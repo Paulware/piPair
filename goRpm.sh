@@ -1,0 +1,2 @@
+cd /boot
+./rpm.sh

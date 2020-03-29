@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=RPM
+Exec=/usr/bin/python /home/pi/examples/rpm/speedometer.py > speedometer.log
+StartupNotify=true
+Terminal=false
+#
+#sudo bash;cd /home/pi/examples/rpm;/usr/bin/python2.7 speedometer.py > speedometer.log 2>&1
