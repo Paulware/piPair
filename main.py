@@ -146,7 +146,7 @@ def showCh (ch,x,y):
 
 def chOffset (ch): 
    offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '=':9, \
-               'I':4, 'W':13, \
+               'I':4, 'W':13, 'O':13, \
                'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, \
                '0':9, '1':9, '2':9, '4':9, '5':9, '6':9, '7':9, '8':9, '9':9 \
              }
@@ -429,7 +429,7 @@ def tictactoePage ():
        x = (x * 100) + 250
        y = (y * 100) + 150 
        print ( 'Draw O at [' + str(x) + ',' + str(y) + ']' )
-       pygame.draw.circle(screen, RED, (x, y), 50, 1)       
+       pygame.draw.circle(DISPLAYSURF, RED, (x, y), 50, 1)       
        pygame.display.update()
            
     # Show screen 
