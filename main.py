@@ -419,20 +419,20 @@ def tictactoePage ():
     
     drawingX = True
     def drawX (x,y):
+       taken [x][y]=True       
        x = (x * 100) + 200
        y = (y * 100) + 100 
        print ( 'Draw X at [' + str(x) + ',' + str(y) + ']' )
        pygame.draw.line(DISPLAYSURF, RED, (x, y), (x+100, y+100))
        pygame.draw.line(DISPLAYSURF, RED, (x+100, y), (x, y+100))
        pygame.display.update()
-       taken [x][y]=True       
     def drawO (x,y):
+       taken [x][y]=True
        x = (x * 100) + 250
        y = (y * 100) + 150 
        print ( 'Draw O at [' + str(x) + ',' + str(y) + ']' )
        pygame.draw.circle(DISPLAYSURF, RED, (x, y), 50, 1)       
        pygame.display.update()
-       taken [x][y]=True
            
     # Show screen 
     DISPLAYSURF.fill((BLACK))
