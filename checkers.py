@@ -135,7 +135,7 @@ def checkersPage():
          x = int(move[1])
          y = int(move[2])
          showStatus ( 'Move piece ' + str(selectedIndex) + ' to [' + \
-                      str(toX) + ',' + str(toY) + ']' ) 
+                      str(x) + ',' + str(y) + ']' ) 
          myTurn = True
          move = None      
       
