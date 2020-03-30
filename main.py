@@ -104,7 +104,9 @@ def getKeyOrUdp():
           typeInput = pygame.MOUSEBUTTONDOWN
           addr = 'mouse'
        elif event.type == pygame.MOUSEMOTION:
-          pass
+          data = pygame.mouse.get_pos()
+          typeInput = pygame.MOUSEMOTION
+          addr = 'mouse'
        else:
           print ( 'Got a event: ' + str(event.type)) 
              
@@ -146,7 +148,7 @@ def getKeyOrUdp():
              addr = str(addr[0])
              
    
-  print ( 'returning typeInput: ' + str(typeInput))   
+  # print ( 'returning typeInput: ' + str(typeInput))   
   return (typeInput,data,addr)
   
 def showCh (ch,x,y):
@@ -202,6 +204,9 @@ def getInput (x,y):
      elif typeInput == pygame.MOUSEBUTTONDOWN:
         line = data
         quit = True
+     elif typeInput == pygame.MOUSEMOTION:
+        line = data
+        quit = True
      elif typeInput == 'udp':
         line = data
         quit = True
@@ -210,7 +215,8 @@ def getInput (x,y):
         print ( 'got some tcp data yo: ' + data)
         quit = True
         
-  print ( "getInput: " + str(line))
+  if typeInput != pygame.MOUSEMOTION:      
+     print ( "getInput: " + str(line))
   return (typeInput,line,addr)  
 
 def updateWpaSupplicant (ssid, password):
@@ -274,22 +280,24 @@ def showImages (filenames,locations):
     for image in images: 
         sprites.append (DISPLAYSURF.blit (image, locations[i]) )
         i = i + 1
-    return sprites
+    pygame.display.update()        
+    return (images,sprites)
   
 def getSpriteClick (eventType, pos, sprites): 
     found = -1
-    if eventType == pygame.MOUSEBUTTONUP:
-       print (str(pos)) 
-  
-       # get a list of all sprites that are under the mouse cursor         
-       clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
-       
-       if clicked_sprite != []:
-          for i in range (len(sprites)):
-             if clicked_sprite[0] == sprites[i]: # just check the first sprite
-                print ( "getSpriteClick: " + str(i)) 
-                found = i
-                break
+    if sprites != None:
+       if (eventType == pygame.MOUSEBUTTONUP) or (eventType == pygame.MOUSEBUTTONDOWN):
+          print (str(pos)) 
+     
+          # get a list of all sprites that are under the mouse cursor         
+          clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
+          
+          if clicked_sprite != []:
+             for i in range (len(sprites)):
+                if clicked_sprite[0] == sprites[i]: # just check the first sprite
+                   print ( "getSpriteClick: " + str(i)) 
+                   found = i
+                   break
     return found
 
 def scanForSsids ():
@@ -343,7 +351,84 @@ def udpBroadcast (message):
     # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
     client.sendto(str.encode(message), (UDP_IP, port))    
     showStatus ( "You sent udp message: [" + message + "]")
- 
+
+def readLines (filename, match):
+    found = False
+    lines = []
+    
+    try: 
+       f = open (filename, 'r') 
+       lines = f.readlines()
+       f.close
+       
+       for line in lines:
+          if line.find (match) > -1:
+             found = True
+             break
+    except Exception as ex:
+       print ( 'Could not readLines because: ' + str(ex)) 
+       
+    return (lines,found)
+
+    
+def modifyDhcpcd():
+    filename = '/etc/dhcpcd.conf' 
+    print ( 'modify /etc/dhcpcd.conf' )
+    (lines,found) = readLines ( filename, 'interface wlan0')
+    if found:
+       print ( "Not modifying /etc/dhcpcd.conf because interface wlan0 already exists" )
+    else: 
+       try: 
+          f = open ( filename, 'w')
+          for line in lines:
+             f.write ( line )
+          f.write ( 'interface wlan0\n' )
+          f.write ( '   static ip_address=192.168.4.1/24\n' )
+          f.write ( '   nohook wpa_supplicant\n' )
+          f.close()
+       except Exception as ex:
+          print ( 'Could not update ' + filename + ' because: ' + str(ex))
+        
+def modifyDnsmasq(): 
+    filename = '/etc/dnsmasq.conf' 
+    print ( 'Modify /etc/dnsmasq.conf' ) 
+    
+    (lines,found) = readLines ( filename, 'interface=wlan0')
+    if found:
+       print ( "Not modifying /etc/dhcpcd.conf because \'interface=wlan0\' already exists")       
+       try:
+          f = open ( filename, 'w')
+          for line in lines:
+             f.write ( line )
+          f.write ( 'interface=wlan0\n' )
+          f.write ( '   dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h\n' )
+          f.close()
+       except Exception as ex:
+          print ( 'Could not modify ' + filename + ' because: ' + str (ex) )
+    
+def modifyHostapd(ssid, password='ABCD1234'):
+    filename = '/etc/hostapd/hostapd.conf'
+    print ( 'Modify /etc/hostapd/hostapd.conf' )
+    try:
+       f = open ( filename, 'w')
+       f.write ( 'interface=wlan0\n' ) 
+       f.write ( 'driver=nl80211\n' )
+       f.write ( 'ssid=' + ssid + '\n' ) 
+       f.write ( 'hw_mode=g\n' ) 
+       f.write ( 'channel=7\n' ) 
+       f.write ( 'wmm_enabled=0\n' ) 
+       f.write ( 'macaddr_acl=0\n' ) 
+       f.write ( 'auth_algs=1\n' ) 
+       f.write ( 'ignore_broadcast_ssid=0\n' ) 
+       f.write ( 'wpa=2\n' ) 
+       f.write ( 'wpa_passphrase=' + password + '\n' ) 
+       f.write ( 'wpa_key_mgmt=WPA-PSK\n' ) 
+       f.write ( 'wpa_pairwise=TKIP\n' ) 
+       f.write ( 'rsn_pairwise=CCMP\n' ) 
+       f.close()
+    except Exception as ex:
+       print ( 'Could not modify ' + filename + ' because: ' + str (ex) )
+    
 '''
    Pages
 '''   
@@ -356,29 +441,34 @@ def hostPage (showOnly=False):
     f.close()
     iAmHost = True
     DISPLAYSURF.fill((BLACK)) 
-    sprites = showImages (['quit.jpg'], [(400,400)] )      
+    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )      
     (surface, rect) = createLabel ('Enter the name of your host ssid', 50, 20)   
     DISPLAYSURF.blit(surface, rect)
     (surface, rect) = createLabel ('SSID:', 250, 55)  
     DISPLAYSURF.blit(surface, rect)
     pygame.display.update()
-    (typeInput,ssid,addr) = getInput(300,55)
+    #(typeInput,ssid,addr) = getInput(300,55)
    
-    pygame.display.set_caption('Hosting SSID: ' + ssid)
-    print ( 'ssid: [' + ssid + ']')
-    print ( 'modify /etc/dhcpcd.conf' )
-    print ( 'Modify /etc/dnsmasq.conf' ) 
-    print ( 'Modify /etc/hostapd/hostapd.conf' )
        
     quit = False
     while not quit: 
-       (eventType,data,addr) = getInput (100,100)    
+       (eventType,data,addr) = getInput (300,55) 
+
+       if eventType == 'key': 
+          print ( 'Got an ssid: [' + data + ']' )
+          if data != '':
+             pygame.display.set_caption('Hosting SSID: ' + data)
+             print ( 'ssid: [' + data + ']')
+             modifyDhcpcd() 
+             modifyDnsmasq()
+             modifyHostapd(data)
+             quit = True
+          
        sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
           games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Panzer Leader']     
           mainPage (True)
           quit = True
-
 
 # Show the list the SSIDS and join an ssid when it is selected
 # Note: reboot may be necessary    
@@ -393,7 +483,7 @@ def joinPage(showOnly=False):
     f.close()
     iAmHost = False
     DISPLAYSURF.fill((BLACK))
-    sprites = showImages (['quit.jpg', 'join.jpg'], [(400,400), (200,200)] )       
+    (images,sprites) = showImages (['quit.jpg', 'join.jpg'], [(400,400), (200,200)] )       
     (ssidSurf, ssidRect) = createLabel ('Press Join to show SSIDs', 50, 20)    
     DISPLAYSURF.blit(ssidSurf, ssidRect)
     pygame.display.update()
@@ -402,9 +492,7 @@ def joinPage(showOnly=False):
     
     ssids = scanForSsids()      
     labels = showSsids(ssids)
-    
-    sprites = showImages (['quit.jpg'], [(400,400)] )       
-    
+        
     quit = False
     while not quit and not showOnly:   
        (eventType,data,addr) = getInput (100,100)   
@@ -435,7 +523,18 @@ def checkersPage():
    RADIUS = int((SQUAREWIDTH/2) - 10)
    OFFSET = 0   
       
-   def drawBoard():
+   def inBoard (x,y):
+      insideBoard = False
+      if (x >= BOARDX) and (y >= BOARDY):
+         if (x <= (BOARDX+(8*SQUAREWIDTH))) and (y <= (BOARDY+(8*SQUAREWIDTH))): 
+            insideBoard = True
+      return insideBoard
+      
+   def legalMove (x1,y1,x2,y2):
+      return True
+      
+   def drawBoard(): 
+      DISPLAYSURF.fill((WHITE)) 
       y = BOARDY
       count = 0
       for i in range (8):
@@ -447,14 +546,31 @@ def checkersPage():
             else:                  
                pygame.draw.rect(DISPLAYSURF, RED, (x,y,SQUAREWIDTH, SQUAREWIDTH))
          y = y + SQUAREWIDTH
-         count = count + 1 # stagger the colors
+         count = count + 1 # stagger the colors   
+   
+      y = BOARDY
+      count = 0
+      for piece in redPieces:
+         x = piece[0]
+         y = piece[1]
+         print ( 'Place redPiece at [' + str(x) + ',' + str(y) + ']') 
+         DISPLAYSURF.blit (redImages[count], (x,y))         
+         count = count + 1
          
+      count = 0
+      for piece in blackPieces:
+         x = piece[0]
+         y = piece[1]
+         print ( 'Place blackPiece at [' + str(x) + ',' + str(y) + ']') 
+         DISPLAYSURF.blit (blackImages[count], (x,y))
+         count = count + 1
+
+      pygame.display.update()        
+            
    # Show screen
-   DISPLAYSURF.fill((WHITE))
    pygame.display.set_caption('Play Tic Tac Toe')        
-   drawBoard()
-   sprites = showImages (['quit.jpg'], [(400,500)] )
-   redPieces = showImages (['redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png'], \
+
+   (redImages,redPieces) = showImages (['redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png'], \
                            [(BOARDX+OFFSET,BOARDY+OFFSET) , \
                             (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET), \
                             (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET), \
@@ -472,8 +588,12 @@ def checkersPage():
                             (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET+SQUAREWIDTH), \
                             (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET+SQUAREWIDTH)  \
                            ] ) 
+   redLocations = [ \
+                    [0,0], [1,0], [2,0], [3,0], [4,0], [5,0], [6,0], [7,0], \
+                    [0,1], [1,1], [2,1], [3,1], [4,1], [5,1], [6,1], [7,1], \
+                  ]
 
-   blackPieces = showImages (['blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png'], \
+   (blackImages,blackPieces) = showImages (['blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png'], \
                            [(BOARDX+OFFSET,BOARDY+OFFSET+(SQUAREWIDTH*6)) , \
                             (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
                             (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
@@ -490,64 +610,115 @@ def checkersPage():
                             (BOARDX+OFFSET+(SQUAREWIDTH*5),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
                             (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
                             (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET+(SQUAREWIDTH*7))  \
-                           ] )                            
+                           ] ) 
+   blackLocations = [ \
+                      [0,6], [1,6], [2,6], [3,6], [4,6], [5,6], [6,6], [7,6], \
+                      [0,7], [1,7], [2,7], [3,7], [4,7], [5,7], [6,7], [7,7], \
+                    ]
+   drawBoard()
+   (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
 
    showStatus ( "Waiting for player to join")
    pygame.display.update()
    
-   if iAmHost: 
+   if iAmHost:
       # Set opponents list of games
       udpBroadcast ( 'exec:games=[\'Checkers\']')
       joining = ''
       playerJoined = False
-      move = (0,0)
+      move = (0,0) # Host can move first
       myTurn = True
    else:
-      udpBroadcast ( 'exec:joining=\'Checkers\'')    
+      udpBroadcast ( 'exec:joining=\'Checkers\'')
       joining = 'Checkers' # Opponent should be waiting
       move = None
        
    quit = False    
+   redSelectedPiece = None
+   blackSelectedPiece = None
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
+      
       if eventType == pygame.MOUSEBUTTONUP:
-         pos = data
-         if joining == 'Checkers':
-            if move == None:
-               showStatus ( 'Waiting on opponent\'s move' )             
-            else:
-               print ( 'process: [' + str(x) + ',' + str(y) + ']' )
+         if redSelectedPiece != None: 
+            x = int((data[0] - BOARDX) / SQUAREWIDTH)
+            y = int((data[1] - BOARDY) / SQUAREWIDTH)
+            x = BOARDX + (x * SQUAREWIDTH)
+            y = BOARDY + (y * SQUAREWIDTH)
+            if legalMove (x,y,x,y): 
+               redSelectedPiece[0] = x
+               redSelectedPiece[1] = y 
+               drawBoard()
+               (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
-               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')
-         else:
-            print ( 'Waiting for player, joining: [' + joining + ']' )
-            showStatus ( 'Ignoring click, waiting for player to join')
-      elif eventType == pygame.MOUSEBUTTONDOWN:
-         pos = data
-         print ( 'Got a mousedown at: ' + str(pos))         
-         x = int((pos[0] - BOARDX) / SQUAREWIDTH)
-         y = int((pos[1] - BOARDY) / SQUAREWIDTH)
-         print ( '[' + str(x) + ',' + str(y) + ']' )
-         
-      #elif eventType == pygame.MOUSEMOTION:
-      #   pass
-      elif eventType == 'udp':
-         if data.find ( 'move=') > -1: # Opponent has moved 
-            if drawingX: 
-               drawX (move[0], move[1])
+               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')               
             else:
-               drawO (move[0], move[1])
-            drawingX = not drawingX
+               showStatus ('Red illegal move' )
             
+         if blackSelectedPiece != None: 
+            x = int((data[0] - BOARDX) / SQUAREWIDTH)
+            y = int((data[1] - BOARDY) / SQUAREWIDTH)
+            x = BOARDX + (x * SQUAREWIDTH)
+            y = BOARDY + (y * SQUAREWIDTH)
+            if legalMove (x,y,x,y): 
+               blackSelectedPiece[0] = x
+               blackSelectedPiece[1] = y 
+               drawBoard()
+               (images,sprites) = showImages (['quit.jpg'], [(400,500)])
+               move = None
+               # move = (fromX, fromY, toX, toY)
+               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ',' + str(x) + ',' + str(y)+ ')')               
+            else:
+               showStatus ( 'Black illegal move' )
+         redSelectedPiece = None
+         blackSelectedPiece = None  
+         
+      elif eventType == pygame.MOUSEBUTTONDOWN:
+         if myTurn: 
+            if joining == 'Checkers':
+               if move == None: 
+                  showStatus ( 'Waiting for opponent to move')
+               else: 
+                  piece = getSpriteClick (eventType, data, redPieces)          
+                  if piece != -1:
+                     redSelectedPiece = redPieces[piece]
+                  piece = getSpriteClick (eventType, data, blackPieces)          
+                  if piece != -1:
+                     print ("black piece clicked on")
+                     blackSelectedPiece = blackPieces[piece]
+            else:
+               showStatus ( 'Waiting for other player to join')
+         else:
+            showStatus ( 'Waiting for other player to move' )                                  
+         
+      elif eventType == pygame.MOUSEMOTION:
+         if redSelectedPiece != None:
+            print ( 'Move redSelectedPiece to: ' + str(data) )
+            if inBoard (data[0], data[1]): 
+               redSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
+               redSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
+            
+               drawBoard()
+               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                 
+             
+         elif blackSelectedPiece != None:
+            print ( 'Move blackSelectedPiece to: ' + str(data))  
+            if inBoard (data[0], data[1]):
+               blackSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
+               blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
+               drawBoard()
+               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                     
+
+      elif eventType == 'udp':         
+         if data.find ( 'move=') > -1: # Opponent has moved 
+            fromX = move[0]
+            fromY = move[1]
+            toX = move[2]
+            toY = move[3]
+            # Lookup piece given the location
+            # Move the piece 
+            print ( 'got a udp move' )
          print ( 'Got a udp: [' + data + '] from: ' + addr )
-          
-      piece = getSpriteClick (eventType, data, redPieces)          
-      if piece != -1:
-         print ("red piece clicked on")
-          
-      piece = getSpriteClick (eventType, data, blackPieces)          
-      if piece != -1:
-         print ("black piece clicked on")
           
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
@@ -586,7 +757,7 @@ def tictactoePage ():
     pygame.draw.line(DISPLAYSURF, RED, (200, 200), (500, 200))
     pygame.draw.line(DISPLAYSURF, RED, (200, 300), (500, 300))
     pygame.display.flip()
-    sprites = showImages (['quit.jpg'], [(400,500)] )      
+    (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
     showStatus ( "Waiting for player to join")
     pygame.display.update()
     
@@ -652,9 +823,8 @@ def chatPage(showOnly=False):
     global tcpConnection 
     
     DISPLAYSURF.fill((BLACK))
-    # sprites = showImages (['quit.jpg'], [(400,400)] )       
     showLabel ('Chat:', 250, 55)
-    sprites = showImages (['quit.jpg'], [(400,400)] )
+    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )
     
     pygame.display.set_caption('Chatting: ')        
     pygame.display.update()  
@@ -731,7 +901,7 @@ def gamePage(showOnly=False):
        pygame.display.set_caption('Select the game to join')    
     DISPLAYSURF.fill((BLACK))
     labels = showSsids(games)    
-    sprites = showImages (['quit.jpg'], [(400,400)] )
+    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )
     if iAmHost: 
        showLabel ('Select a game to host', 50, 20)    
     else:
@@ -763,7 +933,7 @@ def mainPage(showOnly = False):
     height = DISPLAYHEIGHT - 50
     DISPLAYSURF.fill((BLACK))    
     showStatus ( "All Operations Check")
-    sprites = showImages ( ['quit.jpg', 'host.jpg', 'join.jpg', 'game.jpg'], locations)
+    (images,sprites) = showImages ( ['quit.jpg', 'host.jpg', 'join.jpg', 'game.jpg'], locations)
     pygame.display.update()
 
     quit = False
