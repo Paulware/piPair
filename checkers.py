@@ -18,7 +18,13 @@ def checkersPage():
       
    def legalMove (x1,y1,x2,y2):
       return True
+    
+   def xToPixel (x):
+      return BOARDX + (x * SQUAREWIDTH)
       
+   def yToPixel (y):
+      return BOARDY + (y * SQUAREWIDTH)
+    
    def drawBoard(): 
       DISPLAYSURF.fill((WHITE)) 
       y = BOARDY
@@ -37,16 +43,16 @@ def checkersPage():
       y = BOARDY
       count = 0
       for piece in redPieces:
-         x = piece[0]
-         y = piece[1]
+         x = xToPixel (redLocations[count][0])
+         y = yToPixel (redLocations[count][1])
          print ( 'Place redPiece at [' + str(x) + ',' + str(y) + ']') 
          DISPLAYSURF.blit (redImages[count], (x,y))         
          count = count + 1
          
       count = 0
       for piece in blackPieces:
-         x = piece[0]
-         y = piece[1]
+         x = xToPixel (blackLocations[count])
+         y = yToPixel (blockLocations[count])
          print ( 'Place blackPiece at [' + str(x) + ',' + str(y) + ']') 
          DISPLAYSURF.blit (blackImages[count], (x,y))
          count = count + 1
@@ -143,33 +149,24 @@ def checkersPage():
          if redSelectedPiece != None: 
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            x = BOARDX + (x * SQUAREWIDTH)
-            y = BOARDY + (y * SQUAREWIDTH)
             if legalMove (x,y,x,y): 
-               redSelectedPiece[0] = x
-               redSelectedPiece[1] = y 
+               redLocations[selectedIndex] = (x,y)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ')')               
-               redLocations[selectedIndex] = (x,y)
             else:
                showStatus ('Red illegal move' )
             
          if blackSelectedPiece != None: 
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            x = BOARDX + (x * SQUAREWIDTH)
-            y = BOARDY + (y * SQUAREWIDTH)
             if legalMove (x,y,x,y): 
-               blackSelectedPiece[0] = x
-               blackSelectedPiece[1] = y 
+               blackLocations[selectedIndex] = (x,y)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
-               # move = (fromX, fromY, toX, toY)
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ')')               
-               blackLocations[selectedIndex] = (x,y)
             else:
                showStatus ( 'Black illegal move' )
          redSelectedPiece = None
