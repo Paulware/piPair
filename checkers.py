@@ -125,6 +125,16 @@ def checkersPage():
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
       
+      if not myTurn and (move != None): #Opponent has moved 
+         fromX = move[0]
+         fromY = move[1]
+         toX = move[2]
+         toY = move[3]
+         showStatus ( 'Move piece from : [' + str(fromX) + ',' + str(fromY) + '] to [' + \
+                      str(toX) + ',' + str(toY) + ']' ) 
+         myTurn = True
+         move = None      
+      
       if eventType == pygame.MOUSEBUTTONUP:
          if redSelectedPiece != None: 
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
@@ -194,17 +204,6 @@ def checkersPage():
                blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                     
-
-      elif eventType == 'udp':         
-         if data.find ( 'move=') > -1: # Opponent has moved 
-            fromX = move[0]
-            fromY = move[1]
-            toX = move[2]
-            toY = move[3]
-            # Lookup piece given the location
-            # Move the piece 
-            print ( 'got a udp move' )
-         print ( 'Got a udp: [' + data + '] from: ' + addr )
           
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
