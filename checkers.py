@@ -186,7 +186,7 @@ def checkersPage():
                   if piece != -1:
                      redSelectedPiece = redPieces[piece]
                      fromX = redLocations [piece][0]
-                     fromY = redLocations [piece][1]0
+                     fromY = redLocations [piece][1]
                   piece = getSpriteClick (eventType, data, blackPieces)          
                   if piece != -1:
                      print ("black piece clicked on")
