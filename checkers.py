@@ -115,6 +115,7 @@ def checkersPage():
       udpBroadcast ( 'exec:joining=\'Checkers\'')
       joining = 'Checkers' # Opponent should be waiting
       move = None
+      myTurn = False
 
    drawBoard()
    (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
