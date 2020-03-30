@@ -101,11 +101,8 @@ def checkersPage():
                       [0,6], [1,6], [2,6], [3,6], [4,6], [5,6], [6,6], [7,6], \
                       [0,7], [1,7], [2,7], [3,7], [4,7], [5,7], [6,7], [7,7], \
                     ]
-   drawBoard()
-   (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
 
    showStatus ( "Waiting for player to join")
-   pygame.display.update()
    
    if iAmHost:
       # Set opponents list of games
@@ -118,7 +115,12 @@ def checkersPage():
       udpBroadcast ( 'exec:joining=\'Checkers\'')
       joining = 'Checkers' # Opponent should be waiting
       move = None
-       
+
+   drawBoard()
+   (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
+   pygame.display.update()
+
+      
    quit = False    
    redSelectedPiece = None
    blackSelectedPiece = None
