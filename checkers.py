@@ -125,16 +125,16 @@ def checkersPage():
    quit = False    
    redSelectedPiece = None
    blackSelectedPiece = None
+   selectedIndex = None # necessary?
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
       
       if not myTurn and (move != None): #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
-         fromX = move[0]
-         fromY = move[1]
-         toX = move[2]
-         toY = move[3]
-         showStatus ( 'Move piece from : [' + str(fromX) + ',' + str(fromY) + '] to [' + \
+         selectedIndex = int(move[0])
+         x = int(move[1])
+         y = int(move[2])
+         showStatus ( 'Move piece ' + str(selectedIndex) + ' to [' + \
                       str(toX) + ',' + str(toY) + ']' ) 
          myTurn = True
          move = None      
@@ -151,7 +151,8 @@ def checkersPage():
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
-               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')               
+               udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ')')               
+               redLocations[selectedIndex] = (x,y)
             else:
                showStatus ('Red illegal move' )
             
@@ -167,7 +168,8 @@ def checkersPage():
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
                # move = (fromX, fromY, toX, toY)
-               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ',' + str(x) + ',' + str(y)+ ')')               
+               udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ')')               
+               blackLocations[selectedIndex] = (x,y)
             else:
                showStatus ( 'Black illegal move' )
          redSelectedPiece = None
@@ -180,12 +182,17 @@ def checkersPage():
                   showStatus ( 'Waiting for opponent to move')
                else: 
                   piece = getSpriteClick (eventType, data, redPieces)          
+                  selectedIndex = piece
                   if piece != -1:
                      redSelectedPiece = redPieces[piece]
+                     fromX = redLocations [piece][0]
+                     fromY = redLocations [piece][1]0
                   piece = getSpriteClick (eventType, data, blackPieces)          
                   if piece != -1:
                      print ("black piece clicked on")
                      blackSelectedPiece = blackPieces[piece]
+                     fromX = blackLocations [piece][0]
+                     fromY = blackLocations [piece][1]
             else:
                showStatus ( 'Waiting for other player to join')
          else:
