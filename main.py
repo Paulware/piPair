@@ -11,6 +11,8 @@ GREEN      = (  0, 155,   0)
 BRIGHTBLUE = (  0,  50, 255)
 BROWN      = (174,  94,   0)
 RED        = (255,   0,   0)
+DARKRED    = (139,  26,  26)
+DARKGREY   = (128, 128, 128)
 
 TEXTBGCOLOR1 = BRIGHTBLUE
 TEXTBGCOLOR2 = GREEN
@@ -96,6 +98,15 @@ def getKeyOrUdp():
           data = pygame.mouse.get_pos()
           typeInput = pygame.MOUSEBUTTONUP
           addr = 'mouse'
+       elif event.type == pygame.MOUSEBUTTONDOWN:
+          #print ( 'Detected a mouse down yo' )
+          data = pygame.mouse.get_pos()
+          typeInput = pygame.MOUSEBUTTONDOWN
+          addr = 'mouse'
+       elif event.type == pygame.MOUSEMOTION:
+          pass
+       else:
+          print ( 'Got a event: ' + str(event.type)) 
              
     if data == '':
        if tcpConnection != None: 
@@ -134,7 +145,8 @@ def getKeyOrUdp():
              typeInput = 'tcp'
              addr = str(addr[0])
              
-       
+   
+  print ( 'returning typeInput: ' + str(typeInput))   
   return (typeInput,data,addr)
   
 def showCh (ch,x,y):
@@ -147,7 +159,7 @@ def showCh (ch,x,y):
 def chOffset (ch): 
    offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '=':9, \
                'I':4, 'W':13, 'O':13, \
-               'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, \
+               'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'k':9, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, \
                '0':9, '1':9, '2':9, '4':9, '5':9, '6':9, '7':9, '8':9, '9':9 \
              }
    offset = 10
@@ -185,6 +197,9 @@ def getInput (x,y):
               showCh (ch, x, y)           
               x = x + chOffset(ch)
      elif typeInput == pygame.MOUSEBUTTONUP:
+        line = data
+        quit = True
+     elif typeInput == pygame.MOUSEBUTTONDOWN:
         line = data
         quit = True
      elif typeInput == 'udp':
@@ -249,7 +264,6 @@ def showLabels (labels, locations):
         i = i + 1
     return sprites
     
- 
 def showImages (filenames,locations):
     images = [] 
     for filename in filenames:
@@ -411,6 +425,136 @@ def joinPage(showOnly=False):
           mainPage (True)
           quit = True
  
+def checkersPage():
+   global joining 
+   global move 
+   
+   SQUAREWIDTH = 50
+   BOARDY = 50
+   BOARDX = 100 
+   RADIUS = int((SQUAREWIDTH/2) - 10)
+   OFFSET = 0   
+      
+   def drawBoard():
+      y = BOARDY
+      count = 0
+      for i in range (8):
+         for j in range (8):
+            count = count + 1
+            x = BOARDX + (j * SQUAREWIDTH)
+            if (count % 2) == 1:
+               pygame.draw.rect(DISPLAYSURF, BLACK, (x,y,SQUAREWIDTH, SQUAREWIDTH))
+            else:                  
+               pygame.draw.rect(DISPLAYSURF, RED, (x,y,SQUAREWIDTH, SQUAREWIDTH))
+         y = y + SQUAREWIDTH
+         count = count + 1 # stagger the colors
+         
+   # Show screen
+   DISPLAYSURF.fill((WHITE))
+   pygame.display.set_caption('Play Tic Tac Toe')        
+   drawBoard()
+   sprites = showImages (['quit.jpg'], [(400,500)] )
+   redPieces = showImages (['redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png', 'redChecker.png'], \
+                           [(BOARDX+OFFSET,BOARDY+OFFSET) , \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*3),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*4),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*5),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET), \
+                            (BOARDX+OFFSET,                BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*3),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*4),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*5),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET+SQUAREWIDTH), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET+SQUAREWIDTH)  \
+                           ] ) 
+
+   blackPieces = showImages (['blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png', 'blackChecker.png'], \
+                           [(BOARDX+OFFSET,BOARDY+OFFSET+(SQUAREWIDTH*6)) , \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*3),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*4),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*5),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET+(SQUAREWIDTH*6)), \
+                            (BOARDX+OFFSET,                BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*1),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*2),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*3),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*4),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*5),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*6),BOARDY+OFFSET+(SQUAREWIDTH*7)), \
+                            (BOARDX+OFFSET+(SQUAREWIDTH*7),BOARDY+OFFSET+(SQUAREWIDTH*7))  \
+                           ] )                            
+
+   showStatus ( "Waiting for player to join")
+   pygame.display.update()
+   
+   if iAmHost: 
+      # Set opponents list of games
+      udpBroadcast ( 'exec:games=[\'Checkers\']')
+      joining = ''
+      playerJoined = False
+      move = (0,0)
+      myTurn = True
+   else:
+      udpBroadcast ( 'exec:joining=\'Checkers\'')    
+      joining = 'Checkers' # Opponent should be waiting
+      move = None
+       
+   quit = False    
+   while not quit: 
+      (eventType,data,addr) = getInput (100,100)
+      if eventType == pygame.MOUSEBUTTONUP:
+         pos = data
+         if joining == 'Checkers':
+            if move == None:
+               showStatus ( 'Waiting on opponent\'s move' )             
+            else:
+               print ( 'process: [' + str(x) + ',' + str(y) + ']' )
+               move = None
+               udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')
+         else:
+            print ( 'Waiting for player, joining: [' + joining + ']' )
+            showStatus ( 'Ignoring click, waiting for player to join')
+      elif eventType == pygame.MOUSEBUTTONDOWN:
+         pos = data
+         print ( 'Got a mousedown at: ' + str(pos))         
+         x = int((pos[0] - BOARDX) / SQUAREWIDTH)
+         y = int((pos[1] - BOARDY) / SQUAREWIDTH)
+         print ( '[' + str(x) + ',' + str(y) + ']' )
+         
+      #elif eventType == pygame.MOUSEMOTION:
+      #   pass
+      elif eventType == 'udp':
+         if data.find ( 'move=') > -1: # Opponent has moved 
+            if drawingX: 
+               drawX (move[0], move[1])
+            else:
+               drawO (move[0], move[1])
+            drawingX = not drawingX
+            
+         print ( 'Got a udp: [' + data + '] from: ' + addr )
+          
+      piece = getSpriteClick (eventType, data, redPieces)          
+      if piece != -1:
+         print ("red piece clicked on")
+          
+      piece = getSpriteClick (eventType, data, blackPieces)          
+      if piece != -1:
+         print ("black piece clicked on")
+          
+      sprite = getSpriteClick (eventType, data, sprites ) 
+      if sprite != -1: # Quit is the only other option           
+         print ("Selected command: " + str(sprite))
+         mainPage (True)
+         quit = True    
+    
 # Show the Tic-Tac-Toe Pages
 def tictactoePage ():
     global joining 
@@ -458,8 +602,7 @@ def tictactoePage ():
        joining = 'Tic Tac Toe' # Opponent should be waiting
        move = None
     
-    quit = False
-    
+    quit = False    
     while not quit: 
        (eventType,data,addr) = getInput (100,100)
        if eventType == pygame.MOUSEBUTTONUP:
@@ -497,7 +640,7 @@ def tictactoePage ():
              
           print ( 'Got a udp: [' + data + '] from: ' + addr )
            
-       sprite = getSpriteClick (eventType, data, sprites ) 
+ 
        if sprite != -1: # Quit is the only other option           
           print ("Selected command: " + str(sprite))
           mainPage (True)
