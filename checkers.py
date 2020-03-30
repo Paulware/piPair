@@ -51,8 +51,8 @@ def checkersPage():
          
       count = 0
       for piece in blackPieces:
-         x = xToPixel (blackLocations[count])
-         y = yToPixel (blockLocations[count])
+         x = xToPixel (blackLocations[count][0])
+         y = yToPixel (blockLocations[count][1])
          print ( 'Place blackPiece at [' + str(x) + ',' + str(y) + ']') 
          DISPLAYSURF.blit (blackImages[count], (x,y))
          count = count + 1
