@@ -129,6 +129,7 @@ def checkersPage():
       (eventType,data,addr) = getInput (100,100)
       
       if not myTurn and (move != None): #Opponent has moved 
+         print ( "Got a move from opponent: " + str(move)) 
          fromX = move[0]
          fromY = move[1]
          toX = move[2]
