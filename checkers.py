@@ -163,6 +163,7 @@ def checkersPage():
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ',\'red\')')               
+               myTurn = False
             else:
                showStatus ('Red illegal move' )
             
@@ -175,6 +176,7 @@ def checkersPage():
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ',\'black\')')               
+               myTurn=False
             else:
                showStatus ( 'Black illegal move' )
          redSelectedPiece = None
