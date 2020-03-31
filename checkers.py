@@ -40,12 +40,10 @@ def checkersPage():
          y = y + SQUAREWIDTH
          count = count + 1 # stagger the colors   
    
-      y = BOARDY
       count = 0
       for piece in redPieces:
          x = xToPixel (redLocations[count][0])
          y = yToPixel (redLocations[count][1])
-         print ( 'Place redPiece at [' + str(x) + ',' + str(y) + ']') 
          DISPLAYSURF.blit (redImages[count], (x,y))         
          count = count + 1
          
@@ -53,7 +51,6 @@ def checkersPage():
       for piece in blackPieces:
          x = xToPixel (blackLocations[count][0])
          y = yToPixel (blackLocations[count][1])
-         print ( 'Place blackPiece at [' + str(x) + ',' + str(y) + ']') 
          DISPLAYSURF.blit (blackImages[count], (x,y))
          count = count + 1
 
