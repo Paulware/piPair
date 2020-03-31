@@ -16,8 +16,18 @@ def checkersPage():
             insideBoard = True
       return insideBoard
       
-   def legalMove (x1,y1,x2,y2):
-      return True
+   def legalMove (selectedIndex, x, y, color):
+      legal = True
+      if color == 'red':
+         fromX = redLocations[selectedIndex][0]
+         fromY = redLocations[selectedINdex][1]
+      else:
+         fromX = redLocations[selectedIndex][0]
+         fromY = redLocations[selectedINdex][1]
+      if (fromX == x) and (fromY == y):
+         showStatus ( 'Cannot move to same position' )
+         legal = False
+      return legal
     
    def xToPixel (x):
       return BOARDX + (x * SQUAREWIDTH)
