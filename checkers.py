@@ -146,6 +146,8 @@ def checkersPage():
          else:
             blackLocations[selectedIndex] = (x,y)
             
+         drawBoard()
+            
          showStatus ( 'Move ' + color + ' piece ' + str(selectedIndex) + ' to [' + \
                       str(x) + ',' + str(y) + ']' ) 
          myTurn = True
@@ -203,16 +205,13 @@ def checkersPage():
          
       elif eventType == pygame.MOUSEMOTION:
          if redSelectedPiece != None:
-            print ( 'Move redSelectedPiece to: ' + str(data) )
             if inBoard (data[0], data[1]): 
                redSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                redSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
             
                drawBoard()
-               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                 
-             
+               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
          elif blackSelectedPiece != None:
-            print ( 'Move blackSelectedPiece to: ' + str(data))  
             if inBoard (data[0], data[1]):
                blackSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
