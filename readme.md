@@ -6,7 +6,7 @@ The idea is to connect 2 (or more) raspberry pi using the pi's wifi chip and the
 Code is written in python in a module fashion so that students can add more games.<br>
 Currently the games that are supported are:
 <ul>
-  <li>Chat (not really a game but the basis of all game communication></li>
+  <li>Chat (not really a game but the basis of all game communication)</li>
   <li>Tic Tac Toe</li>
   <li>Checkers</li>
   <li>Chess</li>
