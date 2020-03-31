@@ -165,7 +165,7 @@ def checkersPage():
          if redSelectedPiece != None: 
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            if legalMove (x,y,x,y): 
+            if legalMove (selectedIndex,x,y,'red'): 
                redLocations[selectedIndex] = (x,y)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
@@ -178,7 +178,7 @@ def checkersPage():
          if blackSelectedPiece != None: 
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            if legalMove (x,y,x,y): 
+            if legalMove (selectedIndex,x,y,'black'): 
                blackLocations[selectedIndex] = (x,y)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
