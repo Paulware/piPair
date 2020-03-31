@@ -19,11 +19,9 @@ def checkersPage():
    def legalMove (selectedIndex, x, y, color):
       legal = True
       if color == 'red':
-         fromX = redLocations[selectedIndex][0]
-         fromY = redLocations[selectedINdex][1]
+         (fromX,fromY) = redLocations[selectedIndex]
       else:
-         fromX = redLocations[selectedIndex][0]
-         fromY = redLocations[selectedINdex][1]
+         (fromX,fromY) = blackLocations[selectedIndex]
       if (fromX == x) and (fromY == y):
          showStatus ( 'Cannot move to same position' )
          legal = False
