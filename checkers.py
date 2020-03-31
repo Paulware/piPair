@@ -180,27 +180,23 @@ def checkersPage():
          blackSelectedPiece = None  
          
       elif eventType == pygame.MOUSEBUTTONDOWN:
-         if myTurn: 
-            if joining == 'Checkers':
-               if move == None: 
-                  showStatus ( 'Waiting for opponent to move')
-               else: 
-                  piece = getSpriteClick (eventType, data, redPieces)          
-                  selectedIndex = piece
-                  if piece != -1:
-                     redSelectedPiece = redPieces[piece]
-                     fromX = redLocations [piece][0]
-                     fromY = redLocations [piece][1]
-                  piece = getSpriteClick (eventType, data, blackPieces)          
-                  if piece != -1:
-                     print ("black piece clicked on")
-                     blackSelectedPiece = blackPieces[piece]
-                     fromX = blackLocations [piece][0]
-                     fromY = blackLocations [piece][1]
+         if joining == 'Checkers': 
+            if myTurn: 
+               piece = getSpriteClick (eventType, data, redPieces)          
+               selectedIndex = piece
+               if piece != -1:
+                  redSelectedPiece = redPieces[piece]
+                  fromX = redLocations [piece][0]
+                  fromY = redLocations [piece][1]
+               piece = getSpriteClick (eventType, data, blackPieces)          
+               if piece != -1:
+                  blackSelectedPiece = blackPieces[piece]
+                  fromX = blackLocations [piece][0]
+                  fromY = blackLocations [piece][1]
             else:
-               showStatus ( 'Waiting for other player to join')
+               showStatus ( 'Waiting for other player to move' )                                  
          else:
-            showStatus ( 'Waiting for other player to move' )                                  
+            showStatus ( 'Waiting for other player to join')
          
       elif eventType == pygame.MOUSEMOTION:
          if redSelectedPiece != None:
