@@ -40,32 +40,46 @@ def chessPage():
       x = int((x - BOARDX)/ 50) 
       y = int((y - BOARDY)/ 50)
       return (x,y)   
+
+   # (x,y) is board square location not pixels       
+   def findBlackPiece (x,y):  
+      piece = -1
+      count = 0
+      for location in blackLocations: 
+         if (x == location[0]) and (y == location[1]):
+            piece = count
+            break
+         count = count + 1
+      return piece 
+
+   # (x,y) is board square location (not pixels)      
+   def findWhitePiece (x,y):  
+      piece = -1
+      count = 0
+      for location in whiteLocations: 
+         if (x == location[0]) and (y == location[1]):
+            piece = count
+            break
+         count = count + 1
+      return piece 
       
    def findSelectedPiece (x,y):
       (x,y) = posToXY (x,y)
       
-      count = 0
       selectedIndex = None
-      print ("None A")
       whiteSelectedPiece = None
       blackSelectedPiece = None
-      for location in whiteLocations: 
-         if (x == location[0]) and (y == location[1]):
-            whiteSelectedPiece = count
-            selectedIndex = count
-            print ( 'whiteSelected Piece: ' + str(whiteSelectedPiece))
-            break
-         count = count + 1
+      count = findWhitePiece (x,y) 
+      if count > -1:
+         whiteSelectedPiece = count
+         selectedIndex = count
          
       if whiteSelectedPiece == None: 
-         count = 0
-         for location in blackLocations: 
-            if (x == location[0]) and (y == location[1]):
-               selectedIndex = count
-               blackSelectedPiece = count
-               print ( 'blackSelected Piece: ' + str(blackSelectedPiece))
-               break
-            count = count + 1
+         count = findBlackPiece (x,y)
+         if count > -1:
+            selectedIndex = count
+            blackSelectedPiece = count
+            
       return (whiteSelectedPiece, blackSelectedPiece, selectedIndex)
    
    def drawPiece (piece,x,y): 
@@ -73,13 +87,14 @@ def chessPage():
                  'blackKing':(0,0),  'blackQueen':(50,0),  'blackRook':(100,0), 'blackBishop':(150,0), 'blackKnight':(200,0), 'blackPawn':(249,0), \
                  'whiteKing':(0,40), 'whiteQueen':(50,40), 'whiteRook':(100,40),'whiteBishop':(150,40),'whiteKnight':(200,40),'whitePawn':(249,40) \
                }  
-      location = pieces[piece]
-      if (piece == 'whitePawn') or (piece == 'blackPawn'):
-         x = x - 10
-      elif (piece == 'blackKnight') or (piece == 'whiteKnight'):
-         x = x - 8
-         
-      DISPLAYSURF.blit(chessSheet, (x, y), (location[0], location[1], 50, 50))   
+      if (x >= 0) and (y >= 0):
+         location = pieces[piece]
+         if (piece == 'whitePawn') or (piece == 'blackPawn'):
+            x = x - 10
+         elif (piece == 'blackKnight') or (piece == 'whiteKnight'):
+            x = x - 8
+            
+         DISPLAYSURF.blit(chessSheet, (x, y), (location[0], location[1], 50, 50))   
    
    def drawBoard(): 
       DISPLAYSURF.fill((WHITE)) 
@@ -134,13 +149,13 @@ def chessPage():
    
    if iAmHost:
       # Set opponents list of games
-      udpBroadcast ( 'exec:games=[\'Checkers\']')
+      udpBroadcast ( 'exec:games=[\'Chess\']')
       joining = ''
       playerJoined = False
       move = (0,0) # Host can move first
       myTurn = True
    else:
-      udpBroadcast ( 'exec:joining=\'Checkers\'')
+      udpBroadcast ( 'exec:joining=\'Chess\'')
       joining = 'Chess' # Opponent should be waiting
       move = None
       myTurn = False
@@ -155,6 +170,7 @@ def chessPage():
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
       
+      
       if not myTurn and (move != None): #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
          selectedIndex = int(move[0])
@@ -162,9 +178,17 @@ def chessPage():
          y = int(move[2])
          color = move[3]
          if color == 'white':
+            piece = findBlackPiece (x,y)
+            if piece != -1:
+               blackLocations[piece] = (-1,-1) # indicate capture            
+            
             whiteLocations[selectedIndex] = (x,y)
          else:
             blackLocations[selectedIndex] = (x,y)
+            piece = findWhitePiece (x,y)
+            if piece != -1:
+               whiteLocations[piece] = (-1,-1) # indicate capture
+            print ('blackLocations: ' + str(blackLocations) )
             
          drawBoard()
          (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
@@ -179,8 +203,12 @@ def chessPage():
             print ( 'Move white piece[' + str(whiteSelectedPiece) + '] to: ' + str(data) )
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            if legalMove (selectedIndex,x,y,'white'): 
+            if legalMove (selectedIndex,x,y,'white'):             
+               piece = findBlackPiece (x,y)
+               if piece != -1:
+                  blackLocations[piece]=(-1,-1) # indicate unit is gone
                whiteLocations[selectedIndex] = (x,y)
+               
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
                move = None
@@ -196,6 +224,10 @@ def chessPage():
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
             y = int((data[1] - BOARDY) / SQUAREWIDTH)
             if legalMove (selectedIndex,x,y,'black'): 
+               piece = findWhitePiece (x,y)
+               if piece != -1:
+                  whiteLocations[piece]=(-1,-1) # indicate unit is gone
+            
                blackLocations[selectedIndex] = (x,y)
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)])
@@ -211,8 +243,19 @@ def chessPage():
       elif eventType == pygame.MOUSEBUTTONDOWN:
          if joining == 'Chess': 
             if myTurn: 
-               (whiteSelectedPiece, blackSelectedPiece, selectedIndex) = \
-                  findSelectedPiece (data[0], data[1]) 
+               (x,y) = posToXY (data[0],data[1]) 
+               if iAmHost: 
+                  piece = findBlackPiece (x,y)
+                  if piece != -1: 
+                     showStatus ( 'That is not your piece, you are white' )
+                  else: 
+                     (whiteSelectedPiece, blackSelectedPiece, selectedIndex) = findSelectedPiece (data[0], data[1]) 
+               else:
+                  piece = findWhitePiece (x,y)
+                  if piece != -1:
+                     showStatus ( 'That is not your piece, you are black' )
+                  else:
+                     (whiteSelectedPiece, blackSelectedPiece, selectedIndex) = findSelectedPiece (data[0], data[1]) 
             else:
                showStatus ( 'Waiting for other player to move' )                                  
          else:
