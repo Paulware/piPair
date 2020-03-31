@@ -144,6 +144,7 @@ def checkersPage():
             blackLocations[selectedIndex] = (x,y)
             
          drawBoard()
+         (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
             
          showStatus ( 'Move ' + color + ' piece ' + str(selectedIndex) + ' to [' + \
                       str(x) + ',' + str(y) + ']' ) 
@@ -183,16 +184,14 @@ def checkersPage():
          if joining == 'Checkers': 
             if myTurn: 
                piece = getSpriteClick (eventType, data, redPieces)          
-               selectedIndex = piece
                if piece != -1:
+                  selectedIndex = piece
                   redSelectedPiece = redPieces[piece]
-                  fromX = redLocations [piece][0]
-                  fromY = redLocations [piece][1]
+                  
                piece = getSpriteClick (eventType, data, blackPieces)          
                if piece != -1:
+                  selectedIndex = piece
                   blackSelectedPiece = blackPieces[piece]
-                  fromX = blackLocations [piece][0]
-                  fromY = blackLocations [piece][1]
             else:
                showStatus ( 'Waiting for other player to move' )                                  
          else:
@@ -202,8 +201,7 @@ def checkersPage():
          if redSelectedPiece != None:
             if inBoard (data[0], data[1]): 
                redSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
-               redSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
-            
+               redSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)            
                drawBoard()
                (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
          elif blackSelectedPiece != None:
