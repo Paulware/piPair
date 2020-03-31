@@ -223,5 +223,6 @@ def checkersPage():
       if sprite != -1: # Quit is the only other option           
          print ("Selected command: " + str(sprite))
          mainPage (True)
-         quit = True    
+         quit = True  
+         
 CHECKERS=inspect.getsource(checkersPage)

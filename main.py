@@ -7,8 +7,10 @@ import select
 # Include other files
 import checkers
 import tictactoe
+import chess
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
+exec (chess.CHESS)
 
 
 WHITE      = (255, 255, 255)
@@ -166,7 +168,7 @@ def showCh (ch,x,y):
 
 def chOffset (ch): 
    offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '=':9, \
-               'I':4, 'W':13, 'O':12, \
+               'I':4, 'W':14, 'O':12, 'M':14, \
                'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'k':9, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, \
                '0':9, '1':9, '2':9, '3':9, '4':9, '5':9, '6':9, '7':9, '8':9, '9':9 \
              }
@@ -278,15 +280,21 @@ def showLabels (labels, locations):
     
 def showImages (filenames,locations):
     images = [] 
-    for filename in filenames:
-        images.append ( pygame.image.load (filename) )     
+    try:
+       for filename in filenames:
+          images.append ( pygame.image.load (filename) )     
+    except Exception as ex:
+       print ( 'Could not load: ' + filename + ' because: ' + str(ex))
 
     sprites = []
-    i = 0
-    for image in images: 
-        sprites.append (DISPLAYSURF.blit (image, locations[i]) )
-        i = i + 1
-    pygame.display.update()        
+    try:
+       i = 0
+       for image in images: 
+           sprites.append (DISPLAYSURF.blit (image, locations[i]) )
+           i = i + 1
+       pygame.display.update()        
+    except Exception as ex:
+       print ( 'Could not place sprite on surface because: ' + str(ex))
     return (images,sprites)
   
 def getSpriteClick (eventType, pos, sprites): 
