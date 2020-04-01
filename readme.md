@@ -10,7 +10,7 @@ Currently the games that are supported are:
   <li>Tic Tac Toe</li>
   <li>Checkers</li>
   <li>Chess</li>
-  <li>Some kind of tank battle(To be implemented)</li>
+  <li>Tank (battle)</li>
   <li>Panzer Leader (To be implemented)</li>
 </ul>
 <h1>Setup</h1>
@@ -25,5 +25,20 @@ Currently the games that are supported are:
      <li>sudo bash</li>
      <li>cd /boot/setup</li>
      <li>./all.sh</li>
+     <li>Turn on wifi (via desktop icon)</li>
+     <li>reboot</li>
+     <li>A wifi accesspoint with SSID=Walker and password=ABCD1234. Should appear</li>
   </ul>
+</ul>
+
+<h1>Test Setup</li>
+<ul>
+   <li>Open a line terminal
+   <li>Enter the commands:</li>
+   <ul>
+      <li>sudo bash</li>
+      <li>cd /boot</li>
+      <li>python main.py</li>
+      <li>A python program should open</li>
+   </ul>
 </ul>
