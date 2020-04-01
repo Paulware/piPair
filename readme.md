@@ -31,7 +31,7 @@ Currently the games that are supported are:
   </ul>
 </ul>
 
-<h1>Test Setup</li>
+<h1>Test Setup</h1>
 <ul>
    <li>Open a line terminal
    <li>Enter the commands:</li>
