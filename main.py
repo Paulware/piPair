@@ -3,14 +3,17 @@ import subprocess
 import os
 import socket
 import select
+import math
 
 # Include other files
 import checkers
 import tictactoe
 import chess
+import tank
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
+exec (tank.TANK)
 
 
 WHITE      = (255, 255, 255)
@@ -38,19 +41,20 @@ joining = ''
 DISPLAYWIDTH=800
 DISPLAYHEIGHT=600
 UDPPORT = 3333
+configFilename = 'mainConfig.txt'
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
 
 # Read configuration data
 try: 
-   f = open ( 'config.txt', 'r')
+   f = open ( configFilename, 'r')
    line = f.readline().strip().lower()
    f.close()
    print ("Read line: " + line)
    if line == 'host': 
       print ( 'You are host' )
       iAmHost = True
-      games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Panzer Leader']     
+      games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Tank']     
       
    elif line == 'client':
       games = ['Chat']
@@ -64,6 +68,36 @@ print ("iAmHost: " + str(iAmHost) + " games:" + str(games))
 '''
    Utilities
 '''
+def blitRotate(image, pos, angle):
+
+    global DISPLAYSURF
+    surf = DISPLAYSURF
+    
+    # calcaulate the axis aligned bounding box of the rotated image
+    w, h       = image.get_size()
+    originPos  = (w//2,h//2)
+    box        = [pygame.math.Vector2(p) for p in [(0, 0), (w, 0), (w, -h), (0, -h)]]
+    box_rotate = [p.rotate(angle) for p in box]
+    min_box    = (min(box_rotate, key=lambda p: p[0])[0], min(box_rotate, key=lambda p: p[1])[1])
+    max_box    = (max(box_rotate, key=lambda p: p[0])[0], max(box_rotate, key=lambda p: p[1])[1])
+
+    # calculate the translation of the pivot 
+    pivot        = pygame.math.Vector2(originPos[0], -originPos[1])
+    pivot_rotate = pivot.rotate(angle)
+    pivot_move   = pivot_rotate - pivot
+
+    # calculate the upper left origin of the rotated image
+    origin = (pos[0] - originPos[0] + min_box[0] - pivot_move[0], pos[1] - originPos[1] - max_box[1] + pivot_move[1])
+
+    # get a rotated image
+    rotated_image = pygame.transform.rotate(image, angle)
+
+    # rotate and blit the image
+    surf.blit(rotated_image, origin)
+
+    # draw rectangle around the image
+    # pygame.draw.rect (surf, (255, 0, 0), (*origin, *rotated_image.get_size()),2)  
+
 def showStatus (status):
     height = DISPLAYHEIGHT - 23
     pygame.draw.line(DISPLAYSURF, RED, (0, height), (DISPLAYWIDTH, height)) #status line
@@ -86,6 +120,7 @@ def getKeyOrUdp():
     ev = pygame.event.get()
     for event in ev:  
        if event.type == pygame.KEYDOWN:
+          #print( "Got a keydown with value: " + str(event.key) )
           if (event.key == 303) or (event.key == 304): #shift
              upperCase = True
           else:
@@ -193,7 +228,19 @@ def getInput (x,y):
   while not quit:
      (typeInput,data,addr) = getKeyOrUdp()
      if typeInput == 'key': 
-        if data == chr(13):
+        if data == chr(13):           
+           quit = True
+        elif data == chr(273): # Up
+           line = data
+           quit = True
+        elif data == chr(274): # Down
+           line = data
+           quit = True
+        elif data == chr(275): # Right
+           line = data
+           quit = True
+        elif data == chr(276): # Left
+           line = data
            quit = True
         else:
            if data == chr(8):
@@ -462,12 +509,12 @@ def hostPage (showOnly=False):
     global iAmHost 
     global games
     pygame.display.set_caption('You are now host, click below to change SSID')        
-    f = open ( 'config.txt', 'w')
+    f = open ( configFilename, 'w')
     f.write ( 'host\n' )
     f.close()
     iAmHost = True
     DISPLAYSURF.fill((BLACK)) 
-    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )      
+    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )      
     (surface, rect) = createLabel ('Enter the name of your host ssid', 50, 20)   
     DISPLAYSURF.blit(surface, rect)
     (surface, rect) = createLabel ('SSID:', 250, 55)  
@@ -500,16 +547,16 @@ def hostPage (showOnly=False):
 # Note: reboot may be necessary    
 def joinPage(showOnly=False):       
     global iAmHost
-    f = open ( 'config.txt', 'w')
+    f = open ( configFilename, 'w')
     f.write ( 'client\n' )
     f.close()
     pygame.display.set_caption('You are client, click below to join an SSID')        
-    f = open ( 'config.txt', 'w')
+    f = open ( configFilename, 'w')
     f.write ( 'client\n' )
     f.close()
     iAmHost = False
     DISPLAYSURF.fill((BLACK))
-    (images,sprites) = showImages (['quit.jpg', 'join.jpg'], [(400,400), (200,200)] )       
+    (images,sprites) = showImages (['images/quit.jpg', 'images/join.jpg'], [(400,400), (200,200)] )       
     (ssidSurf, ssidRect) = createLabel ('Press Join to show SSIDs', 50, 20)    
     DISPLAYSURF.blit(ssidSurf, ssidRect)
     pygame.display.update()
@@ -546,7 +593,7 @@ def chatPage(showOnly=False):
     
     DISPLAYSURF.fill((BLACK))
     showLabel ('Chat:', 250, 55)
-    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )
+    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
     
     pygame.display.set_caption('Chatting: ')        
     pygame.display.update()  
@@ -624,7 +671,7 @@ def gamePage(showOnly=False):
        pygame.display.set_caption('Select the game to join')    
     DISPLAYSURF.fill((BLACK))
     labels = showSsids(games)    
-    (images,sprites) = showImages (['quit.jpg'], [(400,400)] )
+    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
     if iAmHost: 
        showLabel ('Select a game to host', 50, 20)    
     else:
@@ -656,7 +703,7 @@ def mainPage(showOnly = False):
     height = DISPLAYHEIGHT - 50
     DISPLAYSURF.fill((BLACK))    
     showStatus ( "All Operations Check")
-    (images,sprites) = showImages ( ['quit.jpg', 'host.jpg', 'join.jpg', 'game.jpg'], locations)
+    (images,sprites) = showImages ( ['images/quit.jpg', 'images/host.jpg', 'images/join.jpg', 'images/game.jpg'], locations)
     pygame.display.update()
 
     quit = False

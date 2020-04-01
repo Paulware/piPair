@@ -1,5 +1,6 @@
 import inspect
-def chessPage():
+
+def tankPage():
    global joining 
    global move 
    
@@ -8,7 +9,9 @@ def chessPage():
    BOARDX = 100 
    RADIUS = int((SQUAREWIDTH/2) - 10)
    OFFSET = 0   
-   chessSheet = pygame.image.load('images/chessSheet.png')   
+   print ( "get tankSheet")
+   tankSheet = pygame.image.load('images/tanks.png') 
+
    whiteSelectedPiece = None
    blackSelectedPiece = None   
    
@@ -80,24 +83,20 @@ def chessPage():
             selectedIndex = count
             blackSelectedPiece = count
             
-      return (whiteSelectedPiece, blackSelectedPiece, selectedIndex)
-   
+      return (whiteSelectedPiece, blackSelectedPiece, selectedIndex) 
+      
    def drawPiece (piece,x,y): 
-      pieces = {  \
+      pieces = { \
                  'blackKing':(0,0),  'blackQueen':(50,0),  'blackRook':(100,0), 'blackBishop':(150,0), 'blackKnight':(200,0), 'blackPawn':(249,0), \
-                 'whiteKing':(0,40), 'whiteQueen':(50,40), 'whiteRook':(100,40),'whiteBishop':(150,40),'whiteKnight':(200,40),'whitePawn':(249,40) \
+                 'whiteKing':(0,80), 'whiteQueen':(50,40), 'whiteRook':(100,40),'whiteBishop':(150,40),'whiteKnight':(200,40),'whitePawn':(249,40) \
                }  
-      if (x >= 0) and (y >= 0):
-         location = pieces[piece]
-         if (piece == 'whitePawn') or (piece == 'blackPawn'):
-            x = x - 10
-         elif (piece == 'blackKnight') or (piece == 'whiteKnight'):
-            x = x - 8
-         elif (piece == 'whiteBishop') or (piece == 'blackBishop'):
-            x = x - 3
-            
-         DISPLAYSURF.blit(chessSheet, (x, y), (location[0], location[1], 50, 50))   
-   
+                                          
+      whiteTank = pygame.Surface((164, 212), pygame.SRCALPHA, 32)
+      whiteTank = whiteTank.convert_alpha()
+      whiteTank.blit(tankSheet, (0, 0), (0,0,164,212))                 
+      whiteTank = pygame.transform.scale(whiteTank, (60, 80))       
+      blitRotate ( whiteTank, (x,y), whiteAngles[0] )
+
    def drawBoard(): 
       DISPLAYSURF.fill((WHITE)) 
       y = BOARDY
@@ -115,33 +114,38 @@ def chessPage():
    
       count = 0
       for piece in whitePieces:
-         x = xToPixel (whiteLocations[count][0])
-         y = yToPixel (whiteLocations[count][1])
-         drawPiece (piece, x, y)
+         drawPiece (piece, whiteLocations[count][0], whiteLocations[count][1])
          count = count + 1
          
+      '''
       count = 0
       for piece in blackPieces:
-         x = xToPixel (blackLocations[count][0])
-         y = yToPixel (blackLocations[count][1])
-         drawPiece (piece, x, y)
+         drawPiece (piece, blackLocations[count][0], blackLocations[count][1])
          count = count + 1
-
+      '''
       pygame.display.update()        
-            
+         
+   def angleXY(x,y,speed,degrees):
+      degrees = degrees - 90.0# adjust for picture direction
+      degrees = int(degrees) % 360
+      angle_in_radians = float(degrees) / 180.0 * 3.1415927
+      new_x = x + int(float(speed)*math.cos(angle_in_radians))
+      new_y = y - int(float(speed)*math.sin(angle_in_radians))
+      return new_x, new_y
+         
    # Show screen
    pygame.display.set_caption('Play Checkers')        
 
-   whitePieces = ['whiteRook', 'whiteKnight', 'whiteBishop', 'whiteKing', 'whiteQueen', 'whiteBishop', 'whiteKnight', 'whiteRook', \
-                  'whitePawn', 'whitePawn',   'whitePawn',   'whitePawn', 'whitePawn',  'whitePawn',   'whitePawn',   'whitePawn']
+   whitePieces = ['whiteKing']
+   whiteAngles = [0]
 
    whiteLocations = [ \
                     [0,0], [1,0], [2,0], [3,0], [4,0], [5,0], [6,0], [7,0], \
                     [0,1], [1,1], [2,1], [3,1], [4,1], [5,1], [6,1], [7,1], \
                   ]
-   blackPieces = ['blackRook', 'blackKnight', 'blackBishop', 'blackKing', 'blackQueen', 'blackBishop', 'blackKnight', 'blackRook', \
-                  'blackPawn', 'blackPawn',   'blackPawn',   'blackPawn', 'blackPawn',  'blackPawn',   'blackPawn',   'blackPawn']
+   blackPieces = ['blackKing']
 
+   blackAngles = [30.0]
    blackLocations = [ \
                       [0,7], [1,7], [2,7], [3,7], [4,7], [5,7], [6,7], [7,7], \
                       [0,6], [1,6], [2,6], [3,6], [4,6], [5,6], [6,6], [7,6] \
@@ -170,27 +174,14 @@ def chessPage():
    quit = False    
    selectedIndex = None # necessary?
    while not quit: 
-      (eventType,data,addr) = getInput (100,100)
-      
-      
+      (eventType,data,addr) = getKeyOrUdp()
+            
       if not myTurn and (move != None): #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
          selectedIndex = int(move[0])
          x = int(move[1])
          y = int(move[2])
          color = move[3]
-         if color == 'white':
-            piece = findBlackPiece (x,y)
-            if piece != -1:
-               blackLocations[piece] = (-1,-1) # indicate capture            
-            
-            whiteLocations[selectedIndex] = (x,y)
-         else:
-            blackLocations[selectedIndex] = (x,y)
-            piece = findWhitePiece (x,y)
-            if piece != -1:
-               whiteLocations[piece] = (-1,-1) # indicate capture
-            print ('blackLocations: ' + str(blackLocations) )
             
          drawBoard()
          (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
@@ -199,8 +190,34 @@ def chessPage():
                       str(x) + ',' + str(y) + ']' ) 
          myTurn = True
          move = None      
-      
-      if eventType == pygame.MOUSEBUTTONUP:
+      if eventType == 'key':
+         x = whiteLocations[0][0]
+         y = whiteLocations[0][1]
+         if (data == chr(273)) or (data == 'w'):
+            print ( 'Go forward' )
+            x,y = angleXY(x,y,10,whiteAngles[0])
+            whiteLocations[0][0] = x
+            whiteLocations[0][1] = y
+            drawBoard()
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+         elif (data == chr(274)) or (data == 's'):
+            print ( 'Go backward' )
+            x,y = angleXY(x,y,10,whiteAngles[0]+180)            
+            whiteLocations[0][0] = x
+            whiteLocations[0][1] = y
+            drawBoard()
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+         elif (data == chr(275)) or (data == 'd'):
+            whiteAngles[0] = int(whiteAngles[0] - 10) % 360
+            print ( 'Go Right' )
+            drawBoard()
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])             
+         elif (data == chr(276)) or (data == 'a'):
+            whiteAngles[0] = int(whiteAngles[0] + 10) % 360
+            print ( 'Go Left' )
+            drawBoard()
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
+      elif eventType == pygame.MOUSEBUTTONUP:
          if whiteSelectedPiece != None: 
             print ( 'Move white piece[' + str(whiteSelectedPiece) + '] to: ' + str(data) )
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
@@ -283,4 +300,4 @@ def chessPage():
          mainPage (True)
          quit = True  
          
-CHESS=inspect.getsource(chessPage)
+TANK=inspect.getsource(tankPage)

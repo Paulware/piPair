@@ -129,7 +129,7 @@ def checkersPage():
       myTurn = False
 
    drawBoard()
-   (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
+   (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
    pygame.display.update()
 
       
@@ -152,7 +152,7 @@ def checkersPage():
             blackLocations[selectedIndex] = (x,y)
             
          drawBoard()
-         (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
+         (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
             
          showStatus ( 'Move ' + color + ' piece ' + str(selectedIndex) + ' to [' + \
                       str(x) + ',' + str(y) + ']' ) 
@@ -166,7 +166,7 @@ def checkersPage():
             if legalMove (selectedIndex,x,y,'red'): 
                redLocations[selectedIndex] = (x,y)
                drawBoard()
-               (images,sprites) = showImages (['quit.jpg'], [(400,500)])
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ',\'red\')')               
                myTurn = False
@@ -179,7 +179,7 @@ def checkersPage():
             if legalMove (selectedIndex,x,y,'black'): 
                blackLocations[selectedIndex] = (x,y)
                drawBoard()
-               (images,sprites) = showImages (['quit.jpg'], [(400,500)])
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ',\'black\')')               
                myTurn=False
@@ -211,13 +211,13 @@ def checkersPage():
                redSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                redSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)            
                drawBoard()
-               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                              
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
          elif blackSelectedPiece != None:
             if inBoard (data[0], data[1]):
                blackSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
                drawBoard()
-               (images,sprites) = showImages (['quit.jpg'], [(400,500)] )                     
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                     
           
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
