@@ -9,12 +9,15 @@ def tankPage():
    BOARDX = 100 
    RADIUS = int((SQUAREWIDTH/2) - 10)
    OFFSET = 0   
-   print ( "get tankSheet")
-   tankSheet = pygame.image.load('images/tanks.png') 
-
-   whiteSelectedPiece = None
-   blackSelectedPiece = None   
-   
+   shot = None   
+   Object = type('Object', (object,), {} ) # Generic object definition
+   showStatus ( 'Shoot the bad guy' )    
+      
+   pieces = [  #   id,  image,            image,                                          x   y    angle, health \
+                ['white',extractImage ('images/tanks.png', 0, 0, 164, 212, 60, 80) ,     (100,100), 45,   100],\
+                ['black',extractImage ('images/tanks.png', 168, 428, 340, 605, 60, 80),  (400,400), 135,  100] \
+            ]
+            
    def inBoard (x,y):
       insideBoard = False
       if (x >= BOARDX) and (y >= BOARDY):
@@ -66,113 +69,70 @@ def tankPage():
          count = count + 1
       return piece 
       
-   def findSelectedPiece (x,y):
-      (x,y) = posToXY (x,y)
-      
-      selectedIndex = None
-      whiteSelectedPiece = None
-      blackSelectedPiece = None
-      count = findWhitePiece (x,y) 
-      if count > -1:
-         whiteSelectedPiece = count
-         selectedIndex = count
-         
-      if whiteSelectedPiece == None: 
-         count = findBlackPiece (x,y)
-         if count > -1:
-            selectedIndex = count
-            blackSelectedPiece = count
-            
-      return (whiteSelectedPiece, blackSelectedPiece, selectedIndex) 
-      
-   def drawPiece (piece,x,y): 
-      pieces = { \
-                 'blackKing':(0,0),  'blackQueen':(50,0),  'blackRook':(100,0), 'blackBishop':(150,0), 'blackKnight':(200,0), 'blackPawn':(249,0), \
-                 'whiteKing':(0,80), 'whiteQueen':(50,40), 'whiteRook':(100,40),'whiteBishop':(150,40),'whiteKnight':(200,40),'whitePawn':(249,40) \
-               }  
-                                          
-      whiteTank = pygame.Surface((164, 212), pygame.SRCALPHA, 32)
-      whiteTank = whiteTank.convert_alpha()
-      whiteTank.blit(tankSheet, (0, 0), (0,0,164,212))                 
-      whiteTank = pygame.transform.scale(whiteTank, (60, 80))       
-      blitRotate ( whiteTank, (x,y), whiteAngles[0] )
 
-   def drawBoard(): 
+   def drawBoard(shot): 
       DISPLAYSURF.fill((WHITE)) 
-      y = BOARDY
-      count = 0
-      for i in range (8):
-         for j in range (8):
-            count = count + 1
-            x = BOARDX + (j * SQUAREWIDTH)
-            if (count % 2) == 0:
-               pygame.draw.rect(DISPLAYSURF, DARKGREY, (x,y,SQUAREWIDTH, SQUAREWIDTH))
-            else:                  
-               pygame.draw.rect(DISPLAYSURF, RED, (x,y,SQUAREWIDTH, SQUAREWIDTH))
-         y = y + SQUAREWIDTH
-         count = count + 1 # stagger the colors   
    
       count = 0
-      for piece in whitePieces:
-         drawPiece (piece, whiteLocations[count][0], whiteLocations[count][1])
+      for piece in pieces:
+         x = piece[2][0]
+         y = piece[2][1]
+         img = piece[1]
+         angle = piece[3]
+         blitRotate (img, (x,y), angle) # Rotate image to current angle
+         (w,h) = img.get_size()
+         rect = pygame.Rect ( x, y, w, h) 
+         if shot != None: 
+            if rect.collidepoint ( (shot.x,shot.y) ):
+               image = pygame.image.load ( 'images/explosion.png').convert_alpha()
+               DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
+               showStatus ( "You Win Yo" )
+               shot = None
          count = count + 1
-         
-      '''
-      count = 0
-      for piece in blackPieces:
-         drawPiece (piece, blackLocations[count][0], blackLocations[count][1])
-         count = count + 1
-      '''
+      
+      if shot != None:      
+         pygame.draw.circle(DISPLAYSURF, BLACK, (shot.x,shot.y), 2, 2)
+      
       pygame.display.update()        
+      return shot
          
    def angleXY(x,y,speed,degrees):
       degrees = degrees - 90.0# adjust for picture direction
       degrees = int(degrees) % 360
-      angle_in_radians = float(degrees) / 180.0 * 3.1415927
+      angle_in_radians = float(degrees) / 180.0 * math.pi
       new_x = x + int(float(speed)*math.cos(angle_in_radians))
       new_y = y - int(float(speed)*math.sin(angle_in_radians))
       return new_x, new_y
          
    # Show screen
-   pygame.display.set_caption('Play Checkers')        
-
-   whitePieces = ['whiteKing']
-   whiteAngles = [0]
-
-   whiteLocations = [ \
-                    [0,0], [1,0], [2,0], [3,0], [4,0], [5,0], [6,0], [7,0], \
-                    [0,1], [1,1], [2,1], [3,1], [4,1], [5,1], [6,1], [7,1], \
-                  ]
-   blackPieces = ['blackKing']
-
-   blackAngles = [30.0]
-   blackLocations = [ \
-                      [0,7], [1,7], [2,7], [3,7], [4,7], [5,7], [6,7], [7,7], \
-                      [0,6], [1,6], [2,6], [3,6], [4,6], [5,6], [6,6], [7,6] \
-                    ]
-
+   pygame.display.set_caption('Play Tank Combat')         
    showStatus ( "Waiting for player to join")
    
    if iAmHost:
       # Set opponents list of games
-      udpBroadcast ( 'exec:games=[\'Chess\']')
+      udpBroadcast ( 'exec:games=[\'Tank\']')
       joining = ''
       playerJoined = False
       move = (0,0) # Host can move first
       myTurn = True
    else:
-      udpBroadcast ( 'exec:joining=\'Chess\'')
-      joining = 'Chess' # Opponent should be waiting
+      udpBroadcast ( 'exec:joining=\'Tank\'')
+      joining = 'Tank' # Opponent should be waiting
       move = None
       myTurn = False
 
-   drawBoard()
+   shot = drawBoard(shot)
    (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
    pygame.display.update()
 
       
+   autoKey = ''
    quit = False    
    selectedIndex = None # necessary?
+   autoTime = time.time()
+   moveTimeout = 0.09
+   shotTimeout = time.time() + 0.01
+   shotLifeTimeout = time.time()
    while not quit: 
       (eventType,data,addr) = getKeyOrUdp()
             
@@ -183,41 +143,93 @@ def tankPage():
          y = int(move[2])
          color = move[3]
             
-         drawBoard()
+         shot = drawBoard(shot)
          (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
             
          showStatus ( 'Move ' + color + ' piece ' + str(selectedIndex) + ' to [' + \
                       str(x) + ',' + str(y) + ']' ) 
          myTurn = True
          move = None      
+         
+      if (eventType == pygame.KEYUP):
+         autoKey = ''
+         print ( 'Turning off autoKey' )
+
+      if time.time() > autoTime: 
+         if autoKey != '':
+            print ( 'Detected autokey: ' + autoKey )
+            autoTime = time.time() + moveTimeout
+            eventType = 'key'
+            data = autoKey
+            addr = 'key'
+
+      if shot != None: 
+         if time.time() > shotTimeout:          
+            shotTimeout = time.time() + 0.01
+            (shot.x,shot.y) = angleXY(shot.x, shot.y, 10, shot.angle)
+            if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
+               shot.angle = int(shot.angle + 90) % 360                 
+            else: 
+               shot = drawBoard(shot)
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+
+         if time.time() > shotLifeTimeout: 
+            shot = None
+            shot = drawBoard(shot)
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
+            
       if eventType == 'key':
-         x = whiteLocations[0][0]
-         y = whiteLocations[0][1]
-         if (data == chr(273)) or (data == 'w'):
+         pieceInde = 1
+         if iAmHost:
+            pieceIndex = 0
+         x = pieces[pieceIndex][2][0]
+         y = pieces[pieceIndex][2][1]
+         angle = pieces[pieceIndex][3]
+         if (data == ' '): 
+            print ("Fire!" )
+            shot = Object()
+            shot.x = x
+            shot.y = y
+            shot.angle = angle
+            for i in range(7): 
+                # make sure shot starts outside of the firing tank location
+               (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
+            shotLifeTimeout = time.time() + 2.0
+            
+         elif (data == chr(273)) or (data == 'w'):
+            autoKey = 'w'
+            autoTime = time.time() + moveTimeout
             print ( 'Go forward' )
-            x,y = angleXY(x,y,10,whiteAngles[0])
-            whiteLocations[0][0] = x
-            whiteLocations[0][1] = y
-            drawBoard()
+            x,y = angleXY(x,y,10,angle)
+            pieces[pieceIndex][2]= (x,y)
+            shot = drawBoard(shot)
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
          elif (data == chr(274)) or (data == 's'):
+            autoKey = 's'
+            autoTime = time.time() + moveTimeout
             print ( 'Go backward' )
-            x,y = angleXY(x,y,10,whiteAngles[0]+180)            
-            whiteLocations[0][0] = x
-            whiteLocations[0][1] = y
-            drawBoard()
+            x,y = angleXY(x,y,10,angle+180)   
+            pieces[pieceIndex][2]= (x,y)
+            shot = drawBoard(shot)
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
          elif (data == chr(275)) or (data == 'd'):
-            whiteAngles[0] = int(whiteAngles[0] - 10) % 360
+            autoKey = 'd'
+            autoTime = time.time() + moveTimeout
+            pieces[pieceIndex][3] = int(angle - 10) % 360
             print ( 'Go Right' )
-            drawBoard()
+            shot = drawBoard(shot)
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])             
          elif (data == chr(276)) or (data == 'a'):
-            whiteAngles[0] = int(whiteAngles[0] + 10) % 360
+            autoKey = 'a'
+            autoTime = time.time() + 0.19
+            pieces[pieceIndex][3] = int(angle + 10) % 360
             print ( 'Go Left' )
-            drawBoard()
+            shot = drawBoard(shot)
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
+       
+      ''' 
       elif eventType == pygame.MOUSEBUTTONUP:
+
          if whiteSelectedPiece != None: 
             print ( 'Move white piece[' + str(whiteSelectedPiece) + '] to: ' + str(data) )
             x = int((data[0] - BOARDX) / SQUAREWIDTH)
@@ -228,7 +240,7 @@ def tankPage():
                   blackLocations[piece]=(-1,-1) # indicate unit is gone
                whiteLocations[selectedIndex] = (x,y)
                
-               drawBoard()
+               shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ',\'white\')')               
@@ -248,7 +260,7 @@ def tankPage():
                   whiteLocations[piece]=(-1,-1) # indicate unit is gone
             
                blackLocations[selectedIndex] = (x,y)
-               drawBoard()
+               shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
                move = None
                udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ',\'black\')')               
@@ -259,8 +271,9 @@ def tankPage():
          whiteSelectedPiece = None
          blackSelectedPiece = None  
          
+         
       elif eventType == pygame.MOUSEBUTTONDOWN:
-         if joining == 'Chess': 
+         if joining == 'Tank': 
             if myTurn: 
                (x,y) = posToXY (data[0],data[1]) 
                if iAmHost: 
@@ -279,19 +292,19 @@ def tankPage():
                showStatus ( 'Waiting for other player to move' )                                  
          else:
             showStatus ( 'Waiting for other player to join')
-      '''   
+         
       elif eventType == pygame.MOUSEMOTION:
          if whiteSelectedPiece != None:
             if inBoard (data[0], data[1]): 
                whiteSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                whiteSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)            
-               drawBoard()
+               shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
          elif blackSelectedPiece != None:
             if inBoard (data[0], data[1]):
                blackSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
                blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
-               drawBoard()
+               shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                     
       '''    
       sprite = getSpriteClick (eventType, data, sprites ) 

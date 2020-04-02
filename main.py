@@ -4,6 +4,7 @@ import os
 import socket
 import select
 import math
+import time
 
 # Include other files
 import checkers
@@ -87,7 +88,12 @@ def blitRotate(image, pos, angle):
     pivot_move   = pivot_rotate - pivot
 
     # calculate the upper left origin of the rotated image
-    origin = (pos[0] - originPos[0] + min_box[0] - pivot_move[0], pos[1] - originPos[1] - max_box[1] + pivot_move[1])
+    x = int(pos[0] - originPos[0] + min_box[0] - pivot_move[0])
+    y = int(pos[1] - originPos[1] - max_box[1] + pivot_move[1])
+    # TODO: change x,y to ints 
+    print ( "origin = (" + str(x) + "," + str(y) + ")" )
+    
+    origin = (x,y)
 
     # get a rotated image
     rotated_image = pygame.transform.rotate(image, angle)
@@ -116,6 +122,7 @@ def getKeyOrUdp():
   typeInput = ''
   data = ''
   addr = ''
+  timeEvent = time.time() + 0.01
   while data == '':
     ev = pygame.event.get()
     for event in ev:  
@@ -133,6 +140,10 @@ def getKeyOrUdp():
              
              typeInput = 'key'
              data=key
+       elif event.type == pygame.KEYUP:
+          data = ' '
+          typeInput = pygame.KEYUP
+          addr = 'key'
        elif event.type == pygame.QUIT:
           data = 'quit'
           typeInput = pygame.QUIT
@@ -194,7 +205,11 @@ def getKeyOrUdp():
              typeInput = 'tcp'
              addr = str(addr[0])
              
-   
+    if (data == '') and (time.time() > timeEvent): 
+       typeInput = 'time'
+       data = ' '
+       addr = 'clock'  
+       
   # print ( 'returning typeInput: ' + str(typeInput))   
   return (typeInput,data,addr)
   
@@ -501,7 +516,16 @@ def modifyHostapd(ssid, password='ABCD1234'):
        f.close()
     except Exception as ex:
        print ( 'Could not modify ' + filename + ' because: ' + str (ex) )
-    
+       
+def extractImage (sheetFilename,x1,y1,x2,y2,finalWidth,finalHeight): 
+   sheet = pygame.image.load(sheetFilename)  
+   width = x2 - x1
+   height = y2 - y1      
+   image = pygame.Surface((width, height), pygame.SRCALPHA)
+   image = image.convert_alpha()
+   image.blit(sheet, (0, 0), (x1,y1,x2,y2))                 
+   image = pygame.transform.scale(image, (finalWidth, finalHeight)) 
+   return image                   
 '''
    Pages
 '''   
