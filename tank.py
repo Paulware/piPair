@@ -99,7 +99,7 @@ def tankPage():
                shot = None
          if explosion != None:
             image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
-            DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
+            DISPLAYSURF.blit (image, (explosion.x-100, explosion.y-150 ))
             showStatus ( "You Lost Sorry" )
 
          count = count + 1
