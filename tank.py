@@ -156,129 +156,127 @@ def tankPage():
 
    joinTimeout = time.time() + 1
    while not quit: 
-      if lost: 
-         showStatus ( "You Lost yo" )
-         time.sleep (1)
-      else:
-      
-         if joining != 'Tank':
-            if time.time() > joinTimeout: 
-               joinTimeout = time.time() + 1
-               udpBroadcast ( 'exec:games=[\'Tank\']')
-          
-         (eventType,data,addr) = getKeyOrUdp()
+   
+      if joining != 'Tank':
+         if time.time() > joinTimeout: 
+            joinTimeout = time.time() + 1
+            udpBroadcast ( 'exec:games=[\'Tank\']')
+       
+      (eventType,data,addr) = getKeyOrUdp()
+         
+      if eventType == pygame.MOUSEMOTION:
+         pass # Move turret to follow mouse?
+      elif eventType == pygame.MOUSEBUTTONDOWN:
+         pass # fire tank on mouse click          
+         
+      if move != None: #Opponent has moved 
+         print ( "Got a move from opponent: " + str(move)) 
+         objectType = move[0] # Not used until number of tanks > 2
+         x = int(move[1])
+         y = int(move[2])
             
-         if eventType == pygame.MOUSEMOTION:
-            pass # Move turret to follow mouse?
-         elif eventType == pygame.MOUSEBUTTONDOWN:
-            pass # fire tank on mouse click          
-            
-         if move != None: #Opponent has moved 
-            print ( "Got a move from opponent: " + str(move)) 
-            objectType = move[0] # Not used until number of tanks > 2
-            x = int(move[1])
-            y = int(move[2])
-               
-            pieceIndex = 0
-            if objectType == 'shot':
-               if enemyShot == None:
-                  enemyShot = Object()
-               enemyShot.x = x
-               enemyShot.y = y 
-            elif objectType == 'explosion':
-               explosion = Object()
-               explosion.x = x
-               explosion.y = y
-               lost = True
-            else:
-               angle = move[3]
-               if objectType == 'black':
-                  pieceIndex = 1    
-                        
-               pieces[pieceIndex][2] = (x,y)
-               pieces[pieceIndex][3] = angle         
-            drawBoard()
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
-            #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
-            #             str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
-            move = None      
-            
-         if (eventType == pygame.KEYUP):
-            autoKey = ''
-            print ( 'Turning off autoKey' )
+         pieceIndex = 0
+         if objectType == 'shot':
+            if enemyShot == None:
+               enemyShot = Object()
+            enemyShot.x = x
+            enemyShot.y = y 
+         elif objectType == 'explosion':
+            explosion = Object()
+            explosion.x = x
+            explosion.y = y
+            lost = True
+         else:
+            angle = move[3]
+            if objectType == 'black':
+               pieceIndex = 1    
+                     
+            pieces[pieceIndex][2] = (x,y)
+            pieces[pieceIndex][3] = angle         
+         drawBoard()
+         (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
+         #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
+         #             str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
+         move = None      
+         
+      if (eventType == pygame.KEYUP):
+         autoKey = ''
+         print ( 'Turning off autoKey' )
 
-         if time.time() > autoTime: 
-            if autoKey != '':
-               print ( 'Detected autokey: ' + autoKey )
-               autoTime = time.time() + moveTimeout
-               eventType = 'key'
-               data = autoKey
-               addr = 'key'
+      if time.time() > autoTime: 
+         if autoKey != '':
+            print ( 'Detected autokey: ' + autoKey )
+            autoTime = time.time() + moveTimeout
+            eventType = 'key'
+            data = autoKey
+            addr = 'key'
 
-         if shot != None: 
-            if time.time() > shotTimeout:          
-               shotTimeout = time.time() + 0.01
-               (shot.x,shot.y) = angleXY(shot.x, shot.y, 10, shot.angle)
-               if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
-                  shot.angle = int(shot.angle + 90) % 360                 
-               else: 
-                  if iAmHost: # Todo only owner of shot should udpbroadcast
-                     udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
-                  drawBoard()
-                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-
-            if time.time() > shotLifeTimeout: 
-               shot = None
+      if shot != None: 
+         if time.time() > shotTimeout:          
+            shotTimeout = time.time() + 0.01
+            (shot.x,shot.y) = angleXY(shot.x, shot.y, 10, shot.angle)
+            if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
+               shot.angle = int(shot.angle + 90) % 360                 
+            else: 
+               if iAmHost: # Todo only owner of shot should udpbroadcast
+                  udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
                drawBoard()
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+
+         if time.time() > shotLifeTimeout: 
+            shot = None
+            drawBoard()
+            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
+            
+      if eventType == 'key':
+         if joining != 'Tank':
+            showStatus ( "Waiting for other player to join" )      
+         elif lost: 
+            showStatus ( "Disabled (due to loss)" )         
+         else:
+            pieceIndex = 1
+            tankType = 'black'
+            if iAmHost:
+               pieceIndex = 0
+               tankType = 'white'
                
-         if eventType == 'key':
-            if joining != 'Tank':
-               showStatus ( "Waiting for other player to join" )         
-            else:
-               pieceIndex = 1
-               tankType = 'black'
-               if iAmHost:
-                  pieceIndex = 0
-                  tankType = 'white'
-                  
-               x     = pieces[pieceIndex][2][0]
-               y     = pieces[pieceIndex][2][1]
-               angle = pieces[pieceIndex][3]
-               if (data == ' '): 
-                  print ("Fire!" )
-                  shot = Object()
-                  shot.x = x
-                  shot.y = y
-                  shot.angle = angle
-                  for i in range(8): 
-                      # make sure shot starts outside of the firing tank location
-                     (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
-                  shotLifeTimeout = time.time() + 2.0
+            x     = pieces[pieceIndex][2][0]
+            y     = pieces[pieceIndex][2][1]
+            angle = pieces[pieceIndex][3]
+            if (data == ' '): 
+               print ("Fire!" )
+               shot = Object()
+               shot.x = x
+               shot.y = y
+               shot.angle = angle
+               for i in range(8): 
+                   # make sure shot starts outside of the firing tank location
+                  (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
+               shotLifeTimeout = time.time() + 2.0
+            
+            if data in moveKeys:           
+               if data == 'w':
+                  autoKey = 'w'
+                  autoTime = time.time() + moveTimeout
+                  x,y = angleXY(x,y,10,angle)
+               elif data == 's':
+                  autoKey = 's'
+                  autoTime = time.time() + moveTimeout
+                  x,y = angleXY(x,y,10,angle+180)   
+               elif data == 'd':
+                  autoKey = 'd' 
+                  autoTime = time.time() + moveTimeout
+                  pieces[pieceIndex][3] = int(angle - 10) % 360
+               elif data == 'a':
+                  autoKey = 'a'
+                  autoTime = time.time() + 0.19
+                  pieces[pieceIndex][3] = int(angle + 10) % 360
+                  print ( 'Go Left' )
                
-               if data in moveKeys:           
-                  if data == 'w':
-                     autoKey = 'w'
-                     autoTime = time.time() + moveTimeout
-                     x,y = angleXY(x,y,10,angle)
-                  elif data == 's':
-                     autoKey = 's'
-                     autoTime = time.time() + moveTimeout
-                     x,y = angleXY(x,y,10,angle+180)   
-                  elif data == 'd':
-                     autoKey = 'd' 
-                     autoTime = time.time() + moveTimeout
-                     pieces[pieceIndex][3] = int(angle - 10) % 360
-                  elif data == 'a':
-                     autoKey = 'a'
-                     autoTime = time.time() + 0.19
-                     pieces[pieceIndex][3] = int(angle + 10) % 360
-                     print ( 'Go Left' )
-                  
-                  udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
-                  pieces[pieceIndex][2]= (x,y)
-                  drawBoard()
-                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+               udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
+               pieces[pieceIndex][2]= (x,y)
+               drawBoard()
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
    
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
