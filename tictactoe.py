@@ -90,7 +90,7 @@ def tictactoePage ():
              
           print ( 'Got a udp: [' + data + '] from: ' + addr )
            
- 
+       sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
           print ("Selected command: " + str(sprite))
           mainPage (True)
