@@ -3,6 +3,7 @@ import inspect
 def tankPage():
    global joining 
    global move 
+   global iAmHost
    
    SQUAREWIDTH = 50
    BOARDY = 50
@@ -11,7 +12,7 @@ def tankPage():
    OFFSET = 0   
    shot = None   
    Object = type('Object', (object,), {} ) # Generic object definition
-   showStatus ( 'Shoot the bad guy' )    
+   showStatus ( 'iAmHost: ' + str(iAmHost) )    
    move = None
       
    pieces = [  #   id,  image,            image,                                          x   y    angle, health \
