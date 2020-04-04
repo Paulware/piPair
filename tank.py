@@ -139,7 +139,14 @@ def tankPage():
    except Exception as ex:
       moveKeys = ['w','s','d','a']
 
+   joinTimeout = time.time() + 1
    while not quit: 
+      if joining != "Tank":
+         if time.time() > joinTimeout: 
+            joinTimeout = time.time + 1
+            udpBroadcast ( 'exec:games=\'Tank\'')
+
+            
       (eventType,data,addr) = getKeyOrUdp()
          
       if eventType == pygame.MOUSEMOTION:
