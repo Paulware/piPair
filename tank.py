@@ -201,7 +201,8 @@ def tankPage():
             tankType = 'black'
             if iAmHost:
                pieceIndex = 0
-               typeType = 'white'
+               tankType = 'white'
+               
             x     = pieces[pieceIndex][2][0]
             y     = pieces[pieceIndex][2][1]
             angle = pieces[pieceIndex][3]
@@ -234,7 +235,7 @@ def tankPage():
                   autoTime = time.time() + 0.19
                   pieces[pieceIndex][3] = int(angle + 10) % 360
                   print ( 'Go Left' )
-                  
+               
                udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
                pieces[pieceIndex][2]= (x,y)
                shot = drawBoard(shot)
