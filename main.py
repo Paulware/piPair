@@ -55,7 +55,7 @@ try:
    if line == 'host': 
       print ( 'You are host' )
       iAmHost = True
-      games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Tank']     
+      games = ['Chat', 'Tic Tac Toe', 'Chess', 'Tank'] # 'Checkers'    
       
    elif line == 'client':
       games = []

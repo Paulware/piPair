@@ -130,7 +130,7 @@ def chessPage():
       pygame.display.update()        
             
    # Show screen
-   pygame.display.set_caption('Play Checkers')        
+   pygame.display.set_caption('Play Chess')        
 
    whitePieces = ['whiteRook', 'whiteKnight', 'whiteBishop', 'whiteKing', 'whiteQueen', 'whiteBishop', 'whiteKnight', 'whiteRook', \
                   'whitePawn', 'whitePawn',   'whitePawn',   'whitePawn', 'whitePawn',  'whitePawn',   'whitePawn',   'whitePawn']
@@ -169,9 +169,14 @@ def chessPage():
       
    quit = False    
    selectedIndex = None # necessary?
+   joinTimeout = 0
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
       
+      if joining != 'Chess': 
+         if time.time() > joinTimeout: 
+            joinTimeout = time.time() + 1
+            udpBroadcast ( 'exec:games=[\'Chess\']')
       
       if not myTurn and (move != None): #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
