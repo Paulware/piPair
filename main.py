@@ -714,7 +714,10 @@ def gamePage(showOnly=False):
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
           else:
-             showLabel ('Select a game to join', 50, 20)    
+             if games == []: 
+                showLabel ('Waiting on host to create game', 50, 20 )
+             else:
+                showLabel ('Select a game to join', 50, 20)    
           (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
           pygame.display.update()
    
