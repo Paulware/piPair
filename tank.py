@@ -186,7 +186,7 @@ def tankPage():
             explosion.y = y
          else:
             angle = move[3]
-            if tankType == 'black':
+            if objectType == 'black':
                pieceIndex = 1    
                      
             pieces[pieceIndex][2] = (x,y)
