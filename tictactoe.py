@@ -13,7 +13,7 @@ def tictactoePage ():
        print ( 'Draw X at [' + str(x) + ',' + str(y) + ']' )
        pygame.draw.line(DISPLAYSURF, RED, (x, y), (x+100, y+100))
        pygame.draw.line(DISPLAYSURF, RED, (x+100, y), (x, y+100))
-       (images,sprites) = showImages (['quit.jpg'], [(400,500)] )             
+       (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )             
        pygame.display.update()
     def drawO (x,y):
        taken [x][y]=True
@@ -21,7 +21,7 @@ def tictactoePage ():
        y = (y * 100) + 150 
        print ( 'Draw O at [' + str(x) + ',' + str(y) + ']' )
        pygame.draw.circle(DISPLAYSURF, RED, (x, y), 50, 1)       
-       (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
+       (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
        pygame.display.update()
            
     # Show screen 
@@ -32,7 +32,7 @@ def tictactoePage ():
     pygame.draw.line(DISPLAYSURF, RED, (200, 200), (500, 200))
     pygame.draw.line(DISPLAYSURF, RED, (200, 300), (500, 300))
     pygame.display.flip()
-    (images,sprites) = showImages (['quit.jpg'], [(400,500)] )      
+    (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
     showStatus ( "Waiting for player to join")
     pygame.display.update()
     
