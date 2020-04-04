@@ -225,7 +225,7 @@ def tankPage():
                   autoTime = time.time() + moveTimeout
                   x,y = angleXY(x,y,10,angle+180)   
                elif data == 'd':
-                  autoKey = 'd'
+                  autoKey = 'd' 
                   autoTime = time.time() + moveTimeout
                   pieces[pieceIndex][3] = int(angle - 10) % 360
                elif data == 'a':
