@@ -149,7 +149,7 @@ def tankPage():
          
       #TODO: move shot      
       if move != None: #Opponent has moved 
-         print ( "Got a move from opponent: " + str(move)) 
+         # print ( "Got a move from opponent: " + str(move)) 
          tankType = move[0] # Not used until number of tanks > 2
          x = int(move[1])
          y = int(move[2])
@@ -162,8 +162,8 @@ def tankPage():
          pieces[pieceIndex][3] = angle         
          shot = drawBoard(shot)
          (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
-         showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
-                      str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
+         #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
+         #             str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
          move = None      
          
       if (eventType == pygame.KEYUP):
