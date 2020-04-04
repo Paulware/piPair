@@ -137,8 +137,14 @@ def checkersPage():
    redSelectedPiece = None
    blackSelectedPiece = None
    selectedIndex = None # necessary?
+   joinTimeout = 0
    while not quit: 
       (eventType,data,addr) = getInput (100,100)
+      
+      if joining != 'Checkers':
+         if time.time() > joinTimeout: 
+            joinTimeout = time.time() + 1
+            udpBroadcast ( 'exec:games=[\'Checkers\']')
       
       if not myTurn and (move != None): #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 

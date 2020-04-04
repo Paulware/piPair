@@ -715,7 +715,7 @@ def gamePage(showOnly=False):
              showLabel ('Select a game to host', 50, 20)    
           else:
              if games == []: 
-                showLabel ('Waiting on host to create game', 50, 20 )
+                showLabel ('Waiting on host to select game', 50, 20 )
              else:
                 showLabel ('Select a game to join', 50, 20)    
           (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
