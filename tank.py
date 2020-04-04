@@ -4,6 +4,7 @@ def tankPage():
    global joining 
    global move 
    global iAmHost
+   global enemyShot
    
    SQUAREWIDTH = 50
    BOARDY = 50
@@ -74,7 +75,6 @@ def tankPage():
       
 
    def drawBoard(shot): 
-      global enemyShot
       DISPLAYSURF.fill((WHITE)) 
    
       count = 0
