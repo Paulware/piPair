@@ -8,6 +8,7 @@ apt-get update
 # echo "dns-nameservers 8.8.8.8 8.8.4.4" >> /etc/network/interfaces
 #./obd.sh
 ./ap.sh
+pip install glob3
 # The next command will do a reboot
 # ./3InChinaSolidDisplay.sh
 #echo 'makeConf.sh needs to be run after ./3InChinaSolidDisplay.sh'

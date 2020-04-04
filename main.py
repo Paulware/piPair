@@ -5,16 +5,19 @@ import socket
 import select
 import math
 import time
+import glob
 
-# Include other files
+# Include game files
 import checkers
 import tictactoe
 import chess
 import tank
+import mtg
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
 exec (tank.TANK)
+exec (mtg.MTG)
 
 
 WHITE      = (255, 255, 255)
@@ -55,7 +58,7 @@ try:
    if line == 'host': 
       print ( 'You are host' )
       iAmHost = True
-      games = ['Chat', 'Tic Tac Toe', 'Chess', 'Tank'] # 'Checkers'    
+      games = ['Chat', 'Tic Tac Toe', 'Chess', 'Tank', 'MTG'] # 'Checkers'    
       
    elif line == 'client':
       games = []

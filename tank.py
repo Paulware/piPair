@@ -185,7 +185,7 @@ def tankPage():
          
       if move != None: #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
-         objectType = move[0] # Not used until number of tanks > 2
+         objectType = move[0]
          x = int(move[1])
          y = int(move[2])
             
@@ -235,12 +235,11 @@ def tankPage():
                shot.x = x
                shot.y = y
                if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
-                  shot.angle = int(shot.angle + 90) % 360                 
-               else: 
-                  if iAmHost: # Todo only owner of shot should udpbroadcast
-                     udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
-                  drawBoard()
-                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+                  shot.angle = int(shot.angle + 90) % 360
+                  
+               udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')
+               drawBoard()
+               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
 
          if time.time() > shotLifeTimeout: 
             shot = None
