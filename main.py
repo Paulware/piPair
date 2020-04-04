@@ -703,7 +703,7 @@ def gamePage(showOnly=False):
     global iAmHost
 
     quit = False
-    showTimeout = time.time() + 1
+    showTimeout = 0
     while not quit and not showOnly:  
        (eventType,data,addr) = getKeyOrUdp() # This should set games
        
