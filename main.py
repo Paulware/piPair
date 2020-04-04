@@ -717,8 +717,14 @@ def gamePage(showOnly=False):
     pygame.display.update()
     
     quit = False
+    showTimeout = time.time() + 1
     while not quit and not showOnly:  
-       (eventType, data, addr) = getInput (100,100)    
+       (eventType,data,addr) = getKeyOrUdp() # This should set games
+       
+       if time.time() > showTimeout: 
+          labels = showSsids(games)
+          showTimeout = time.time() + 1 
+   
        # Check if a game is clicked on       
        sprite = getSpriteClick (eventType, data, labels ) 
        if sprite != -1:          
