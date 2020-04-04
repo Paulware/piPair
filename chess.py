@@ -171,11 +171,11 @@ def chessPage():
    selectedIndex = None # necessary?
    joinTimeout = 0
    while not quit: 
-      (eventType,data,addr) = getInput (100,100)
+      (eventType,data,addr) = getKeyOrUdp()
       
       if joining != 'Chess': 
          if time.time() > joinTimeout: 
-            joinTimeout = time.time() + 1
+            joinTimeout = time.time() + 0.5
             udpBroadcast ( 'exec:games=[\'Chess\']')
       
       if not myTurn and (move != None): #Opponent has moved 
