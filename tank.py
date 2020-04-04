@@ -141,9 +141,10 @@ def tankPage():
 
    joinTimeout = time.time() + 1
    while not quit: 
-      if joining != "Tank":
+   
+      if joining != 'Tank':
          if time.time() > joinTimeout: 
-            joinTimeout = time.time + 1
+            joinTimeout = time.time() + 1
             udpBroadcast ( 'exec:games=\'Tank\'')
 
             
