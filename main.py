@@ -91,7 +91,7 @@ def blitRotate(image, pos, angle):
     x = int(pos[0] - originPos[0] + min_box[0] - pivot_move[0])
     y = int(pos[1] - originPos[1] - max_box[1] + pivot_move[1])
     # TODO: change x,y to ints 
-    print ( "origin = (" + str(x) + "," + str(y) + ")" )
+    # print ( "origin = (" + str(x) + "," + str(y) + ")" )
     
     origin = (x,y)
 
@@ -130,6 +130,19 @@ def getKeyOrUdp():
           #print( "Got a keydown with value: " + str(event.key) )
           if (event.key == 303) or (event.key == 304): #shift
              upperCase = True
+          # chr(273), 'w', chr(274), 's',  chr(275), 'd', chr (276), 'a']             
+          elif (event.key == 273): 
+             data = 'w'
+             typeInput = 'key'
+          elif (event.key == 274): 
+             data = 's'
+             typeInput = 'key'
+          elif (event.key == 275):
+             data = 'd'
+             typeInput = 'key'
+          elif (event.key == 276):
+             data = 'a'
+             typeInput = 'key'             
           else:
              key = chr(event.key)
              if upperCase: 

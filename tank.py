@@ -12,6 +12,7 @@ def tankPage():
    shot = None   
    Object = type('Object', (object,), {} ) # Generic object definition
    showStatus ( 'Shoot the bad guy' )    
+   move = None
       
    pieces = [  #   id,  image,            image,                                          x   y    angle, health \
                 ['white',extractImage ('images/tanks.png', 0, 0, 164, 212, 60, 80) ,     (100,100), 45,   100],\
@@ -113,7 +114,6 @@ def tankPage():
       udpBroadcast ( 'exec:games=[\'Tank\']')
       joining = ''
       playerJoined = False
-      move = (0,0) # Host can move first
       myTurn = True
    else:
       udpBroadcast ( 'exec:joining=\'Tank\'')
@@ -133,22 +133,36 @@ def tankPage():
    moveTimeout = 0.09
    shotTimeout = time.time() + 0.01
    shotLifeTimeout = time.time()
+   try: 
+      moveKeys = [chr(273), 'w', chr(274), 's',  chr(275), 'd', chr (276), 'a']   
+   except Exception as ex:
+      moveKeys = ['w','s','d','a']
+
    while not quit: 
       (eventType,data,addr) = getKeyOrUdp()
-            
-      if not myTurn and (move != None): #Opponent has moved 
+         
+      if eventType == pygame.MOUSEMOTION:
+         pass # Move turret to follow mouse?
+      elif eventType == pygame.MOUSEBUTTONDOWN:
+         pass # fire tank on mouse click          
+         
+      #TODO: move shot      
+      if move != None: #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
-         selectedIndex = int(move[0])
+         tankType = move[0] # Not used until number of tanks > 2
          x = int(move[1])
          y = int(move[2])
-         color = move[3]
+         angle = move[3]
             
+         pieceIndex = 0
+         if tankType == 'black':
+            pieceIndex = 1         
+         pieces[pieceIndex][2] = (x,y)
+         pieces[pieceIndex][3] = angle         
          shot = drawBoard(shot)
-         (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-            
-         showStatus ( 'Move ' + color + ' piece ' + str(selectedIndex) + ' to [' + \
-                      str(x) + ',' + str(y) + ']' ) 
-         myTurn = True
+         (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
+         showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
+                      str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
          move = None      
          
       if (eventType == pygame.KEYUP):
@@ -179,134 +193,52 @@ def tankPage():
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
             
       if eventType == 'key':
-         pieceInde = 1
-         if iAmHost:
-            pieceIndex = 0
-         x = pieces[pieceIndex][2][0]
-         y = pieces[pieceIndex][2][1]
-         angle = pieces[pieceIndex][3]
-         if (data == ' '): 
-            print ("Fire!" )
-            shot = Object()
-            shot.x = x
-            shot.y = y
-            shot.angle = angle
-            for i in range(7): 
-                # make sure shot starts outside of the firing tank location
-               (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
-            shotLifeTimeout = time.time() + 2.0
-            
-         elif (data == chr(273)) or (data == 'w'):
-            autoKey = 'w'
-            autoTime = time.time() + moveTimeout
-            print ( 'Go forward' )
-            x,y = angleXY(x,y,10,angle)
-            pieces[pieceIndex][2]= (x,y)
-            shot = drawBoard(shot)
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-         elif (data == chr(274)) or (data == 's'):
-            autoKey = 's'
-            autoTime = time.time() + moveTimeout
-            print ( 'Go backward' )
-            x,y = angleXY(x,y,10,angle+180)   
-            pieces[pieceIndex][2]= (x,y)
-            shot = drawBoard(shot)
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-         elif (data == chr(275)) or (data == 'd'):
-            autoKey = 'd'
-            autoTime = time.time() + moveTimeout
-            pieces[pieceIndex][3] = int(angle - 10) % 360
-            print ( 'Go Right' )
-            shot = drawBoard(shot)
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])             
-         elif (data == chr(276)) or (data == 'a'):
-            autoKey = 'a'
-            autoTime = time.time() + 0.19
-            pieces[pieceIndex][3] = int(angle + 10) % 360
-            print ( 'Go Left' )
-            shot = drawBoard(shot)
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
-       
-      ''' 
-      elif eventType == pygame.MOUSEBUTTONUP:
-
-         if whiteSelectedPiece != None: 
-            print ( 'Move white piece[' + str(whiteSelectedPiece) + '] to: ' + str(data) )
-            x = int((data[0] - BOARDX) / SQUAREWIDTH)
-            y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            if legalMove (selectedIndex,x,y,'white'):             
-               piece = findBlackPiece (x,y)
-               if piece != -1:
-                  blackLocations[piece]=(-1,-1) # indicate unit is gone
-               whiteLocations[selectedIndex] = (x,y)
-               
-               shot = drawBoard(shot)
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
-               move = None
-               udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y) + ',\'white\')')               
-               myTurn = False
-            else:
-               showStatus ('Red illegal move' )
-         else: 
-            print ( 'whiteSelectedPiece == None' )
-            
-         if blackSelectedPiece != None: 
-            print ( 'Move black piece[' + str(blackSelectedPiece) + '] to: ' + str(data) )
-            x = int((data[0] - BOARDX) / SQUAREWIDTH)
-            y = int((data[1] - BOARDY) / SQUAREWIDTH)
-            if legalMove (selectedIndex,x,y,'black'): 
-               piece = findWhitePiece (x,y)
-               if piece != -1:
-                  whiteLocations[piece]=(-1,-1) # indicate unit is gone
-            
-               blackLocations[selectedIndex] = (x,y)
-               shot = drawBoard(shot)
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)])
-               move = None
-               udpBroadcast ( 'exec:move=(' + str(selectedIndex) + ',' + str(x) + ',' + str(y)+ ',\'black\')')               
-               myTurn=False
-            else:
-               showStatus ( 'Black illegal move' )
-         print ("None B")
-         whiteSelectedPiece = None
-         blackSelectedPiece = None  
-         
-         
-      elif eventType == pygame.MOUSEBUTTONDOWN:
-         if joining == 'Tank': 
-            if myTurn: 
-               (x,y) = posToXY (data[0],data[1]) 
-               if iAmHost: 
-                  piece = findBlackPiece (x,y)
-                  if piece != -1: 
-                     showStatus ( 'That is not your piece, you are white' )
-                  else: 
-                     (whiteSelectedPiece, blackSelectedPiece, selectedIndex) = findSelectedPiece (data[0], data[1]) 
-               else:
-                  piece = findWhitePiece (x,y)
-                  if piece != -1:
-                     showStatus ( 'That is not your piece, you are black' )
-                  else:
-                     (whiteSelectedPiece, blackSelectedPiece, selectedIndex) = findSelectedPiece (data[0], data[1]) 
-            else:
-               showStatus ( 'Waiting for other player to move' )                                  
+         if joining != 'Tank':
+            showStatus ( "Waiting for other player to join" )         
          else:
-            showStatus ( 'Waiting for other player to join')
-         
-      elif eventType == pygame.MOUSEMOTION:
-         if whiteSelectedPiece != None:
-            if inBoard (data[0], data[1]): 
-               whiteSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
-               whiteSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)            
+            pieceIndex = 1
+            tankType = 'black'
+            if iAmHost:
+               pieceIndex = 0
+               typeType = 'white'
+            x     = pieces[pieceIndex][2][0]
+            y     = pieces[pieceIndex][2][1]
+            angle = pieces[pieceIndex][3]
+            if (data == ' '): 
+               print ("Fire!" )
+               shot = Object()
+               shot.x = x
+               shot.y = y
+               shot.angle = angle
+               for i in range(8): 
+                   # make sure shot starts outside of the firing tank location
+                  (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
+               shotLifeTimeout = time.time() + 2.0
+            
+            if data in moveKeys:           
+               if data == 'w':
+                  autoKey = 'w'
+                  autoTime = time.time() + moveTimeout
+                  x,y = angleXY(x,y,10,angle)
+               elif data == 's':
+                  autoKey = 's'
+                  autoTime = time.time() + moveTimeout
+                  x,y = angleXY(x,y,10,angle+180)   
+               elif data == 'd':
+                  autoKey = 'd'
+                  autoTime = time.time() + moveTimeout
+                  pieces[pieceIndex][3] = int(angle - 10) % 360
+               elif data == 'a':
+                  autoKey = 'a'
+                  autoTime = time.time() + 0.19
+                  pieces[pieceIndex][3] = int(angle + 10) % 360
+                  print ( 'Go Left' )
+                  
+               udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
+               pieces[pieceIndex][2]= (x,y)
                shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-         elif blackSelectedPiece != None:
-            if inBoard (data[0], data[1]):
-               blackSelectedPiece[0] = data[0] - int(SQUAREWIDTH/2)
-               blackSelectedPiece[1] = data[1] - int(SQUAREWIDTH/2)
-               shot = drawBoard(shot)
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                     
-      '''    
+   
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
          print ("Selected command: " + str(sprite))
