@@ -58,7 +58,7 @@ try:
       games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Tank']     
       
    elif line == 'client':
-      games = ['Chat']
+      games = []
       print ( 'You are client')
       iAmHost = False
 except Exception as ex:
