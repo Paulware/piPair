@@ -21,11 +21,23 @@ def tankPage():
    move = None
    lost = None
       
-   pieces = [  #   id,  image,            image,                                          x   y    angle, health \
+   pieces = [  #   id,  image,            image,                                          x   y    angle, health 
                 ['white',extractImage ('images/tanks.png', 0, 0, 164, 212, 60, 80) ,     (100,100), 45,   100],\
                 ['black',extractImage ('images/tanks.png', 168, 428, 340, 605, 60, 80),  (400,400), 135,  100] \
             ]
-            
+
+   walls = [
+                pygame.Rect(150,100,30,200), \
+                pygame.Rect(250,300,250,30), \
+           ] 
+   def wallCollide(x,y): 
+      collide = False
+      for wall in walls:       
+         if wall.collidepoint ((x,y)):
+            collide = True
+            break            
+         
+      return collide           
    def inBoard (x,y):
       insideBoard = False
       if (x >= BOARDX) and (y >= BOARDY):
@@ -82,6 +94,8 @@ def tankPage():
       global shot
       DISPLAYSURF.fill((WHITE)) 
    
+      for wall in walls:
+         pygame.draw.rect (DISPLAYSURF, (255, 0, 0), (wall[0],wall[1],wall[2],wall[3])) 
       count = 0
       for piece in pieces:
          x = piece[2][0]
@@ -214,14 +228,19 @@ def tankPage():
       if shot != None: 
          if time.time() > shotTimeout:          
             shotTimeout = time.time() + 0.01
-            (shot.x,shot.y) = angleXY(shot.x, shot.y, 10, shot.angle)
-            if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
-               shot.angle = int(shot.angle + 90) % 360                 
-            else: 
-               if iAmHost: # Todo only owner of shot should udpbroadcast
-                  udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
-               drawBoard()
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+            (x,y) = angleXY(shot.x, shot.y, 10, shot.angle)
+            if wallCollide (x,y): 
+               shot = None
+            else:
+               shot.x = x
+               shot.y = y
+               if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
+                  shot.angle = int(shot.angle + 90) % 360                 
+               else: 
+                  if iAmHost: # Todo only owner of shot should udpbroadcast
+                     udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
+                  drawBoard()
+                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
 
          if time.time() > shotLifeTimeout: 
             shot = None
@@ -273,10 +292,13 @@ def tankPage():
                   pieces[pieceIndex][3] = int(angle + 10) % 360
                   print ( 'Go Left' )
                
-               udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
-               pieces[pieceIndex][2]= (x,y)
-               drawBoard()
-               (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+               if wallCollide (x,y): 
+                  showStatus ( "Mind the wall!" )
+               else:
+                  udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
+                  pieces[pieceIndex][2]= (x,y)
+                  drawBoard()
+                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
    
       sprite = getSpriteClick (eventType, data, sprites ) 
       if sprite != -1: # Quit is the only other option           
