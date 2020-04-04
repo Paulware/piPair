@@ -5,6 +5,7 @@ def tankPage():
    global move 
    global iAmHost
    global enemyShot
+   global shot
    
    SQUAREWIDTH = 50
    BOARDY = 50
@@ -74,7 +75,8 @@ def tankPage():
       return piece 
       
 
-   def drawBoard(shot): 
+   def drawBoard(): 
+      global shot
       DISPLAYSURF.fill((WHITE)) 
    
       count = 0
@@ -101,7 +103,6 @@ def tankPage():
          pygame.draw.circle(DISPLAYSURF, BLACK, (shot.x,shot.y), 2, 2)
       
       pygame.display.update()        
-      return shot
          
    def angleXY(x,y,speed,degrees):
       degrees = degrees - 90.0# adjust for picture direction
@@ -127,7 +128,7 @@ def tankPage():
       move = None
       myTurn = False
 
-   shot = drawBoard(shot)
+   drawBoard()
    (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
    pygame.display.update()
 
@@ -164,7 +165,6 @@ def tankPage():
          tankType = move[0] # Not used until number of tanks > 2
          x = int(move[1])
          y = int(move[2])
-         angle = move[3]
             
          pieceIndex = 0
          if tankType == 'shot':
@@ -173,12 +173,13 @@ def tankPage():
             enemyShot.x = x
             enemyShot.y = y 
          else:
+            angle = move[3]
             if tankType == 'black':
                pieceIndex = 1    
                      
             pieces[pieceIndex][2] = (x,y)
             pieces[pieceIndex][3] = angle         
-         shot = drawBoard(shot)
+         drawBoard()
          (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
          #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
          #             str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
@@ -205,12 +206,12 @@ def tankPage():
             else: 
                if iAmHost: # Todo only owner of shot should udpbroadcast
                   udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
-               shot = drawBoard(shot)
+               drawBoard()
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
 
          if time.time() > shotLifeTimeout: 
             shot = None
-            shot = drawBoard(shot)
+            drawBoard()
             (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
             
       if eventType == 'key':
@@ -258,7 +259,7 @@ def tankPage():
                
                udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
                pieces[pieceIndex][2]= (x,y)
-               shot = drawBoard(shot)
+               drawBoard()
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
    
       sprite = getSpriteClick (eventType, data, sprites ) 
