@@ -46,9 +46,15 @@ def tictactoePage ():
        joining = 'Tic Tac Toe' # Opponent should be waiting
        move = None
     
-    quit = False    
+    quit = False  
+    joinTimeout = 0    
     while not quit: 
-       (eventType,data,addr) = getInput (100,100)
+       (eventType,data,addr) = getKeyOrUdp()
+       if joining != 'Tic Tac Toe':
+          if time.time() > joinTimeout: 
+             joinTimeout = time.time() + 1
+             udpBroadcast ( 'exec:games=[\'Tic Tac Toe\']')
+       
        if eventType == pygame.MOUSEBUTTONUP:
           pos = data
           x = int(pos[0] / 100) - 2
