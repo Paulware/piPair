@@ -6,6 +6,7 @@ def tankPage():
    global iAmHost
    global enemyShot
    global shot
+   global explosion
    
    SQUAREWIDTH = 50
    BOARDY = 50
@@ -14,6 +15,7 @@ def tankPage():
    OFFSET = 0   
    shot = None  
    enemyShot = None   
+   explosion = None
    Object = type('Object', (object,), {} ) # Generic object definition
    showStatus ( 'iAmHost: ' + str(iAmHost) )    
    move = None
@@ -90,10 +92,16 @@ def tankPage():
          rect = pygame.Rect ( x, y, w, h) 
          if shot != None: 
             if rect.collidepoint ( (shot.x,shot.y) ):
-               image = pygame.image.load ( 'images/explosion.png').convert_alpha()
+               udpBroadcast ( 'exec:move=(\'explosion\','+ str(shot.x) + ',' + str(shot.y) + ']')
+               image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
                DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
                showStatus ( "You Win Yo" )
                shot = None
+         if explosion != None:
+            image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
+            DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
+            showStatus ( "You Lost Sorry" )
+
          count = count + 1
       
       if enemyShot != None: 
@@ -162,16 +170,20 @@ def tankPage():
          
       if move != None: #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
-         tankType = move[0] # Not used until number of tanks > 2
+         objectType = move[0] # Not used until number of tanks > 2
          x = int(move[1])
          y = int(move[2])
             
          pieceIndex = 0
-         if tankType == 'shot':
+         if objectType == 'shot':
             if enemyShot == None:
                enemyShot = Object()
             enemyShot.x = x
             enemyShot.y = y 
+         elif objectType == 'explosion':
+            explosion = Object()
+            explosion.x = x
+            explosion.y = y
          else:
             angle = move[3]
             if tankType == 'black':
