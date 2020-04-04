@@ -122,7 +122,7 @@ def getKeyOrUdp():
   typeInput = ''
   data = ''
   addr = ''
-  timeEvent = time.time() + 0.01
+  timeEvent = time.time() + 0.1
   while data == '':
     ev = pygame.event.get()
     for event in ev:  
@@ -184,37 +184,38 @@ def getKeyOrUdp():
           i,o,e = select.select ([tcpSocket], [], [], 0.0001)
        else: #udp
           i,o,e = select.select ([client], [], [], 0.0001)
+          
        for s in i:
           if s == client:
              data, addr = client.recvfrom (1024)
              data = data.decode();
              addr = str(addr[0])
              if (addr == '192.168.4.1') and (myIpAddress == '127.0.1.1'): 
-                print ( 'Ignore udp message: [' + data + '] from me' )
+                #print ( 'Ignore udp message: [' + data + '] from me' )
                 data = ''
              elif (addr == myIpAddress):
-                print ( "Ignoring udp message [" + data + "] from me" )
+                #print ( "Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
-                print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress)
-                showStatus ( "Received udp message [" + data + "]")
+                #print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress)
+                # showStatus ( "Received udp message [" + data + "]")
                 ind = data.find ( 'exec:')
                 if ind > -1: # joining=, games=, move= 
                    command = data[ind+5:]
-                   showStatus ("Executing command: [" + command + "]")
+                   #showStatus ("Executing command: [" + command + "]")
                    exec (command, globals()) 
                 
-             typeInput = 'udp'
+             typeInput = 'udp'   
           elif s == tcpConnection: 
              data, addr = tcpConnection.recvfrom (1024)
              data = data.decode();
-             print ("Received tcp data:" + data)
+             #print ("Received tcp data:" + data)
              addr = str(addr[0])
              typeInput = 'tcp'
           elif s == tcpSocket:
              data, addr = tcpSocket.recvfrom (1024)
              data = data.decode();
-             print ("Received tcp data:" + data)
+             #print ("Received tcp data:" + data)
              typeInput = 'tcp'
              addr = str(addr[0])
              
