@@ -149,7 +149,7 @@ def tankPage():
          
       #TODO: move shot      
       if move != None: #Opponent has moved 
-         # print ( "Got a move from opponent: " + str(move)) 
+         print ( "Got a move from opponent: " + str(move)) 
          tankType = move[0] # Not used until number of tanks > 2
          x = int(move[1])
          y = int(move[2])
