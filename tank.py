@@ -92,7 +92,7 @@ def tankPage():
          rect = pygame.Rect ( x, y, w, h) 
          if shot != None: 
             if rect.collidepoint ( (shot.x,shot.y) ):
-               udpBroadcast ( 'exec:move=(\'explosion\','+ str(shot.x) + ',' + str(shot.y) + ']')
+               udpBroadcast ( 'exec:move=(\'explosion\','+ str(shot.x) + ',' + str(shot.y) + ')')
                image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
                DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
                showStatus ( "You Win Yo" )
