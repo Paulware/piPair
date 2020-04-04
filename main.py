@@ -702,28 +702,21 @@ def gamePage(showOnly=False):
     global games   
     global iAmHost
 
-    print ("games: " + str(games))    
-    if iAmHost: 
-       pygame.display.set_caption('Select a game to host')
-    else:
-       pygame.display.set_caption('Select the game to join')    
-    DISPLAYSURF.fill((BLACK))
-    labels = showSsids(games)    
-    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
-    if iAmHost: 
-       showLabel ('Select a game to host', 50, 20)    
-    else:
-       showLabel ('Select a game to join', 50, 20)    
-    pygame.display.update()
-    
     quit = False
     showTimeout = time.time() + 1
     while not quit and not showOnly:  
        (eventType,data,addr) = getKeyOrUdp() # This should set games
        
        if time.time() > showTimeout: 
+          DISPLAYSURF.fill((BLACK))
           labels = showSsids(games)
           showTimeout = time.time() + 1 
+          if iAmHost: 
+             showLabel ('Select a game to host', 50, 20)    
+          else:
+             showLabel ('Select a game to join', 50, 20)    
+          (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
+          pygame.display.update()
    
        # Check if a game is clicked on       
        sprite = getSpriteClick (eventType, data, labels ) 
