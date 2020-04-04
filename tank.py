@@ -150,7 +150,7 @@ def tankPage():
    
       if joining != 'Tank':
          if time.time() > joinTimeout: 
-            joinTimeout = time.time() + 3
+            joinTimeout = time.time() + 1
             udpBroadcast ( 'exec:games=[\'Tank\']')
        
       (eventType,data,addr) = getKeyOrUdp()
