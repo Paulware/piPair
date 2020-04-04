@@ -10,7 +10,8 @@ def tankPage():
    BOARDX = 100 
    RADIUS = int((SQUAREWIDTH/2) - 10)
    OFFSET = 0   
-   shot = None   
+   shot = None  
+   enemyShot = None   
    Object = type('Object', (object,), {} ) # Generic object definition
    showStatus ( 'iAmHost: ' + str(iAmHost) )    
    move = None
@@ -73,6 +74,7 @@ def tankPage():
       
 
    def drawBoard(shot): 
+      global enemyShot
       DISPLAYSURF.fill((WHITE)) 
    
       count = 0
@@ -92,6 +94,9 @@ def tankPage():
                shot = None
          count = count + 1
       
+      if enemyShot != None: 
+         pygame.draw.circle(DISPLAYSURF, BLACK, (enemyShot.x,enemyShot.y), 2, 2)
+               
       if shot != None:      
          pygame.draw.circle(DISPLAYSURF, BLACK, (shot.x,shot.y), 2, 2)
       
@@ -146,8 +151,7 @@ def tankPage():
          if time.time() > joinTimeout: 
             joinTimeout = time.time() + 1
             udpBroadcast ( 'exec:games=[\'Tank\']')
-
-            
+       
       (eventType,data,addr) = getKeyOrUdp()
          
       if eventType == pygame.MOUSEMOTION:
@@ -155,7 +159,6 @@ def tankPage():
       elif eventType == pygame.MOUSEBUTTONDOWN:
          pass # fire tank on mouse click          
          
-      #TODO: move shot      
       if move != None: #Opponent has moved 
          print ( "Got a move from opponent: " + str(move)) 
          tankType = move[0] # Not used until number of tanks > 2
@@ -164,10 +167,17 @@ def tankPage():
          angle = move[3]
             
          pieceIndex = 0
-         if tankType == 'black':
-            pieceIndex = 1         
-         pieces[pieceIndex][2] = (x,y)
-         pieces[pieceIndex][3] = angle         
+         if tankType == 'shot':
+            if enemyShot == None:
+               enemyShot = Object()
+            enemyShot.x = x
+            enemyShot.y = y 
+         else:
+            if tankType == 'black':
+               pieceIndex = 1    
+                     
+            pieces[pieceIndex][2] = (x,y)
+            pieces[pieceIndex][3] = angle         
          shot = drawBoard(shot)
          (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
          #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
@@ -193,6 +203,8 @@ def tankPage():
             if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
                shot.angle = int(shot.angle + 90) % 360                 
             else: 
+               if iAmHost: # Todo only owner of shot should udpbroadcast
+                  udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
                shot = drawBoard(shot)
                (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
 

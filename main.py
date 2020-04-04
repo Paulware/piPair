@@ -122,7 +122,7 @@ def getKeyOrUdp():
   typeInput = ''
   data = ''
   addr = ''
-  timeEvent = time.time() + 0.1
+  timeEvent = time.time() + 0.01
   while data == '':
     ev = pygame.event.get()
     for event in ev:  
