@@ -6,8 +6,10 @@ import select
 import math
 import time
 import glob
+import random
 
 # Include game files
+import castingCost
 import checkers
 import tictactoe
 import chess
@@ -46,6 +48,7 @@ DISPLAYWIDTH=800
 DISPLAYHEIGHT=600
 UDPPORT = 3333
 configFilename = 'mainConfig.txt'
+rightClick = False
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
 
@@ -72,6 +75,25 @@ print ("iAmHost: " + str(iAmHost) + " games:" + str(games))
 '''
    Utilities
 '''
+def rotate (image, angle): 
+    # calcaulate the axis aligned bounding box of the rotated image
+    w, h       = image.get_size()
+    originPos  = (w//2,h//2)
+    box        = [pygame.math.Vector2(p) for p in [(0, 0), (w, 0), (w, -h), (0, -h)]]
+    box_rotate = [p.rotate(angle) for p in box]
+    min_box    = (min(box_rotate, key=lambda p: p[0])[0], min(box_rotate, key=lambda p: p[1])[1])
+    max_box    = (max(box_rotate, key=lambda p: p[0])[0], max(box_rotate, key=lambda p: p[1])[1])
+
+    # calculate the translation of the pivot 
+    pivot        = pygame.math.Vector2(originPos[0], -originPos[1])
+    pivot_rotate = pivot.rotate(angle)
+    pivot_move   = pivot_rotate - pivot
+    
+    # get a rotated image
+    rotated_image = pygame.transform.rotate(image, angle)
+    
+    return rotated_image
+    
 def blitRotate(image, pos, angle):
 
     global DISPLAYSURF
@@ -118,6 +140,7 @@ def showStatus (status):
 def getKeyOrUdp():
   global client 
   global joining 
+  global rightClick
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
   key = None
@@ -126,7 +149,9 @@ def getKeyOrUdp():
   data = ''
   addr = ''
   timeEvent = time.time() + 0.01
+  
   while data == '':
+    rightClick = False
     ev = pygame.event.get()
     for event in ev:  
        if event.type == pygame.KEYDOWN:
@@ -173,6 +198,9 @@ def getKeyOrUdp():
           data = pygame.mouse.get_pos()
           typeInput = pygame.MOUSEBUTTONDOWN
           addr = 'mouse'
+          rightClick = (event.button == 3)
+          if rightClick:
+             print ("right click detected")
        elif event.type == pygame.MOUSEMOTION:
           data = pygame.mouse.get_pos()
           typeInput = pygame.MOUSEMOTION
@@ -238,9 +266,9 @@ def showCh (ch,x,y):
   pygame.display.update()
 
 def chOffset (ch): 
-   offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '=':9, \
+   offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '/':4, '=':9, \
                'I':4, 'W':14, 'O':12, 'M':14, \
-               'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'k':9, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, \
+               'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'k':9, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, 'z':8, \
                '0':9, '1':9, '2':9, '3':9, '4':9, '5':9, '6':9, '7':9, '8':9, '9':9 \
              }
    offset = 10
@@ -377,24 +405,28 @@ def showImages (filenames,locations):
            i = i + 1
        pygame.display.update()        
     except Exception as ex:
-       print ( 'Could not place sprite on surface because: ' + str(ex))
+       print ( 'main.showImages, could not place sprite on surface because: ' + str(ex))
+       print ( 'filenames: ' + str(filenames) + ' locations: ' + str(locations) ) 
     return (images,sprites)
   
 def getSpriteClick (eventType, pos, sprites): 
     found = -1
-    if sprites != None:
-       if (eventType == pygame.MOUSEBUTTONUP) or (eventType == pygame.MOUSEBUTTONDOWN):
-          print (str(pos)) 
-     
-          # get a list of all sprites that are under the mouse cursor         
-          clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
-          
-          if clicked_sprite != []:
-             for i in range (len(sprites)):
-                if clicked_sprite[0] == sprites[i]: # just check the first sprite
-                   print ( "getSpriteClick: " + str(i)) 
-                   found = i
-                   break
+    try:
+       if sprites != None:
+          if eventType == pygame.MOUSEBUTTONDOWN:
+             print (str(pos)) 
+        
+             # get a list of all sprites that are under the mouse cursor         
+             clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
+             
+             if clicked_sprite != []:
+                for i in range (len(sprites)):
+                   if clicked_sprite[0] == sprites[i]: # just check the first sprite
+                      print ( "getSpriteClick: " + str(i)) 
+                      found = i
+                      break
+    except Exception as ex:
+       print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprites: ' + str(sprites)) 
     return found
 
 def scanForSsids ():
@@ -440,11 +472,15 @@ def joinSSID (ssid):
     print ("joinSSID")
     print ( "Join this ssid yo (reboot may be necessary):" + ssid )   
 
+lastMessage = ""    
 def udpBroadcast (message):
     global client
+    global lastMessage
     try: 
        UDP_IP = '<broadcast>'
-       print ("broadcast message:", message)
+       if message != lastMessage: 
+          print ("broadcast message:", message)
+          lastMessage = message
        # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
        if client == None:
           print ("client udp network not set yet" )

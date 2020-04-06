@@ -1,5 +1,5 @@
 import inspect
-
+#TODO: Each while loop has its own def 
 def mtgPage():
    global joining 
    global move 
@@ -7,11 +7,12 @@ def mtgPage():
    global enemyShot
    global shot
    global explosion
-   
-   SQUAREWIDTH = 50
+   global rightClick
+   global allCards
+  
+   CARDWIDTH = 100
    BOARDY = 50
    BOARDX = 100 
-   RADIUS = int((SQUAREWIDTH/2) - 10)
    OFFSET = 0   
    shot = None  
    enemyShot = None   
@@ -20,132 +21,343 @@ def mtgPage():
    showStatus ( 'iAmHost: ' + str(iAmHost) )    
    move = None
    lost = None
-
+                   
+   # filename is relative path to image
+   # iOwnIt:True/False
+   # location:'library', 'inplay','inhand','exiled','discarded'
+   # tapped:True/False
+   # index:0..(len(allCards)-1)
+   def addCard (filePath,owned,location,tapped): 
+      ind = len(allCards)
+      if (ind == 49) or (ind == 50): 
+         print ( 'Adding card: ' + filePath + ',' + str(owned) + ',' + location + ',' + str(tapped) ) 
+      card = {'index':ind, 'iOwnIt':owned, 'filename':filePath, 'location':location, 'tapped':tapped}
+      allCards.append (card) 
+   def modCard (index,owned,loc,isTapped): 
+      filename = allCards[index]['filename']
+      allCards[index] = {'filename':filename, 'iOwnIt':owned, 'location':loc, 'tapped':isTapped} 
+   def modTapped (index,tapped): 
+      allCards[index]['tapped'] = tapped
+      
+   def drawCard(hand):
+      libraryList = [] 
+      for card in allCards:
+         location = card['location']
+         if location == 'library':
+            libraryList.append ( card['index'] )
+      
+      index = int( random.random() * len(libraryList))
+      allCards[index]['location'] = 'inhand'
+      hand.append (index)
+      return hand
+      
+   ''' 
    pieces = []   
-   '''
+   
    pieces = [  #   id,  image,            image,                                          x   y    angle, health 
                 ['white',extractImage ('images/mtgCards.png', 0, 0, 164, 212, 60, 80) ,     (100,100), 45,   100],\
                 ['black',extractImage ('images/mtgCards.png', 168, 428, 340, 605, 60, 80),  (400,400), 135,  100] \
             ]
-   '''
-   walls = [
+   
+   walls = []
+   
                 pygame.Rect(150,100,30,200), \
                 pygame.Rect(250,300,250,30), \
            ] 
-
-   os.chdir('images/mtg')
-   a = glob.glob('*.*')
-   print ( "list of cards yo: " + str(a) )     
-         
-   def wallCollide(x,y): 
-      collide = False
-      for wall in walls:       
-         if wall.collidepoint ((x,y)):
-            collide = True
-            break            
-         
-      return collide           
-   def inBoard (x,y):
-      insideBoard = False
-      if (x >= BOARDX) and (y >= BOARDY):
-         if (x <= (BOARDX+(8*SQUAREWIDTH))) and (y <= (BOARDY+(8*SQUAREWIDTH))): 
-            insideBoard = True
-      return insideBoard
-      
-   def legalMove (selectedIndex, x, y, color):
-      legal = True
-      if color == 'white':
-         (fromX,fromY) = whiteLocations[selectedIndex]
-      else:
-         (fromX,fromY) = blackLocations[selectedIndex]
-      if (fromX == x) and (fromY == y):
-         showStatus ( 'Cannot move to same position' )
-         legal = False
-      return legal
-    
-   def xToPixel (x):
-      return BOARDX + (x * SQUAREWIDTH)
-      
-   def yToPixel (y):
-      return BOARDY + (y * SQUAREWIDTH)
-      
-   def posToXY (x,y):
-      x = int((x - BOARDX)/ 50) 
-      y = int((y - BOARDY)/ 50)
-      return (x,y)   
-
-   # (x,y) is board square location not pixels       
-   def findBlackPiece (x,y):  
-      piece = -1
-      count = 0
-      for location in blackLocations: 
-         if (x == location[0]) and (y == location[1]):
-            piece = count
-            break
-         count = count + 1
-      return piece 
-
-   # (x,y) is board square location (not pixels)      
-   def findWhitePiece (x,y):  
-      piece = -1
-      count = 0
-      for location in whiteLocations: 
-         if (x == location[0]) and (y == location[1]):
-            piece = count
-            break
-         count = count + 1
-      return piece 
-      
-
-   def drawBoard(): 
-      global shot
-      DISPLAYSURF.fill((WHITE)) 
    
-      for wall in walls:
-         pygame.draw.rect (DISPLAYSURF, (255, 0, 0), (wall[0],wall[1],wall[2],wall[3])) 
-      count = 0
-      for piece in pieces:
-         x = piece[2][0]
-         y = piece[2][1]
-         img = piece[1]
-         angle = piece[3]
-         blitRotate (img, (x,y), angle) # Rotate image to current angle
-         (w,h) = img.get_size()
-         rect = pygame.Rect ( x, y, w, h) 
-         if shot != None: 
-            if rect.collidepoint ( (shot.x,shot.y) ):
-               udpBroadcast ( 'exec:move=(\'explosion\','+ str(shot.x) + ',' + str(shot.y) + ')')
-               image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
-               DISPLAYSURF.blit (image, (shot.x-100, shot.y-150 ))
-               showStatus ( "You Win Yo" )
-               shot = None
-         if explosion != None:
-            image = pygame.image.load ( 'images/explosion.png').convert_alpha()               
-            DISPLAYSURF.blit (image, (explosion.x-100, explosion.y-150 ))
-            showStatus ( "You Lost Sorry" )
+   # manaCosts = {
+   
+   # os.chdir('images/mtg/creatures')
+   creaturFilenames = glob.glob('images/mtg/creatures/*.*')
+   creatureFilenames = []
+   for filename in creaturFilenames:
+      filename = filename.replace ( '\\', '/') 
+      creatureFilenames.append (filename)
+      
+   # print ('creatureFilename: ' + str(creatureFilenames)) 
+   count = 0
+   
+   #Note do not run this code as it will overwrite the mana cost
+   f = open ( 'castingCost.py', 'w' )
+   f.write ( 'class castingCost: \n' )
+   f.write ( '   cost = { \\\n' ) 
+   for filename in filenames: 
+      count = count + 1
+      f.write ( '      \'' + filename + '\':\'whiteblackgreenbluered\', \\\n' )
+   f.write ( '   }\n' ) 
+   f.write ( '   def __init__(self):\n' ) 
+   f.write ( '      pass\n' ) 
+   f.close()
+   '''
+   c = castingCost.castingCost()
+   
+   STARTX = 50
+   def indexesToFilenames (indexList): 
+      # print ( 'indexesToFilenames list: ' + str(indexList) + ' len(allCards): ' + str(len(allCards))  ) 
+      filenames = []
+      element = None
+      try:
+         for index in indexList: 
+            if str(index).isnumeric():   
+               if int(index) <= len(allCards):  
+                  element = allCards [index]               
+                  filename = allCards[index]['filename']
+                  filenames.append (filename)
+               else:
+                  print ( 'index:' + str(index) + ' is too large for len(allCards): ' + str(len(allCards)) )
+            else:
+               print ( 'ERR index invalid (should be a number): ' + str(index) ) 
+      except Exception as ex:
+         print ( 'Could not convert indexes to filenames with element: ' + str(element) + ' because: ' + str(ex)  )      
 
-         count = count + 1
+      return filenames
+   
+   def showCards (indexList,startLocation,width):
+      filenames = indexesToFilenames(indexList)
+      print ( 'showCards (indexList: ' + str(indexList) + \
+              ' startLocation: ' + str(startLocation) + ',width: ' + str(width) + ')' )
+      x = startLocation [0]
+      y = startLocation [1]
+      height = int (width * 1.4)
       
-      if enemyShot != None: 
-         pygame.draw.circle(DISPLAYSURF, BLACK, (enemyShot.x,enemyShot.y), 2, 2)
-               
-      if shot != None:      
-         pygame.draw.circle(DISPLAYSURF, BLACK, (shot.x,shot.y), 2, 2)
-      
-      pygame.display.update()        
-         
+      # Get all the images 
+      images = [] 
+      count = 0
+      try:
+         for filename in filenames:
+            index = indexList[count]
+            tapped = allCards[index]['tapped']
+            image = pygame.image.load (filename ).convert_alpha()
+            image = pygame.transform.scale(image, (width, height))                      
+            if tapped: 
+               print ( "showCards, this card is tapped yo: " + filename ) 
+               image = rotate (image, 90) 
+            images.append (image)     
+            count = count + 1
+      except Exception as ex:
+         print ( 'Could not load: ' + str(filename) + ' because: ' + str(ex))
+
+      # Place all images on the surface and get list of rectangles (sprites)
+      sprites = []
+      try:
+         i = 0
+         for image in images: 
+             sprites.append (DISPLAYSURF.blit (image,(x,y)))
+             x = x + width
+             if x >= DISPLAYWIDTH:
+                x = startLocation[0]
+                y = y + height
+             i = i + 1
+         pygame.display.update()        
+      except Exception as ex:
+         print ( 'Show cards could not place sprite (card) on surface because: ' + str(ex))
+      return (images,sprites)
+                                           
    def angleXY(x,y,speed,degrees):
       degrees = degrees - 90.0# adjust for picture direction
       degrees = int(degrees) % 360
       angle_in_radians = float(degrees) / 180.0 * math.pi
       new_x = x + int(float(speed)*math.cos(angle_in_radians))
       new_y = y - int(float(speed)*math.sin(angle_in_radians))
-      return new_x, new_y
+      return new_x, new_y         
          
-   # Show screen
-   pygame.display.set_caption('Play Magic The Gathering')         
-   showStatus ( "Waiting for player to join")
-   
+   def selectMainCard(creatureIndexes):   
+      def drawDeckCards(): 
+         global cards
+         global sprites
+         # Show screen
+         pygame.display.set_caption('Click a card, then press select to build a deck around the selected card')  
+         DISPLAYSURF.fill((WHITE)) 
+         print ( 'selectMainCard.drawDeckCards' )
+         (images,cards) = showCards (creatureIndexes, (0,90), 35 )
+                  
+      joinTimeout = 0   
+      drawDeckCards()
+      quit = False        
+      while True:  
+         (eventType,data,addr) = getKeyOrUdp()
+         '''      
+         if joining != 'MTG':
+            if time.time() > joinTimeout: 
+               joinTimeout = time.time() + 1
+               udpBroadcast ( 'exec:games=[\'MTG\']') 
+         '''                                  
+         card = getSpriteClick (eventType, data, cards ) 
+         if card != -1: 
+            filename = allCards[card]['filename']
+            actions = ['ok','select']            
+            action = getSingleCardAction ( filename, 'View card', actions)  
+            if action == 'select':                
+               break
+            else:                  
+               drawDeckCards() # Draw deck again after viewing card              
+      print ( 'card selected as basis of deck: ' + str(card))         
+      return card 
+      
+   def showCreatedDeck(indexList,creature):
+      print ( 'showCreatedDeck, my indexList ( should be all numbers ): ' + str(indexList) ) 
+      deck = indexesToFilenames (indexList)
+      def showDeck():
+         global cards
+         global sprites
+         # Show the deck
+         DISPLAYSURF.fill((WHITE))       
+         (images,sprites) = showImages (['images/ok.jpg'], [(400,50)] ) 
+         print ( 'showCreatedDeck.showDeck' )
+         (images,cards) = showCards (indexList, (0,90), 35 )
+         
+      pygame.display.set_caption('Here is your deck based on:' + creature)
+      showDeck()
+      quit = False  
+      joinTimeout = 0
+      while not quit:  
+         (eventType,data,addr) = getKeyOrUdp()
+      
+         if joining != 'MTG':
+            if time.time() > joinTimeout: 
+               joinTimeout = time.time() + 1
+               udpBroadcast ( 'exec:games=[\'MTG\']')
+
+         if eventType == pygame.MOUSEBUTTONUP:
+            showDeck()
+            
+         card = getSpriteClick (eventType, data, cards ) 
+         if card != -1: # show the card
+            actions = ['ok']        
+            filename = deck[card]            
+            action = getSingleCardAction ( filename, 'View card', actions)          
+
+         sprite = getSpriteClick (eventType, data, sprites ) 
+         if sprite != -1: # Quit is the only other option           
+            quit = True
+            
+   def actionsToIcons (actions): 
+      filenames = []
+      locations = []
+      x = 550 
+      y = 50
+      for action in actions:
+         filenames.append ( 'images/' + action + '.jpg' )
+         locations.append ( (x,y) ) 
+         y = y + 100
+      return (filenames,locations)
+      
+   # Get action from a single card 
+   def getSingleCardAction (card,caption,actions):
+      print ( 'getSingleCardAction (' + card + ',' + caption + ',' + str(actions) + ')' )   
+      pygame.display.set_caption(caption)   
+      DISPLAYSURF.fill((WHITE))
+      
+      image  = pygame.image.load (card).convert_alpha()
+      width  = image.get_width()
+      if width > 400: 
+         width = 400
+      height = int (width * 1.4)
+      image = pygame.transform.scale(image, (width, height))                            
+      DISPLAYSURF.blit(image, (10, 50))   
+      pygame.display.update()        
+      
+      (filenames,locations) = actionsToIcons (actions)
+      
+      (images,sprites) = showImages (filenames, locations )
+      list = [card]
+      action = ''
+      quit = False
+      while not quit and (action == ''):
+         (eventType,data,addr) = getKeyOrUdp()                  
+         sprite = getSpriteClick (eventType, data, sprites ) 
+         if sprite != -1: 
+            action = actions[sprite]
+      
+      print ( '[' + action + ']=getSingleCardAction(' + card + ',' + caption + '), quit=' + str(quit) )       
+      return action 
+      
+   # Draw the entire playing surface with my cards and opponents cards visible   
+   def drawBoard(handIndexes, inplayIndexes, hasPlayedLand): 
+      hand = indexesToFilenames (handIndexes)
+      print ( 'drawBoard hand: ' + str(hand))
+      inplay = indexesToFilenames (inplayIndexes)
+      print ( 'drawBoard inplay: ' + str(inplay))
+      def showBoard (actions): 
+         pygame.display.set_caption('Click on card to perform action (hand,inplay):')
+         DISPLAYSURF.fill((WHITE))
+         (filenames,locations) = actionsToIcons (actions) 
+         (images,sprites) = showImages (filenames, locations )
+         print ( 'drawBoard.showBoard, draw cards in hand' )         
+         (images,handSprites) = showCards (handIndexes, (0,90), 100 )
+         print ( 'drawBoard.showBoard, draw cards in play' )
+         (images,inplaySprites) = showCards (inplayIndexes, (0, 250), 100)  
+         print ( 'Done in drawBoard.showBoard' )
+         return (sprites,handSprites,inplaySprites)
+         
+      quit = False   
+      (buttonSprites,handSprites,inplaySprites) = showBoard(['done','quit'])
+      while not quit:  
+         (eventType,data,addr) = getKeyOrUdp()
+
+         if eventType == pygame.MOUSEBUTTONUP:
+            (buttonSprites,handSprites,inplaySprites) = showBoard(['done','quit'])
+            
+         card = getSpriteClick (eventType, data, handSprites)         
+         if card != -1: # show the card in hand
+            selectedCard = hand[card]
+            # Show card and get action
+            actions = ['discard', 'ok']
+            if selectedCard.find ( '/lands/' ) > -1: # This is a land 
+               if not hasPlayedLand: 
+                  actions.append ( 'cast' )
+            action = getSingleCardAction ( selectedCard, 'Select an action', actions)  
+            if action != '':
+               print ( 'Perform action: (only action should be play/discard)  [' + action + '] on card: ' + selectedCard )     
+               if action == 'discard': 
+                  print ( 'Pop card: ' + str(card) + ' len(handIndexes: ' + str(len(handIndexes)) )
+                  handIndexes.pop(card)
+                  #TODO: Add to discard pile 
+                  hand.remove (selectedCard)                   
+                  if len(hand) <= 7: 
+                     showStatus ( "Your turn is over due to discard" )
+                     quit = True 
+               elif action == 'cast':
+                  c = handIndexes.pop(card)
+                  hand.remove (selectedCard)
+                  inplayIndexes.append (c) 
+                  if selectedCard.find ( '/lands/' ) > -1: # This is a land 
+                     hasPlayedLand = True
+                  
+            showBoard(['quit'])
+               
+         card = getSpriteClick (eventType, data, inplaySprites )         
+         if card != -1: # show the card in play
+            # Show card and get action 
+            index = inplayIndexes[card]
+            print ( 'card: ' + str(card) + ' index: ' + str(index) + ' inplayIndexes: ' + str(inplayIndexes) ) 
+            selectedCard = allCards[index]['filename']
+            print ( 'selectedCard: ' + selectedCard ) 
+            tapped = allCards[index]['tapped']
+            if tapped:             
+               action = getSingleCardAction ( selectedCard, 'Select an action', ['ok'])  
+            else:
+               action = getSingleCardAction ( selectedCard, 'Select an action', ['tap','ok'])  
+            if action != '':
+               print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
+               if action == 'tap': 
+                  print ( 'Tapping card yo' )
+                  modTapped (index, True )   
+               
+            showBoard(['quit'])
+
+         sprite = getSpriteClick (eventType, data, buttonSprites ) 
+         if sprite == 1:
+            showStatus ( 'You have elected to quit'  )      
+            quit = True
+         elif sprite == 0: #done 
+            if len(hand) > 7: 
+               showStatus ( 'You must discard a card (maximum hand size == 7)' )
+            else:
+               quit = True     
+            
+      return (handIndexes,inplayIndexes,hasPlayedLand)      
+               
    if iAmHost:
       # Set opponents list of games
       udpBroadcast ( 'exec:games=[\'MTG\']')
@@ -156,161 +368,38 @@ def mtgPage():
       udpBroadcast ( 'exec:joining=\'MTG\'')
       joining = 'MTG' # Opponent should be waiting
       move = None
-      myTurn = False
+      myTurn = False          
+  
+   (allCards,creatureIndexes) = c.allCards() # Database of all cards, their filenames, locations, and status    
+   card = selectMainCard(creatureIndexes) # Select one card from a deck of cards 
+   filename = allCards[card]['filename']
+   print ( 'Filename selected as basis of deck: ' + filename )
+   cost = c.cost[filename] 
+   deckBasis = filename    
+   print ( 'Cost of deck basis: ' + str(cost ))
+   showStatus ( "Build deck based on card: " + filename + " cost: " + str(cost))
 
-   drawBoard()
-   (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )      
-   pygame.display.update()
-
-      
-   autoKey = ''
-   quit = False    
-   selectedIndex = None # necessary?
-   autoTime = time.time()
-   moveTimeout = 0.09
-   shotTimeout = time.time() + 0.01
-   shotLifeTimeout = time.time()
-   try: 
-      moveKeys = [chr(273), 'w', chr(274), 's',  chr(275), 'd', chr (276), 'a']   
-   except Exception as ex:
-      moveKeys = ['w','s','d','a']
-
-   joinTimeout = time.time() + 1
-   while not quit: 
+   deckFilenames = c.buildDeck (filename)   
+   deck = [] 
+   allCards = []
+   count = 0
+   for card_ in deckFilenames: 
+      addCard (card_,True,'library',False)      
+      deck.append ( count ) # Build a list of indexes 
+      count = count + 1
+ 
+   creature = deckBasis   
+   print ( 'Got a creature filename: ' + creature )
+   showCreatedDeck(deck,creature) # Show the list of cards 
    
-      if joining != 'MTG':
-         if time.time() > joinTimeout: 
-            joinTimeout = time.time() + 1
-            udpBroadcast ( 'exec:games=[\'MTG\']')
-       
-      (eventType,data,addr) = getKeyOrUdp()
-         
-      if eventType == pygame.MOUSEMOTION:
-         pass # Move turret to follow mouse?
-      elif eventType == pygame.MOUSEBUTTONDOWN:
-         pass # fire tank on mouse click          
-         
-      if move != None: #Opponent has moved 
-         print ( "Got a move from opponent: " + str(move)) 
-         objectType = move[0]
-         x = int(move[1])
-         y = int(move[2])
-            
-         pieceIndex = 0
-         if objectType == 'shot':
-            if enemyShot == None:
-               enemyShot = Object()
-            enemyShot.x = x
-            enemyShot.y = y 
-         elif objectType == 'explosion':
-            explosion = Object()
-            explosion.x = x
-            explosion.y = y
-            lost = True
-         else:
-            angle = move[3]
-            if objectType == 'black':
-               pieceIndex = 1    
-                     
-            pieces[pieceIndex][2] = (x,y)
-            pieces[pieceIndex][3] = angle         
-         drawBoard()
-         (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                                          
-         #showStatus ( 'Move piece ' + str(pieceIndex) + ' to [' + \
-         #             str(x) + ',' + str(y) + '] angle:' + str(angle) ) 
-         move = None      
-         
-      if (eventType == pygame.KEYUP):
-         autoKey = ''
-         print ( 'Turning off autoKey' )
-
-      if time.time() > autoTime: 
-         if autoKey != '':
-            print ( 'Detected autokey: ' + autoKey )
-            autoTime = time.time() + moveTimeout
-            eventType = 'key'
-            data = autoKey
-            addr = 'key'
-
-      if shot != None: 
-         if time.time() > shotTimeout:          
-            shotTimeout = time.time() + 0.01
-            (x,y) = angleXY(shot.x, shot.y, 10, shot.angle)
-            if wallCollide (x,y): 
-               shot = None
-            else:
-               shot.x = x
-               shot.y = y
-               if (shot.x >= DISPLAYWIDTH) or (shot.y >= DISPLAYHEIGHT) or (shot.x <= 0) or (shot.y <= 0): 
-                  shot.angle = int(shot.angle + 90) % 360                 
-               else: 
-                  if iAmHost: # Todo only owner of shot should udpbroadcast
-                     udpBroadcast ( 'exec:move=(\'shot\',' + str(shot.x) + ',' + str(shot.y) + ')')                                       
-                  drawBoard()
-                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
-
-         if time.time() > shotLifeTimeout: 
-            shot = None
-            drawBoard()
-            (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] ) 
-            
-      if eventType == 'key':
-         if joining != 'MTG':
-            showStatus ( "Waiting for other player to join" )      
-         elif lost: 
-            showStatus ( "Disabled (due to loss)" )         
-         else:
-            pieceIndex = 1
-            tankType = 'black'
-            if iAmHost:
-               pieceIndex = 0
-               tankType = 'white'
-               
-            x     = pieces[pieceIndex][2][0]
-            y     = pieces[pieceIndex][2][1]
-            angle = pieces[pieceIndex][3]
-            if (data == ' '): 
-               print ("Fire!" )
-               shot = Object()
-               shot.x = x
-               shot.y = y
-               shot.angle = angle
-               for i in range(8): 
-                   # make sure shot starts outside of the firing tank location
-                  (shot.x,shot.y) = angleXY(shot.x, shot.y, 13, shot.angle)            
-               shotLifeTimeout = time.time() + 2.0
-            
-            if data in moveKeys:           
-               if data == 'w':
-                  autoKey = 'w'
-                  autoTime = time.time() + moveTimeout
-                  x,y = angleXY(x,y,10,angle)
-               elif data == 's':
-                  autoKey = 's'
-                  autoTime = time.time() + moveTimeout
-                  x,y = angleXY(x,y,10,angle+180)   
-               elif data == 'd':
-                  autoKey = 'd' 
-                  autoTime = time.time() + moveTimeout
-                  pieces[pieceIndex][3] = int(angle - 10) % 360
-               elif data == 'a':
-                  autoKey = 'a'
-                  autoTime = time.time() + 0.19
-                  pieces[pieceIndex][3] = int(angle + 10) % 360
-                  print ( 'Go Left' )
-               
-               if wallCollide (x,y): 
-                  showStatus ( "Mind the wall!" )
-               else:
-                  udpBroadcast ( 'exec:move=(\'' + tankType + '\',' + str(x) + ',' + str(y) + ',' + str(angle) + ')')                
-                  pieces[pieceIndex][2]= (x,y)
-                  drawBoard()
-                  (images,sprites) = showImages (['images/quit.jpg'], [(400,500)] )                              
+   pygame.display.set_caption('Getting artifact,lands,instants and sorceries that share mana with:' + creature)
+   hand = []
+   inPlay = []
+   # Deal 7 cards 
+   for i in range(8):
+      hand = drawCard(hand)
    
-      sprite = getSpriteClick (eventType, data, sprites ) 
-      if sprite != -1: # Quit is the only other option           
-         print ("Selected command: " + str(sprite))
-         mainPage (True)
-         quit = True  
-         
+   hasPlayedLand = False    
+   (hand,inPlay,hasPlayedLand) = drawBoard(hand, inPlay, hasPlayedLand) # Also give options for play
+        
 MTG=inspect.getsource(mtgPage)
