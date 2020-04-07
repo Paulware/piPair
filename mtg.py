@@ -29,13 +29,14 @@ def mtgPage():
    # index:0..(len(allCards)-1)
    def addCard (filePath,owned,location,tapped): 
       ind = len(allCards)
-      if (ind == 49) or (ind == 50): 
-         print ( 'Adding card: ' + filePath + ',' + str(owned) + ',' + location + ',' + str(tapped) ) 
-      card = {'index':ind, 'iOwnIt':owned, 'filename':filePath, 'location':location, 'tapped':tapped}
+      card = {'index':ind, 'iOwnIt':owned, 'filename':filePath, \
+              'location':location, 'tapped':tapped, \
+              'summoned':False}
       allCards.append (card) 
    def modCard (index,owned,loc,isTapped): 
-      filename = allCards[index]['filename']
-      allCards[index] = {'filename':filename, 'iOwnIt':owned, 'location':loc, 'tapped':isTapped} 
+      allCards[index]['iOwnIt'] = owned
+      allCards[index]['location'] = loc
+      allCards[index]['tapped'] = isTapped
    def modTapped (index,tapped): 
       allCards[index]['tapped'] = tapped
    def modSummoned (index,summoned): 
@@ -341,7 +342,7 @@ def mtgPage():
                   actions.append ( 'cast' )
             action = getSingleCardAction ( selectedCard, 'Select an action', actions)  
             if action != '':
-               index = inhandIndexes[card]            
+               index = handIndexes[card]            
                print ( 'Perform action: (only action should be play/discard)  [' + action + '] on card: ' + selectedCard )     
                if action == 'discard': 
                   print ( 'Pop card: ' + str(card) + ' len(handIndexes: ' + str(len(handIndexes)) )
@@ -372,7 +373,8 @@ def mtgPage():
             tapped = allCards[index]['tapped']
             actions = ['ok']
             if not tapped:             
-               actions.append ( 'tap' ) 
+               actions.append ( 'tap' )
+            print ( 'Get summoned property from allcards[' + str(index) + ']' )               
             if not allCards[index]['summoned']: 
                actions.append ( 'attack' )             
                
