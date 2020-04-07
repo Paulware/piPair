@@ -38,6 +38,28 @@ def mtgPage():
       allCards[index] = {'filename':filename, 'iOwnIt':owned, 'location':loc, 'tapped':isTapped} 
    def modTapped (index,tapped): 
       allCards[index]['tapped'] = tapped
+   def showAllCards():
+      for card in allCards:
+         filename = card['filename']
+         iOwnIt = card['iOwnIt']
+         location = card['location']
+         tapped = card['tapped']
+         index = card['index']
+         msg = 'card{index:'
+         if index<10: 
+            msg = msg + ' '
+         msg = msg + str(index) + ',iOwnIt:' + str(iOwnIt) 
+         if iOwnIt:
+            msg = msg + ' tapped:' 
+         msg = msg + str(tapped) 
+         if tapped:
+            msg = msg = ' ' 
+         msg = msg + ',location:'
+         if location == 'inhand':
+            msg = msg + ' ' 
+         msg = msg + location + ',filename:' + filename + '}, cost=' + \
+               str(c.totalManaCost ( filename )) 
+         print (msg)
       
    def drawCard(hand):
       libraryList = [] 
@@ -127,11 +149,13 @@ def mtgPage():
          for filename in filenames:
             index = indexList[count]
             tapped = allCards[index]['tapped']
-            image = pygame.image.load (filename ).convert_alpha()
-            image = pygame.transform.scale(image, (width, height))                      
+            image = pygame.image.load (filename).convert_alpha()
+            image = pygame.transform.scale(image, (width, height))
             if tapped: 
+               #print ( 'width before tap: ' + str(width) )            
                print ( "showCards, this card is tapped yo: " + filename ) 
                image = rotate (image, 90) 
+                              
             images.append (image)     
             count = count + 1
       except Exception as ex:
@@ -143,6 +167,8 @@ def mtgPage():
          i = 0
          for image in images: 
              sprites.append (DISPLAYSURF.blit (image,(x,y)))
+             width,height = image.get_size()
+             
              x = x + width
              if x >= DISPLAYWIDTH:
                 x = startLocation[0]
@@ -322,7 +348,7 @@ def mtgPage():
                   hand.remove (selectedCard)
                   inplayIndexes.append (c) 
                   if selectedCard.find ( '/lands/' ) > -1: # This is a land 
-                     hasPlayedLand = True
+                     hasPlayedLand = False #True
                   
             showBoard(['quit'])
                
@@ -342,7 +368,8 @@ def mtgPage():
                print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
                if action == 'tap': 
                   print ( 'Tapping card yo' )
-                  modTapped (index, True )   
+                  modTapped (index, True )
+                  showAllCards()
                
             showBoard(['quit'])
 
