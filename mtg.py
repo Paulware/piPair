@@ -404,7 +404,7 @@ def mtgPage():
                   if iAmHost: 
                      hostTurn = False
                   else:
-                     hostTurn = True
+                     hostTurn = True 
                '''
                #TODO: when other player finished their turn                
                hasPlayedLand = False              
