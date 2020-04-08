@@ -268,6 +268,7 @@ def mtgPage():
       global move
       global hostTurn
       global iAmHost
+      global hostTurn
       
       manaPool = [] 
       def showBoard (actions): 
