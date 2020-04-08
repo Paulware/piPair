@@ -19,7 +19,7 @@ Currently the games that are supported are:
 <ul>
   <li>Download the latest raspbian image from: <a href="https://www.raspberrypi.org/downloads/raspbian">https://www.raspberrypi.org/downloads/raspbian</a></li>
   <li>Copy the .img to an 8gb sd card using <a href="https://www.sourceforge.net/projects/win32diskimager">win32diskimager</a></li>
-  <li>Copy the contents of this github repo to the sd card (this will be later referred to as /boot area)</li>
+  <li>Copy the setup directory in this github repo to the sd card (this will be later referred to as /boot area)</li>
   <li>Connect an internet cable to the raspberry pi</li>
   <li>Place the sd card in the raspberry pi and power up</li>
   <li>Open a line terminal and enter the commands</li>
