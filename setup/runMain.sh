@@ -36,7 +36,7 @@ Description=Start Backdoor
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/pi/.Xauthority
 ExecStart=/bin/bash -c 'cd /home/pi/piPair;/usr/bin/python3 main.py > /home/pi/piPair/main.log 2>&1'
-Restart=never
+Restart=no
 RestartSec=10s
 KillMode=process
 TimeoutSec=infinity
@@ -52,6 +52,6 @@ systemctl daemon-reload
 systemctl enable backdoor.service
 # remove the autorun option from the file manager
 #sed -i 's/autorun=1/autorun=0/' /home/pi/.config/pcmanfm/LXDE-pi/pcmanfm.conf
-
+export DISPLAY=desktop:0
 echo "On reboot the service should start see /share/WOD/sshBackdoor.log for details"
 

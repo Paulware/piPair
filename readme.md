@@ -36,7 +36,7 @@ Currently the games that are supported are:
 <h1>Keyboard Logitech K380 Setup</h1>
 <ul>
    <li>Press and hold yellow key 1 until it blinks</li>
-   <li>Using the bluetooth icon on the raspberry pi bt icon</li>
+   <li>Using the bluetooth icon on the raspberry pi</li>
      <ul>
        <li>Turn on bluetooth</li>
        <li>Make Discoverable</li>

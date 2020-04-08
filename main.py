@@ -42,6 +42,7 @@ tcpConnection = None
 client = None
 
 games = [] 
+gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG']
 iAmHost = False
 joining = ''
 DISPLAYWIDTH=800
@@ -50,7 +51,11 @@ UDPPORT = 3333
 configFilename = 'mainConfig.txt'
 rightClick = False
 
+# Sleep so that the desktop display can initialize itself
+time.sleep(15) 
+
 myIpAddress = socket.gethostbyname(socket.gethostname())
+
 
 # Read configuration data
 try: 
@@ -61,7 +66,7 @@ try:
    if line == 'host': 
       print ( 'You are host' )
       iAmHost = True
-      games = ['Chat', 'Tic Tac Toe', 'Chess', 'Tank', 'MTG'] # 'Checkers'    
+      games = gameList    
       
    elif line == 'client':
       games = []
@@ -585,13 +590,14 @@ def extractImage (sheetFilename,x1,y1,x2,y2,finalWidth,finalHeight):
 def hostPage (showOnly=False):
     global iAmHost 
     global games
+    global gameList
     pygame.display.set_caption('You are now host, click below to change SSID')        
     f = open ( configFilename, 'w')
     f.write ( 'host\n' )
     f.close()
     iAmHost = True
     DISPLAYSURF.fill((BLACK)) 
-    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )      
+    (images,sprites) = showImages (['images/ok.jpg'], [(400,400)] )      
     (surface, rect) = createLabel ('Enter the name of your host ssid', 50, 20)   
     DISPLAYSURF.blit(surface, rect)
     (surface, rect) = createLabel ('SSID:', 250, 55)  
@@ -616,7 +622,7 @@ def hostPage (showOnly=False):
           
        sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
-          games = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'Panzer Leader']     
+          games = gameList     
           mainPage (True)
           quit = True
 

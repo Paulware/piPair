@@ -1,10 +1,10 @@
-echo "Run all scripts to configure the pi"
-echo "Note: .img used for this should already have a wifi access point setup"
+echo "Run all scripts to configure the pi"0
 if [ $(id -u) -ne 0 ]; then echo "You must use sudo: sudo ./all.sh"; exit 1; fi
 cd /home/pi
-echo "Still need to make some modes for all.sh to run properly"
 git clone https://www.github.com/Paulware/piPair
-cd /home/pi/piPair/setup
+cd /home/pi/piPair
+chmod 777 *.*
+cd /boot/setup
 apt-get update
 ./ssh.sh
 ./keyboard.sh
@@ -12,5 +12,7 @@ apt-get update
 # echo "dns-nameservers 8.8.8.8 8.8.4.4" >> /etc/network/interfaces
 ./ap.sh
 pip install glob3
+./runMain.sh
+echo "Done in setup, Using the wifi icon on desktop:turn wifi on, and set wifi country.  Then reboot"
 
 

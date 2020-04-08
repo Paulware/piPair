@@ -377,11 +377,12 @@ def mtgPage():
             selectedCard = allCards[index]['filename']
             print ( 'selectedCard: ' + selectedCard ) 
             tapped = allCards[index]['tapped']
+            justSummoned = allCards[index]['summoned'
             actions = ['ok']
-            if not tapped:
+            if not tapped and not justSummoned:
                actions.append ( 'tap' )
             print ( 'Get summoned property from allcards[' + str(index) + ']' )               
-            if not allCards[index]['summoned'] and not allCards[index]['tapped']: 
+            if not tapped and not justSummoned: 
                if selectedCard.find ('/creatures/') > -1: 
                   actions.append ( 'attack' )
                
