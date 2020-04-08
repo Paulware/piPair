@@ -301,7 +301,7 @@ def mtgPage():
       quit = False  
       myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)  
       if myTurn:
-         buttons = ['done','quit','draw','untap','turndone']
+         buttons = ['draw','untap','turndone','quit']
       else:   
          buttons = ['quit']
          showStatus ( 'Waiting on other player to finish their turn' )
@@ -316,7 +316,7 @@ def mtgPage():
             print ( '  moveType: ' + move['moveType'] )
             print ( '  filename: ' + move['filename'] )
             if move['moveType'] == 'turndone':
-               buttons = ['done','quit','draw','untap','turndone']
+               buttons = ['draw','untap','turndone','quit']
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                hostTurn = not hostTurn
             elif move['moveType'] == 'cast':
