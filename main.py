@@ -156,7 +156,10 @@ def getKeyOrUdp():
   typeInput = ''
   data = ''
   addr = ''
-  timeEvent = time.time() + 0.01
+  
+  # Note: If timeout is too close to time.time() 
+  #       udp could be lost
+  timeEvent = time.time() + 1
   
   while data == '':
     rightClick = False

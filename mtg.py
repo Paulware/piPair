@@ -325,6 +325,21 @@ def mtgPage():
                opponentIndexes.append (index)
                print ( 'opponentIndexes: ' + str(opponentIndexes) ) 
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+            elif move['moveType'] == 'tap':
+               filename = move['filename']
+               count = 0
+               index = -1 
+               for card in opponenCards: 
+                  if card == filename:
+                     index = count                  
+                  count = count + 1
+               if index == -1: 
+                  print ( 'ERR.Could not find this opponentscard: [' + filename + ']' )
+                  print ( 'Consider now adding it to the list of opponentsCards' )
+               else:
+                  ind = opponentIndexes[index]
+                  allCards[ind]['tapped'] = True 
+                  (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
             move = None
             
          if eventType == pygame.MOUSEBUTTONUP:
@@ -342,7 +357,7 @@ def mtgPage():
                actions.append ( 'discard')
                if selectedCard.find ( '/lands/' ) == -1: # This is not a land 
                   if c.sufficientManaToCast ( manaPool, selectedCard ): 
-                     actions.append ( 'cast' )             
+                     actions.append ( 'cast' )
                else:
                   if not hasPlayedLand: 
                      actions.append ( 'cast' )
@@ -404,6 +419,10 @@ def mtgPage():
                      landType = landType[0:ind]
                      manaPool.append (landType) 
                      print ( 'manaPool is now: ' + str(manaPool ) ) 
+                  #TODO: Add an inplay index to uniquely identify the card tapped   
+                  udpBroadcast ( 'exec:move={\'moveType\':\'tap\',' + \
+                                 '\'filename\':\'' + selectedCard + '\'}') 
+                     
                   # showAllCards()               
                elif action == 'attack': 
                   allCards[index]['tapped'] = True
