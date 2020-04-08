@@ -4,6 +4,7 @@ def mtgPage():
    global joining 
    global move 
    global iAmHost
+   global hostTurn
    global enemyShot
    global shot
    global explosion
@@ -266,7 +267,6 @@ def mtgPage():
    # Draw the entire playing surface with my cards and opponents cards visible   
    def drawBoard(handIndexes, inplayIndexes, hasPlayedLand): 
       global move
-      global hostTurn
       global iAmHost
       global hostTurn
       
