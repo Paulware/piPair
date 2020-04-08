@@ -33,6 +33,18 @@ Currently the games that are supported are:
   </ul>
 </ul>
 
+<h1>Keyboard Logitech K380 Setup</h1>
+<ul>
+   <li>Press and hold yellow key 1 until it blinks</li>
+   <li>Using the bluetooth icon on the raspberry pi bt icon</li>
+     <ul>
+       <li>Turn on bluetooth</li>
+       <li>Make Discoverable</li>
+       <li>Select K380 Keyboard in list of devices</li>
+     </ul>
+     <li>Enter the number in the K380 keyboard as directed by the raspberry pi</li>
+</ul>
+
 <h1>Test Setup</h1>
 <ul>
    <li>Open a line terminal
