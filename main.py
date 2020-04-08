@@ -50,6 +50,7 @@ DISPLAYHEIGHT=600
 UDPPORT = 3333
 configFilename = 'mainConfig.txt'
 rightClick = False
+move = None
 
 # Sleep so that the desktop display can initialize itself
 #time.sleep(15) 
@@ -104,7 +105,7 @@ def blitRotate(image, pos, angle):
     global DISPLAYSURF
     surf = DISPLAYSURF
     
-    # calcaulate the axis aligned bounding box of the rotated image
+    # calculate the axis aligned bounding box of the rotated image
     w, h       = image.get_size()
     originPos  = (w//2,h//2)
     box        = [pygame.math.Vector2(p) for p in [(0, 0), (w, 0), (w, -h), (0, -h)]]
@@ -145,6 +146,8 @@ def showStatus (status):
 def getKeyOrUdp():
   global client 
   global joining 
+  global move
+  global cast
   global rightClick
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }

@@ -76,44 +76,6 @@ def mtgPage():
       hand.append (index)
       return hand
       
-   ''' 
-   pieces = []   
-   
-   pieces = [  #   id,  image,            image,                                          x   y    angle, health 
-                ['white',extractImage ('images/mtgCards.png', 0, 0, 164, 212, 60, 80) ,     (100,100), 45,   100],\
-                ['black',extractImage ('images/mtgCards.png', 168, 428, 340, 605, 60, 80),  (400,400), 135,  100] \
-            ]
-   
-   walls = []
-   
-                pygame.Rect(150,100,30,200), \
-                pygame.Rect(250,300,250,30), \
-           ] 
-   
-   # manaCosts = {
-   
-   # os.chdir('images/mtg/creatures')
-   creaturFilenames = glob.glob('images/mtg/creatures/*.*')
-   creatureFilenames = []
-   for filename in creaturFilenames:
-      filename = filename.replace ( '\\', '/') 
-      creatureFilenames.append (filename)
-      
-   # print ('creatureFilename: ' + str(creatureFilenames)) 
-   count = 0
-   
-   #Note do not run this code as it will overwrite the mana cost
-   f = open ( 'castingCost.py', 'w' )
-   f.write ( 'class castingCost: \n' )
-   f.write ( '   cost = { \\\n' ) 
-   for filename in filenames: 
-      count = count + 1
-      f.write ( '      \'' + filename + '\':\'whiteblackgreenbluered\', \\\n' )
-   f.write ( '   }\n' ) 
-   f.write ( '   def __init__(self):\n' ) 
-   f.write ( '      pass\n' ) 
-   f.close()
-   '''
    c = castingCost.castingCost()
    
    STARTX = 50
@@ -327,7 +289,12 @@ def mtgPage():
       (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn','untap'])
       while not quit:  
          (eventType,data,addr) = getKeyOrUdp()
-
+         if move != None:
+            print ( "Got a move yo" )
+            print ( '  moveType: ' + move['moveType'] )
+            print ( '  filename: ' + move['filename'] )
+            move = None
+            
          if eventType == pygame.MOUSEBUTTONUP:
             (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn', 'untap'])
             print ( 'number of handSprites: ' + str(len(handSprites)) + ', num in play: ' + str(len(inplaySprites)) )
@@ -366,6 +333,9 @@ def mtgPage():
                      hasPlayedLand = True
                   elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
                      modSummoned (index,True) 
+                  udpBroadcast ( 'exec:move={\'moveType\':\'cast\', \
+                                 \'filename\':\'' + selectedCard + '\'}') 
+
             showBoard(['quit'])
 
          # Handle the cards in play             
