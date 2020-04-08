@@ -314,22 +314,23 @@ def mtgPage():
          if move != None:
             print ( "Got a move yo" )
             print ( '  moveType: ' + move['moveType'] )
-            print ( '  filename: ' + move['filename'] )
             if move['moveType'] == 'turndone':
                buttons = ['draw','untap','turndone','quit']
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                hostTurn = not hostTurn
             elif move['moveType'] == 'cast':
                filename = move['filename']
+               print ( '  filename: ' + move['filename'] )
                index = addCard (filename, False, 'opponent', False)
                opponentIndexes.append (index)
                print ( 'opponentIndexes: ' + str(opponentIndexes) ) 
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
             elif move['moveType'] == 'tap':
                filename = move['filename']
+               print ( '  filename: ' + move['filename'] )
                count = 0
                index = -1 
-               for card in opponenCards: 
+               for card in opponentCards: 
                   if card == filename:
                      index = count                  
                   count = count + 1
