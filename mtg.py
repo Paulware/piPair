@@ -368,7 +368,7 @@ def mtgPage():
                   elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
                      modSummoned (index,True) 
                   udpBroadcast ( 'exec:move={\'moveType\':\'cast\',' + \
-                                 'filename\':\'' + selectedCard + '\'}') 
+                                 '\'filename\':\'' + selectedCard + '\'}') 
 
             (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
 
