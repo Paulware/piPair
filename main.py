@@ -494,7 +494,7 @@ def udpBroadcast (message):
              client.sendto(str.encode(message), (UDP_IP, UDPPORT)) #Ethernet   
           except Exception as ex:
              client.sendto(str.encode(message), ('192.168.4.255', UDPPORT)) 
-       #showStatus ( "You sent udp message: [" + message + "]")
+       print ( "You sent udp message: [" + message + "]")
     except Exception as ex:
        print ( "Could not send: [" + message + "] because: " + str(ex))
 
