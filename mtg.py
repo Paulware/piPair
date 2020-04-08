@@ -318,6 +318,10 @@ def mtgPage():
                buttons = ['draw','untap','turndone','quit']
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                hostTurn = not hostTurn
+               hasPlayedLand = False
+               myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)                
+               if not myTurn: 
+                  print ('ERR: Should be my turn, hostTurn is not correct: ' + str(hostTurn) + ' iAmHost: ' + str(iAmHost))               
             elif move['moveType'] == 'cast':
                filename = move['filename']
                print ( '  filename: ' + move['filename'] )
