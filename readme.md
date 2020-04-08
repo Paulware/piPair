@@ -2,7 +2,7 @@
 This project is based on the 10 in Maker Shack laptop: <img src="images/makerShack.jpg"><br>
 But can also be tested on a LAN network with windows pcs.<p>
 The idea is to connect 2 (or more) raspberry pi using the pi's wifi chip and then chat or play games.
-Recommended bluetooth keyboard (Logitech K380):<br>
+<br>Recommended bluetooth keyboard (Logitech K380):<br>
 <img src="images/k380.jpg">
 <p>
 Code is written in python in a module fashion so that students can add more games.<br>
