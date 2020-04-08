@@ -33,7 +33,8 @@ def mtgPage():
       card = {'index':ind, 'iOwnIt':owned, 'filename':filePath, \
               'location':location, 'tapped':tapped, \
               'summoned':False}
-      allCards.append (card) 
+      allCards.append (card)
+      return ind      
    def modCard (index,owned,loc,isTapped): 
       allCards[index]['iOwnIt'] = owned
       allCards[index]['location'] = loc
@@ -318,7 +319,12 @@ def mtgPage():
                buttons = ['done','quit','draw','untap','turndone']
                (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                hostTurn = not hostTurn
-               
+            elif move['moveType'] == 'cast':
+               filename = move['filename']
+               index = addCard (filename, False, 'opponent', False)
+               opponentIndexes.append (index)
+               print ( 'opponentIndexes: ' + str(opponentIndexes) ) 
+               (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
             move = None
             
          if eventType == pygame.MOUSEBUTTONUP:
@@ -361,10 +367,10 @@ def mtgPage():
                      hasPlayedLand = True
                   elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
                      modSummoned (index,True) 
-                  udpBroadcast ( 'exec:move={\'moveType\':\'cast\', \
-                                 \'filename\':\'' + selectedCard + '\'}') 
+                  udpBroadcast ( 'exec:move={\'moveType\':\'cast\',' + \
+                                 'filename\':\'' + selectedCard + '\'}') 
 
-            (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(['quit'])
+            (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
 
          # Handle the cards in play             
          card = getSpriteClick (eventType, data, inplaySprites )         
