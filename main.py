@@ -227,14 +227,14 @@ def getKeyOrUdp():
              data = data.decode();
              addr = str(addr[0])
              if (addr == '192.168.4.1') and (myIpAddress == '127.0.1.1'): 
-                #print ( 'Ignore udp message: [' + data + '] from me' )
+                print ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
                 data = ''
              elif (addr == myIpAddress):
-                #print ( "Ignoring udp message [" + data + "] from me" )
+                print ( "Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
-                #print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress)
-                # showStatus ( "Received udp message [" + data + "]")
+                print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress)
+                print ( "Received udp message [" + data + "]")
                 ind = data.find ( 'exec:')
                 if ind > -1: # joining=, games=, move= 
                    command = data[ind+5:]
@@ -478,9 +478,11 @@ def joinSSID (ssid):
     print ( "Join this ssid yo (reboot may be necessary):" + ssid )   
 
 lastMessage = ""    
+udpCount = 0
 def udpBroadcast (message):
     global client
     global lastMessage
+    global udpCount
     try: 
        UDP_IP = '<broadcast>'
        if message != lastMessage: 
@@ -494,7 +496,8 @@ def udpBroadcast (message):
              client.sendto(str.encode(message), (UDP_IP, UDPPORT)) #Ethernet   
           except Exception as ex:
              client.sendto(str.encode(message), ('192.168.4.255', UDPPORT)) 
-       print ( "You sent udp message: [" + message + "]")
+          udpCount = udpCount + 1
+          print ( "You sent udp message(" + str(udpCount) + ": [" + message + "]")
     except Exception as ex:
        print ( "Could not send: [" + message + "] because: " + str(ex))
 
