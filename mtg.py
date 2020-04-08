@@ -271,6 +271,8 @@ def mtgPage():
       global hostTurn
       
       manaPool = [] 
+      opponentIndexes = []
+      
       def showBoard (actions): 
          pygame.display.set_caption('Click on card to perform action (hand,inplay):')
          DISPLAYSURF.fill((WHITE))
@@ -284,11 +286,16 @@ def mtgPage():
          (images,inplaySprites) = showCards (inplayIndexes, (0, 210), 100)  
          inplay = indexesToFilenames (inplayIndexes)
          print ( 'drawBoard inplay: ' + str(inplay))
+         print ( 'drawBoard.showBoard, draw opponent cards' )
+         (images,opponentSprites) = showCards (opponentIndexes, (0, 360), 100)  
+         opponentCards = indexesToFilenames (opponentIndexes)
+         print ( 'drawBoard opponentCards: ' + str(opponentCards))
          print ( 'Done in drawBoard.showBoard' )
          pygame.draw.line(DISPLAYSURF, RED, (0, 350), (DISPLAYWIDTH, 350))
-         pygame.display.update()        
+         pygame.display.update() 
          
-         return (sprites,hand,handSprites,inplay,inplaySprites)
+         
+         return (sprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites)
          
       quit = False  
       myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)  
@@ -297,19 +304,25 @@ def mtgPage():
       else:   
          buttons = ['quit']
          showStatus ( 'Waiting on other player to finish their turn' )
-      (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+      (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
          
       while not quit:            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()
+         
          if move != None:
             print ( "Got a move yo" )
             print ( '  moveType: ' + move['moveType'] )
             print ( '  filename: ' + move['filename'] )
+            if move['moveType'] == 'turndone':
+               buttons = ['done','quit','draw','untap','turndone']
+               (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+               hostTurn = not hostTurn
+               
             move = None
             
          if eventType == pygame.MOUSEBUTTONUP:
-            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+            (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
             print ( 'number of handSprites: ' + str(len(handSprites)) + ', num in play: ' + str(len(inplaySprites)) )
             print ( 'number in hand: ' + str(len(hand)) ) 
             
@@ -351,7 +364,7 @@ def mtgPage():
                   udpBroadcast ( 'exec:move={\'moveType\':\'cast\', \
                                  \'filename\':\'' + selectedCard + '\'}') 
 
-            showBoard(['quit'])
+            (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(['quit'])
 
          # Handle the cards in play             
          card = getSpriteClick (eventType, data, inplaySprites )         
@@ -389,11 +402,12 @@ def mtgPage():
                elif action == 'attack': 
                   allCards[index]['tapped'] = True
                   
-            showBoard(['quit'])
+            (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(['quit'])
 
          sprite = getSpriteClick (eventType, data, buttonSprites ) 
          if sprite > -1:
             action = buttons[sprite]
+            print ( 'Got a button action of: [' + action + ']' )
             if action == 'quit':
                showStatus ( 'You have elected to quit'  )      
                quit = True
@@ -402,10 +416,11 @@ def mtgPage():
                   showStatus ( 'You must discard a card (maximum hand size == 7)' )
                else:
                   print ( 'Other players turn' )
-                  if iAmHost: 
-                     hostTurn = False
-                  else:
-                     hostTurn = True 
+                  hostTurn = not hostTurn
+                  buttons = ['quit']
+                  showStatus ( 'Waiting on other player to finish their turn' )
+                  (buttonSprites,opponentCards,opponentIndexes,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+                      
                   udpBroadcast ( 'exec:move={\'moveType\':\'turndone\'}') 
 
                '''
@@ -422,12 +437,10 @@ def mtgPage():
                print ( 'Untap all cards yo' )
                for index in inplayIndexes: 
                   allCards[index]['tapped'] = False
-                  manaPool = []
-            
-            
-      return (handIndexes,inplayIndexes,hasPlayedLand)      
+                  manaPool = []    
 
    hostTurn = True # Host gets to move first       
+   myTurn = True
    if iAmHost:
       # Set opponents list of games
       udpBroadcast ( 'exec:games=[\'MTG\']')
@@ -436,6 +449,7 @@ def mtgPage():
    else:
       udpBroadcast ( 'exec:joining=\'MTG\'')
       joining = 'MTG' # Opponent should be waiting
+      myTurn = False
   
    (allCards,creatureIndexes) = c.allCards() # Database of all cards, their filenames, locations, and status    
    card = selectMainCard(creatureIndexes) # Select one card from a deck of cards 
@@ -463,10 +477,13 @@ def mtgPage():
    hand = []
    inPlay = []
    # Deal 7 cards 
-   for i in range(8):
+   for i in range(7):
+      hand = drawCard(hand)
+      
+   if myTurn: 
       hand = drawCard(hand)
    
    hasPlayedLand = False    
-   (hand,inPlay,hasPlayedLand) = drawBoard(hand, inPlay, hasPlayedLand) # Also give options for play
+   drawBoard(hand, inPlay, hasPlayedLand) # Also give options for play
         
 MTG=inspect.getsource(mtgPage)
