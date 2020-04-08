@@ -377,7 +377,7 @@ def mtgPage():
             selectedCard = allCards[index]['filename']
             print ( 'selectedCard: ' + selectedCard ) 
             tapped = allCards[index]['tapped']
-            justSummoned = allCards[index]['summoned'
+            justSummoned = allCards[index]['summoned']
             actions = ['ok']
             if not tapped and not justSummoned:
                actions.append ( 'tap' )

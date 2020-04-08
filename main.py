@@ -52,7 +52,7 @@ configFilename = 'mainConfig.txt'
 rightClick = False
 
 # Sleep so that the desktop display can initialize itself
-time.sleep(15) 
+#time.sleep(15) 
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
 
