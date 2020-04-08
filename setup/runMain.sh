@@ -35,8 +35,8 @@ Description=Start Backdoor
 [Service]
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/pi/.Xauthority
-ExecStart=/bin/bash -c 'cd /boot;/usr/bin/python2.7 sf30Tank.py > /boot/sf30Tank.log 2>&1'
-Restart=always
+ExecStart=/bin/bash -c 'cd /home/pi/piPair;/usr/bin/python3 main.py > /home/pi/piPair/main.log 2>&1'
+Restart=never
 RestartSec=10s
 KillMode=process
 TimeoutSec=infinity

@@ -4,7 +4,7 @@ if [ $(id -u) -ne 0 ]; then echo "You must use sudo: sudo ./all.sh"; exit 1; fi
 cd /home/pi
 echo "Still need to make some modes for all.sh to run properly"
 git clone https://www.github.com/Paulware/piPair
-cd /boot
+cd /home/pi/piPair/setup
 apt-get update
 ./ssh.sh
 ./keyboard.sh

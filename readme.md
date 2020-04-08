@@ -1,7 +1,9 @@
 <h1>Raspberry Pi Pairing project</h1>
-This project is based on the 10 in Maker Shack laptop: <img src="makerShack.jpg"><br>
+This project is based on the 10 in Maker Shack laptop: <img src="images/makerShack.jpg"><br>
 But can also be tested on a LAN network with windows pcs.<p>
 The idea is to connect 2 (or more) raspberry pi using the pi's wifi chip and then chat or play games.
+Note: This keyboard (Logitech K380) works well with the system:<br>
+<img src="images/k380.jpg">
 <p>
 Code is written in python in a module fashion so that students can add more games.<br>
 Currently the games that are supported are:

@@ -5,9 +5,12 @@ class castingCost:
       'images/mtg/creatures/agentSmith.jpg':{'toCast':['4','black','black']}, \
       'images/mtg/creatures/alGore.jpg':{'toCast':['green','green']}, \
       'images/mtg/creatures/americanEagle.jpg':{'toCast':['3','white','blue','red']}, \
+      'images/mtg/creatures/android17.png':{'toCast':['2','red','red']}, \
+      'images/mtg/creatures/android18.png':{'toCast':['2','white','red']}, \
       'images/mtg/creatures/annoyingOrange.jpg':{'toCast':['green','blue','red']}, \
       'images/mtg/creatures/arbalestElite.jpg':{'toCast':['2','white','white']}, \
       'images/mtg/creatures/arrgh.jpg':{'toCast':['black','black','black']}, \
+      'images/mtg/creatures/arthurKingOfTheBritains.jpg':{'toCast':['3','white','white']}, \
       'images/mtg/creatures/barackHObama.jpg':{'toCast':['1','red']}, \
       'images/mtg/creatures/barackObama.jpg':{'toCast':[['green','blue'],['green','blue'],['green','blue'],['white','blue'],['white','blue'],['white','blue']]}, \
       'images/mtg/creatures/barackObamaII.jpg':{'toCast':['3','black']}, \
@@ -25,6 +28,7 @@ class castingCost:
       'images/mtg/creatures/bruceLee.jpg':{'toCast':['white','black','green','blue','red']}, \
       'images/mtg/creatures/burninator.jpg':{'toCast':['9','red']}, \
       'images/mtg/creatures/cantinaBand.jpg':{'toCast':['white']}, \
+      'images/mtg/creatures/captainAmerica.jfif':{'toCast':['2','white','blue','red']}, \
       'images/mtg/creatures/charlesXavier.jpg':{'toCast':['2','white','blue','blue']}, \
       'images/mtg/creatures/cheatyFace.jpg':{'toCast':['blue','blue']}, \
       'images/mtg/creatures/chivalrousChevalier.jpg':{'toCast':['4','white']}, \
@@ -32,6 +36,7 @@ class castingCost:
       'images/mtg/creatures/conanTheBarbarian.png':{'toCast':['2','red','red']}, \
       'images/mtg/creatures/conanTheLibrarian.png':{'toCast':['4','red','red']}, \
       'images/mtg/creatures/countTyroneRugen.jpg':{'toCast':['black','black','red']}, \
+      'images/mtg/creatures/cowardlyLion.png':{'toCast':['green']}, \
       'images/mtg/creatures/daenerysStormborn.jpg':{'toCast':['1','white','black','green','red']}, \
       'images/mtg/creatures/darthSidious.jpg':{'toCast':['4','black','blue','red']}, \
       'images/mtg/creatures/darthVader.jpg':{'toCast':['5','black','black','black','black','black']}, \
@@ -44,12 +49,14 @@ class castingCost:
       'images/mtg/creatures/dickJones.png':{'toCast':['3','black','black']}, \
       'images/mtg/creatures/doctorEmmettBrown.jpg':{'toCast':['2','blue','blue']}, \
       'images/mtg/creatures/doge.jpg':{'toCast':['1']}, \
+      'images/mtg/creatures/donkeyKong.png':{'toCast':['5','green','red']}, \
       'images/mtg/creatures/drHouse.jpg':{'toCast':['5','white','white','white']}, \
       'images/mtg/creatures/drStrange.jpg':{'toCast':['1','white','black','blue']}, \
       'images/mtg/creatures/earlOfSquirrel.jpg':{'toCast':['4','green','green']}, \
       'images/mtg/creatures/extremelySlowZombie.jpg':{'toCast':['1','black']}, \
       # Add tap, creature gains flying and is destroyed at end of turn (Fezzik)
       'images/mtg/creatures/fezzikTheKindlyGiant.jpg':{'toCast':['1','white','green','red']}, \
+      'images/mtg/creatures/frieza.jpg':{'toCast':['black','blue','blue']}, \
       'images/mtg/creatures/galactus.jpg':{'toCast':['10']}, \
       'images/mtg/creatures/gameStoreEmployee.jpg':{'toCast':['blue','blue']}, \
       'images/mtg/creatures/gandalf.png':{'toCast':['2','white','blue']}, \
@@ -58,11 +65,13 @@ class castingCost:
       'images/mtg/creatures/georgeMcfly.jpg':{'toCast':['1','white','blue']}, \
       'images/mtg/creatures/georgeWBush.jpg':{'toCast':['red']}, \
       'images/mtg/creatures/god.png':{'toCast':['white','black','green','blue','red']}, \
+      'images/mtg/creatures/godzilla.jpg':{'toCast':['5','green','blue','red']}, \
       'images/mtg/creatures/gordonRamsey.jpg':{'toCast':['3','red']}, \
       'images/mtg/creatures/hangman.jpg':{'toCast':['black']}, \
       'images/mtg/creatures/hanSolo.jpg':{'toCast':['3','white']}, \
       'images/mtg/creatures/hela.png':{'toCast':['4',['black','red'],'green']}, \
       'images/mtg/creatures/hillaryClinton.jpeg':{'toCast':['2','white','red']}, \
+      'images/mtg/creatures/hirohito.png':{'toCast':['3','red','white']}, \
       'images/mtg/creatures/hitler.jpg':{'toCast':['black','black','black','black']}, \
       'images/mtg/creatures/hulk.png':{'toCast':['green','green','green','green','green','green']}, \
       'images/mtg/creatures/iKnowKungFu.jpg':{'toCast':['3','green']}, \
@@ -84,6 +93,7 @@ class castingCost:
       'images/mtg/creatures/joshLane.jpg':{'toCast':['white','black','green','blue','red']}, \
       'images/mtg/creatures/kanyeWest.png':{'toCast':['black']}, \
       'images/mtg/creatures/killerBunny.jpg':{'toCast':['white']}, \
+      'images/mtg/creatures/kingKong.jpg':{'toCast':['3','green']}, \
       'images/mtg/creatures/kittyPryde.jpg':{'toCast':['2','white','blue']}, \
       'images/mtg/creatures/koolAidMan.jpg':{'toCast':['2','red','red']}, \
       'images/mtg/creatures/krillin.jpg':{'toCast':['white']}, \
@@ -92,6 +102,7 @@ class castingCost:
       'images/mtg/creatures/lordVoldemort.jpg':{'toCast':['3','black','black','black']}, \
       'images/mtg/creatures/magneto.jpg':{'toCast':['3','black','blue','red']}, \
       'images/mtg/creatures/mario.jpg':{'toCast':['3','red','red']}, \
+      'images/mtg/creatures/masterChief.png':{'toCast':['2','black','red']}, \
       'images/mtg/creatures/martyMcFly.jpg':{'toCast':['2','white','red']}, \
       'images/mtg/creatures/memePirate.jpeg':{'toCast':['2','blue','red']}, \
       'images/mtg/creatures/miracleMax.jpg':{'toCast':['white','blue']}, \
@@ -108,10 +119,12 @@ class castingCost:
       'images/mtg/creatures/peasants.png':{'toCast':['1','white','green']}, \
       'images/mtg/creatures/peeweeHerman.jpg':{'toCast':['1','white','red']}, \
       'images/mtg/creatures/pepe.jpg':{'toCast':['black']}, \
+      'images/mtg/creatures/pikachu.png':{'toCast':[['blue','red'], ['blue','red']]}, \
       'images/mtg/creatures/pizzaTheHutt.jpg':{'toCast':['3','black','green']}, \
       'images/mtg/creatures/princeHumperdinck.jpg':{'toCast':['3','black','black']}, \
       'images/mtg/creatures/princessButtercup.jpg':{'toCast':['white','white','green','green']}, \
       'images/mtg/creatures/princessLeia.jpg':{'toCast':['3','white','green','blue']}, \
+      'images/mtg/creatures/raichu.jpg':{'toCast':['4','white','red']}, \
       'images/mtg/creatures/ragePlayer.jpeg':{'toCast':['red','red','red']}, \
       'images/mtg/creatures/ralphNader.jpg':{'toCast':['black','green']}, \
       'images/mtg/creatures/redForman.jpg':{'toCast':['red','red',]}, \
@@ -129,14 +142,17 @@ class castingCost:
       'images/mtg/creatures/silverSurfer.png':{'toCast':['1','white','black','green','blue','red']}, \
       'images/mtg/creatures/sirBedevere.jpg':{'toCast':['white','blue']}, \
       'images/mtg/creatures/sirRobin.png':{'toCast':['white','blue']}, \
+      'images/mtg/creatures/spaceMarineCaptain.png':{'toCast':['3','white','red']}, \
       'images/mtg/creatures/spiderman.jpg':{'toCast':['2',['blue','red'],['blue','red']]}, \
       'images/mtg/creatures/spidermanII.png':{'toCast':['3','blue','red']}, \
       'images/mtg/creatures/spock.png':{'toCast':['2','white','blue']}, \
       'images/mtg/creatures/steveAustin.png':{'toCast':['1','white','black','red']}, \
+      'images/mtg/creatures/stevenRogers.jpg':{'toCast':['1','white','white','white']}, \
       'images/mtg/creatures/superBattleDroid.jpg':{'toCast':['5','blue']}, \
       'images/mtg/creatures/superman.gif':{'toCast':['3','blue','blue']}, \
       'images/mtg/creatures/supermanII.jpg':{'toCast':['2','white','white','white','white']}, \
       'images/mtg/creatures/t34Tank.jpg':{'toCast':['2','red']}, \
+      'images/mtg/creatures/thanos.jpg':{'toCast':['5','black','black']}, \
       'images/mtg/creatures/theCollector.jpeg':{'toCast':['1','green','green']}, \
       'images/mtg/creatures/theJoker.jpg':{'toCast':[['black','red'],['black','red'], ['black','red'], ['black','red']]}, \
       'images/mtg/creatures/theOracle.jpg':{'toCast':['1','blue','blue']}, \
@@ -146,15 +162,18 @@ class castingCost:
       'images/mtg/creatures/thorSonOfOdin.png':{'toCast':['4','white','green']}, \
       'images/mtg/creatures/timmyPowerGamer.jpg':{'toCast':['2','green','green']}, \
       'images/mtg/creatures/tigerTank.png':{'toCast':['8']}, \
+      'images/mtg/creatures/tinman.png':{'toCast':['3']}, \
       'images/mtg/creatures/toughNerd.jpeg':{'toCast':['2','red','red','red']}, \
       'images/mtg/creatures/tournamentGrinder.jpg':{'toCast':['2','black','black']}, \
       'images/mtg/creatures/tribble.png':{'toCast':['1','white']}, \
       'images/mtg/creatures/trooperCommander.jpg':{'toCast':['2','green']}, \
       'images/mtg/creatures/trump.jpg':{'toCast':['1','white','blue','red']}, \
       'images/mtg/creatures/unwillingVolunteer.jpg':{'toCast':['1','green']}, \
+      'images/mtg/creatures/vegeta.png':{'toCast':['black','green','red']}, \
       'images/mtg/creatures/vespaDruishPrincess.jpg':{'toCast':['green','green']}, \
       'images/mtg/creatures/vizziniSicilianMastermind.jpg':{'toCast':['black','blue','red']}, \
       'images/mtg/creatures/wallOfTrump.png':{'toCast':['white','white','blue','blue']}, \
+      'images/mtg/creatures/warriorBug.png':{'toCast':['1','green','red']}, \
       'images/mtg/creatures/weepingStatue.jpg':{'toCast':['4']}, \
       'images/mtg/creatures/westleyMasterofEverything.jpg':{'toCast':['green','blue','red']}, \
       'images/mtg/creatures/youngChild.jpeg':{'toCast':['white']} \
@@ -255,11 +274,12 @@ class castingCost:
       for key in self.cost:
          if self.baseCost(key) == casting: 
             matches.append (key) 
-         #Check if match on single color
-         for mono in casting: 
-            if self.baseCost(key) == [mono]:
-               matches.append (key)
-               break
+         else:
+            #Check if match on single color
+            for mono in casting: 
+               if self.baseCost(key) == [mono]:
+                  matches.append (key)
+                  break
 
       return matches
       
@@ -274,8 +294,7 @@ class castingCost:
          # For each creature 
          deck.append ( creatures[count] ) 
          count = count + 1
-         if count == len(creatures):
-            count = 0
+         count = count % len(creatures)
             
       # Add Lands      
       maxLands = 20 

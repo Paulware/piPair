@@ -37,8 +37,6 @@ def mtgPage():
       allCards[index]['iOwnIt'] = owned
       allCards[index]['location'] = loc
       allCards[index]['tapped'] = isTapped
-   def modTapped (index,tapped): 
-      allCards[index]['tapped'] = tapped
    def modSummoned (index,summoned): 
       allCards[index]['summoned'] = summoned
    def showAllCards():
@@ -64,8 +62,9 @@ def mtgPage():
          msg = msg + location + ',filename:' + filename + '}'
          msg = msg + ', cost=' + str(c.totalManaCost ( filename )) 
          print (msg)
-      
+   # Modify the list of indexes related to cards in the hand   
    def drawCard(hand):
+      # Make a list of all items in the draw deck (library)
       libraryList = [] 
       for card in allCards:
          location = card['location']
@@ -203,7 +202,7 @@ def mtgPage():
                   
       joinTimeout = 0   
       drawDeckCards()
-      quit = False        
+      quit = False
       while True:  
          (eventType,data,addr) = getKeyOrUdp()
          '''      
@@ -213,7 +212,7 @@ def mtgPage():
                udpBroadcast ( 'exec:games=[\'MTG\']') 
          '''                                  
          card = getSpriteClick (eventType, data, cards ) 
-         if card != -1: 
+         if card != -1:
             filename = allCards[card]['filename']
             actions = ['ok','select']            
             action = getSingleCardAction ( filename, 'View card', actions)  
@@ -305,32 +304,38 @@ def mtgPage():
    # Draw the entire playing surface with my cards and opponents cards visible   
    def drawBoard(handIndexes, inplayIndexes, hasPlayedLand): 
       manaPool = [] 
-      hand = indexesToFilenames (handIndexes)
-      print ( 'drawBoard hand: ' + str(hand))
-      inplay = indexesToFilenames (inplayIndexes)
-      print ( 'drawBoard inplay: ' + str(inplay))
       def showBoard (actions): 
          pygame.display.set_caption('Click on card to perform action (hand,inplay):')
          DISPLAYSURF.fill((WHITE))
          (filenames,locations) = actionsToIcons (actions) 
          (images,sprites) = showImages (filenames, locations )
          print ( 'drawBoard.showBoard, draw cards in hand' )         
-         (images,handSprites) = showCards (handIndexes, (0,90), 100 )
+         (images,handSprites) = showCards (handIndexes, (0,70), 100 )
+         hand = indexesToFilenames (handIndexes)
+         print ( 'drawBoard hand: ' + str(hand))
          print ( 'drawBoard.showBoard, draw cards in play' )
-         (images,inplaySprites) = showCards (inplayIndexes, (0, 250), 100)  
+         (images,inplaySprites) = showCards (inplayIndexes, (0, 210), 100)  
+         inplay = indexesToFilenames (inplayIndexes)
+         print ( 'drawBoard inplay: ' + str(inplay))
          print ( 'Done in drawBoard.showBoard' )
-         return (sprites,handSprites,inplaySprites)
+         pygame.draw.line(DISPLAYSURF, RED, (0, 350), (DISPLAYWIDTH, 350))
+         pygame.display.update()        
+         
+         return (sprites,hand,handSprites,inplay,inplaySprites)
          
       quit = False   
-      (buttonSprites,handSprites,inplaySprites) = showBoard(['done','quit','draw','nextturn', 'untap'])
+      (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn','untap'])
       while not quit:  
          (eventType,data,addr) = getKeyOrUdp()
 
          if eventType == pygame.MOUSEBUTTONUP:
-            (buttonSprites,handSprites,inplaySprites) = showBoard(['done','quit','draw','nextturn', 'untap'])
+            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn', 'untap'])
+            print ( 'number of handSprites: ' + str(len(handSprites)) + ', num in play: ' + str(len(inplaySprites)) )
+            print ( 'number in hand: ' + str(len(hand)) ) 
             
+         # Handle the cards in the hand   
          card = getSpriteClick (eventType, data, handSprites)         
-         if card != -1: # show the card in hand
+         if card != -1:
             selectedCard = hand[card]
             # Show card and get action
             actions = ['discard', 'ok']
@@ -352,17 +357,18 @@ def mtgPage():
                   if len(hand) <= 7: 
                      showStatus ( "Your turn is over due to discard" )
                      quit = True 
-               elif action == 'cast':
+               elif action == 'cast':                  
                   crd = handIndexes.pop(card)
-                  hand.remove (selectedCard)
+                  hand.pop (card) 
+                  # hand.remove (selectedCard)
                   inplayIndexes.append (crd) 
                   if selectedCard.find ( '/lands/' ) > -1: # This is a land 
-                     hasPlayedLand = False #True
+                     hasPlayedLand = True
                   elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
                      modSummoned (index,True) 
-                  
             showBoard(['quit'])
-               
+
+         # Handle the cards in play             
          card = getSpriteClick (eventType, data, inplaySprites )         
          if card != -1: # show the card in play
             # Show card and get action 
@@ -372,18 +378,19 @@ def mtgPage():
             print ( 'selectedCard: ' + selectedCard ) 
             tapped = allCards[index]['tapped']
             actions = ['ok']
-            if not tapped:             
+            if not tapped:
                actions.append ( 'tap' )
             print ( 'Get summoned property from allcards[' + str(index) + ']' )               
-            if not allCards[index]['summoned']: 
-               actions.append ( 'attack' )             
+            if not allCards[index]['summoned'] and not allCards[index]['tapped']: 
+               if selectedCard.find ('/creatures/') > -1: 
+                  actions.append ( 'attack' )
                
             action = getSingleCardAction (selectedCard,'Select an action',actions)  
             if action != '':
                print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
                if action == 'tap': 
-                  print ( 'Tapping card yo' )
-                  modTapped (index, True )
+                  print ( 'Tapping card ' + str(index) )
+                  allCards[index]['tapped'] = True                  
                   ind = selectedCard.find ( '/lands/' )
                   if ind > -1: 
                      landType = selectedCard[ind+7:]
@@ -391,8 +398,10 @@ def mtgPage():
                      landType = landType[0:ind]
                      manaPool.append (landType) 
                      print ( 'manaPool is now: ' + str(manaPool ) ) 
-                  # showAllCards()
-               
+                  # showAllCards()               
+               elif action == 'attack': 
+                  allCards[index]['tapped'] = True
+                  
             showBoard(['quit'])
 
          sprite = getSpriteClick (eventType, data, buttonSprites ) 
@@ -407,10 +416,19 @@ def mtgPage():
                quit = True
          elif sprite == 2: #draw  
             print ( 'Draw a card yo' )
+            handIndexes = drawCard(handIndexes)            
          elif sprite == 3: #next turn 
             print ( 'Take another turn yo' )
+            hasPlayedLand = False              
+            for index in inplayIndexes: 
+               allCards[index]['summoned'] = False 
+               print ( 'next turn, allCards[' + str(index) + '][summoned] == False' )
          elif sprite == 4: # untap
             print ( 'Untap all cards yo' )
+            for index in inplayIndexes: 
+               allCards[index]['tapped'] = False
+               manaPool = []
+            
             
       return (handIndexes,inplayIndexes,hasPlayedLand)      
                
