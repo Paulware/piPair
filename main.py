@@ -630,6 +630,8 @@ def hostPage (showOnly=False):
 # Note: reboot may be necessary    
 def joinPage(showOnly=False):       
     global iAmHost
+    global games
+    games = []
     f = open ( configFilename, 'w')
     f.write ( 'client\n' )
     f.close()

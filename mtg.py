@@ -205,12 +205,12 @@ def mtgPage():
       quit = False
       while True:  
          (eventType,data,addr) = getKeyOrUdp()
-         '''      
+               
          if joining != 'MTG':
             if time.time() > joinTimeout: 
                joinTimeout = time.time() + 1
                udpBroadcast ( 'exec:games=[\'MTG\']') 
-         '''                                  
+                                           
          card = getSpriteClick (eventType, data, cards ) 
          if card != -1:
             filename = allCards[card]['filename']
