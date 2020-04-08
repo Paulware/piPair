@@ -265,6 +265,10 @@ def mtgPage():
       
    # Draw the entire playing surface with my cards and opponents cards visible   
    def drawBoard(handIndexes, inplayIndexes, hasPlayedLand): 
+      global move
+      global hostTurn
+      global iAmHost
+      
       manaPool = [] 
       def showBoard (actions): 
          pygame.display.set_caption('Click on card to perform action (hand,inplay):')
@@ -286,8 +290,16 @@ def mtgPage():
          return (sprites,hand,handSprites,inplay,inplaySprites)
          
       quit = False   
-      (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn','untap'])
-      while not quit:  
+      myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)  
+      if myTurn:
+         buttons = ['done','quit','draw','untap','turndone']
+      else:   
+         buttons = ['quit']
+         showStatus ( 'Waiting on other player to finish their turn' )
+      (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+         
+      while not quit:            
+         myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()
          if move != None:
             print ( "Got a move yo" )
@@ -296,7 +308,7 @@ def mtgPage():
             move = None
             
          if eventType == pygame.MOUSEBUTTONUP:
-            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','nextturn', 'untap'])
+            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','untap', 'turndone'])
             print ( 'number of handSprites: ' + str(len(handSprites)) + ', num in play: ' + str(len(inplaySprites)) )
             print ( 'number in hand: ' + str(len(hand)) ) 
             
@@ -305,17 +317,19 @@ def mtgPage():
          if card != -1:
             selectedCard = hand[card]
             # Show card and get action
-            actions = ['discard', 'ok']
-            if selectedCard.find ( '/lands/' ) == -1: # This is not a land 
-               if c.sufficientManaToCast ( manaPool, selectedCard ): 
-                  actions.append ( 'cast' )             
-            else:
-               if not hasPlayedLand: 
-                  actions.append ( 'cast' )
+            actions = ['ok']
+            if myTurn: 
+               actions.append ( 'discard')
+               if selectedCard.find ( '/lands/' ) == -1: # This is not a land 
+                  if c.sufficientManaToCast ( manaPool, selectedCard ): 
+                     actions.append ( 'cast' )             
+               else:
+                  if not hasPlayedLand: 
+                     actions.append ( 'cast' )
             action = getSingleCardAction ( selectedCard, 'Select an action', actions)  
             if action != '':
                index = handIndexes[card]            
-               print ( 'Perform action: (only action should be play/discard)  [' + action + '] on card: ' + selectedCard )     
+               print ( 'Perform action: [' + action + '] on card: ' + selectedCard )     
                if action == 'discard': 
                   print ( 'Pop card: ' + str(card) + ' len(handIndexes: ' + str(len(handIndexes)) )
                   handIndexes.pop(card)
@@ -349,12 +363,13 @@ def mtgPage():
             tapped = allCards[index]['tapped']
             justSummoned = allCards[index]['summoned']
             actions = ['ok']
-            if not tapped and not justSummoned:
-               actions.append ( 'tap' )
-            print ( 'Get summoned property from allcards[' + str(index) + ']' )               
-            if not tapped and not justSummoned: 
-               if selectedCard.find ('/creatures/') > -1: 
-                  actions.append ( 'attack' )
+            if myTurn: 
+               if not tapped and not justSummoned:
+                  actions.append ( 'tap' )
+               print ( 'Get summoned property from allcards[' + str(index) + ']' )               
+               if not tapped and not justSummoned: 
+                  if selectedCard.find ('/creatures/') > -1: 
+                     actions.append ( 'attack' )
                
             action = getSingleCardAction (selectedCard,'Select an action',actions)  
             if action != '':
@@ -376,44 +391,48 @@ def mtgPage():
             showBoard(['quit'])
 
          sprite = getSpriteClick (eventType, data, buttonSprites ) 
-         # 'done', 'quit', 'draw', 'nextturn'
-         if sprite == 1:
-            showStatus ( 'You have elected to quit'  )      
-            quit = True
-         elif sprite == 0: #done 
-            if len(hand) > 7: 
-               showStatus ( 'You must discard a card (maximum hand size == 7)' )
-            else:
+         if sprite > -1:
+            action = buttons[sprite]
+            if action == 'quit':
+               showStatus ( 'You have elected to quit'  )      
                quit = True
-         elif sprite == 2: #draw  
-            print ( 'Draw a card yo' )
-            handIndexes = drawCard(handIndexes)            
-         elif sprite == 3: #next turn 
-            print ( 'Take another turn yo' )
-            hasPlayedLand = False              
-            for index in inplayIndexes: 
-               allCards[index]['summoned'] = False 
-               print ( 'next turn, allCards[' + str(index) + '][summoned] == False' )
-         elif sprite == 4: # untap
-            print ( 'Untap all cards yo' )
-            for index in inplayIndexes: 
-               allCards[index]['tapped'] = False
-               manaPool = []
+            elif action == 'turndone':
+               if len(hand) > 7: 
+                  showStatus ( 'You must discard a card (maximum hand size == 7)' )
+               else:
+                  print ( 'Other players turn' )
+                  if iAmHost: 
+                     hostTurn = False
+                  else:
+                     hostTurn = True
+               '''
+               #TODO: when other player finished their turn                
+               hasPlayedLand = False              
+               for index in inplayIndexes: 
+                  allCards[index]['summoned'] = False 
+                  print ( 'next turn, allCards[' + str(index) + '][summoned] == False' )          
+               '''                  
+            elif action == 'draw':  
+               print ( 'Draw a card yo' )
+               handIndexes = drawCard(handIndexes)                                      
+            elif action == 'untap':
+               print ( 'Untap all cards yo' )
+               for index in inplayIndexes: 
+                  allCards[index]['tapped'] = False
+                  manaPool = []
             
             
       return (handIndexes,inplayIndexes,hasPlayedLand)      
-               
+
+   hostTurn = True # Host gets to move first       
    if iAmHost:
       # Set opponents list of games
       udpBroadcast ( 'exec:games=[\'MTG\']')
       joining = ''
       playerJoined = False
-      myTurn = True
    else:
       udpBroadcast ( 'exec:joining=\'MTG\'')
       joining = 'MTG' # Opponent should be waiting
-      move = None
-      myTurn = False          
   
    (allCards,creatureIndexes) = c.allCards() # Database of all cards, their filenames, locations, and status    
    card = selectMainCard(creatureIndexes) # Select one card from a deck of cards 
