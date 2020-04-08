@@ -290,7 +290,7 @@ def mtgPage():
          
          return (sprites,hand,handSprites,inplay,inplaySprites)
          
-      quit = False   
+      quit = False  
       myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)  
       if myTurn:
          buttons = ['done','quit','draw','untap','turndone']
@@ -309,7 +309,7 @@ def mtgPage():
             move = None
             
          if eventType == pygame.MOUSEBUTTONUP:
-            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(['done','quit','draw','untap', 'turndone'])
+            (buttonSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
             print ( 'number of handSprites: ' + str(len(handSprites)) + ', num in play: ' + str(len(inplaySprites)) )
             print ( 'number in hand: ' + str(len(hand)) ) 
             
@@ -406,6 +406,8 @@ def mtgPage():
                      hostTurn = False
                   else:
                      hostTurn = True 
+                  udpBroadcast ( 'exec:move={\'moveType\':\'turndone\'}') 
+
                '''
                #TODO: when other player finished their turn                
                hasPlayedLand = False              
