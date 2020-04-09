@@ -1,6 +1,8 @@
 echo "Run all scripts to configure the pi"0
 if [ $(id -u) -ne 0 ]; then echo "You must use sudo: sudo ./all.sh"; exit 1; fi
 cd /home/pi
+cp /boot/setup/runPython.sh /home/pi/Desktop/runPython.sh
+chmod 777 /home/pi/Desktop/runPython.sh
 git clone https://www.github.com/Paulware/piPair
 cd /home/pi/piPair
 chmod 777 *.*

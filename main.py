@@ -15,11 +15,13 @@ import tictactoe
 import chess
 import tank
 import mtg
+import diplomacy
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
 exec (tank.TANK)
 exec (mtg.MTG)
+exec (diplomacy.DIPLOMACY)
 
 
 WHITE      = (255, 255, 255)
@@ -42,7 +44,7 @@ tcpConnection = None
 client = None
 
 games = [] 
-gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG']
+gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG', 'Diplomacy']
 iAmHost = False
 joining = ''
 DISPLAYWIDTH=800
@@ -51,12 +53,13 @@ UDPPORT = 3333
 configFilename = 'mainConfig.txt'
 rightClick = False
 move = None
+udpCounter = 0
 
 # Sleep so that the desktop display can initialize itself
 #time.sleep(15) 
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
-
+statusMessage = ""
 
 # Read configuration data
 try: 
@@ -136,19 +139,21 @@ def blitRotate(image, pos, angle):
     # pygame.draw.rect (surf, (255, 0, 0), (*origin, *rotated_image.get_size()),2)  
 
 def showStatus (status):
-    height = DISPLAYHEIGHT - 23
-    pygame.draw.line(DISPLAYSURF, RED, (0, height), (DISPLAYWIDTH, height)) #status line
-    pygame.draw.rect(DISPLAYSURF, BLACK, (0,height+2,DISPLAYWIDTH,25))    
-    # pygame.display.flip()
-    showLine (status, 1, height+4)
-    print (status)
+    global statusMessage
+    statusMessage = status 
+    print ( 'showStatus(' + statusMessage + ')' )
 
+lastUdpCount = -1
+resync = -1
 def getKeyOrUdp():
   global client 
   global joining 
   global move
   global cast
   global rightClick
+  global lastUdpCount
+  global resync
+  
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
   key = None
@@ -216,8 +221,9 @@ def getKeyOrUdp():
           data = pygame.mouse.get_pos()
           typeInput = pygame.MOUSEMOTION
           addr = 'mouse'
-       else:
-          print ( 'Got a event: ' + str(event.type)) 
+       #   
+       #else:
+       #   print ( 'Got a event: ' + str(event.type)) 
              
     if data == '':
        if tcpConnection != None: 
@@ -239,15 +245,27 @@ def getKeyOrUdp():
                 print ( "Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
-                print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress)
-                print ( "Received udp message [" + data + "]")
-                ind = data.find ( 'exec:')
-                if ind > -1: # joining=, games=, move= 
-                   command = data[ind+5:]
-                   #showStatus ("Executing command: [" + command + "]")
-                   exec (command, globals()) 
+                print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress + ' data: [' + data + ']')
+                ind = data.find ( ':' )
+                udpCount = int(data[0:ind])
+                if (lastUdpCount + 1) != udpCount: 
+                   print ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
+                   resync = lastUdpCount + 1
+                   data = ''
+                else:
+                   resync = -1
+                   print ( 'Good (no resync) [' + str(lastUdpCount) + ',' + str(udpCount) + ']' )
+                   lastUdpCount = udpCount               
+                   data = data[(ind+1):]
+                   print ( "Received udp message [" + str(udpCount) + "] with data: [" + data + "]")
+                   
+                   ind = data.find ( 'exec:')
+                   if ind > -1: # joining=, games=, move= 
+                      command = data[ind+5:]
+                      #showStatus ("Executing command: [" + command + "]")
+                      exec (command, globals())
+                typeInput = 'udp'                         
                 
-             typeInput = 'udp'   
           elif s == tcpConnection: 
              data, addr = tcpConnection.recvfrom (1024)
              data = data.decode();
@@ -400,6 +418,18 @@ def showLabels (labels, locations):
         i = i + 1
     return sprites
     
+def actionsToIcons (actions): 
+    filenames = []
+    locations = []
+    x = 50 
+    y = 10
+    for action in actions:
+       filenames.append ( 'images/' + action + '.jpg' )
+       locations.append ( (x,y) ) 
+       x = x + 110
+    return (filenames,locations)
+    
+    
 def showImages (filenames,locations):
     images = [] 
     try:
@@ -485,28 +515,45 @@ def joinSSID (ssid):
 
 lastMessage = ""    
 udpCount = 0
+udpMessages = [] 
+
+def resyncMessages (which): 
+   global client
+   redo = udpMessages [which:]
+   
+   for message in redo: 
+      try: 
+         print ( 'resync/resend: [' + message + ']' )
+         client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+      except Exception as ex:
+         print ( "Could not re-broadcast: [" + message + "] because: " + str(ex))
+         
 def udpBroadcast (message):
     global client
     global lastMessage
     global udpCount
+    global udpMessages
+    
     try: 
        UDP_IP = '<broadcast>'
-       if message != lastMessage: 
-          print ("broadcast message:", message)
-          lastMessage = message
+       #if message != lastMessage: 
+       #   print ("broadcast message:", message)
+       #   lastMessage = message
        # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
        if client == None:
           print ("client udp network not set yet" )
        else:
-          try: 
-             client.sendto(str.encode(message), (UDP_IP, UDPPORT)) #Ethernet   
-          except Exception as ex:
-             client.sendto(str.encode(message), ('192.168.4.255', UDPPORT)) 
-          udpCount = udpCount + 1
-          print ( "You sent udp message(" + str(udpCount) + ": [" + message + "]")
+          #try: 
+          #   client.sendto(str.encode(message), (UDP_IP, UDPPORT)) #Ethernet   
+          #except Exception as ex:
+          message = str(len(udpMessages)) + ':' + message
+          client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+          udpMessages.append (message) 
+                   
     except Exception as ex:
        print ( "Could not send: [" + message + "] because: " + str(ex))
-
+       
+       
 def readLines (filename, match):
     found = False
     lines = []
