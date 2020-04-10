@@ -154,31 +154,32 @@ class castingCost:
       'images/mtg/creatures/superman.gif':{'power':3, 'toughness':3,'toCast':['3','blue','blue']}, \
       'images/mtg/creatures/supermanII.jpg':{'power':6, 'toughness':6,'toCast':['2','white','white','white','white']}, \
       'images/mtg/creatures/t34Tank.jpg':{'power':3, 'toughness':3,'toCast':['2','red']}, \
-      'images/mtg/creatures/thanos.jpg':{'power':3, 'toughness':3,'toCast':['5','black','black']}, \
-      'images/mtg/creatures/theCollector.jpeg':{'power':3, 'toughness':3,'toCast':['1','green','green']}, \
-      'images/mtg/creatures/theJoker.jpg':{'power':3, 'toughness':3,'toCast':[['black','red'],['black','red'], ['black','red'], ['black','red']]}, \
-      'images/mtg/creatures/theOracle.jpg':{'power':3, 'toughness':3,'toCast':['1','blue','blue']}, \
+      'images/mtg/creatures/thanos.jpg':{'power':9, 'toughness':9,'toCast':['5','black','black']}, \
+      'images/mtg/creatures/theCollector.jpeg':{'power':2, 'toughness':3,'toCast':['1','green','green']}, \
+      'images/mtg/creatures/theJoker.jpg':{'power':2, 'toughness':4,'toCast':[['black','red'],['black','red'], ['black','red'], ['black','red']]}, \
+      'images/mtg/creatures/theOracle.jpg':{'power':0, 'toughness':3,'toCast':['1','blue','blue']}, \
       'images/mtg/creatures/theSilence.jpg':{'power':3, 'toughness':3,'toCast':['4','black']}, \
-      'images/mtg/creatures/thor.jpg':{'power':3, 'toughness':3,'toCast':['2','white','blue','red']}, \
-      'images/mtg/creatures/thorGodOfThunder.png':{'power':3, 'toughness':3,'toCast':['6',['blue','red'],['blue','red']]}, \
-      'images/mtg/creatures/thorSonOfOdin.png':{'power':3, 'toughness':3,'toCast':['4','white','green']}, \
-      'images/mtg/creatures/timmyPowerGamer.jpg':{'power':3, 'toughness':3,'toCast':['2','green','green']}, \
-      'images/mtg/creatures/tigerTank.png':{'power':3, 'toughness':3,'toCast':['8']}, \
-      'images/mtg/creatures/tinman.png':{'power':3, 'toughness':3,'toCast':['3']}, \
-      'images/mtg/creatures/toughNerd.jpeg':{'power':3, 'toughness':3,'toCast':['2','red','red','red']}, \
-      'images/mtg/creatures/tournamentGrinder.jpg':{'power':3, 'toughness':3,'toCast':['2','black','black']}, \
-      'images/mtg/creatures/tribble.png':{'power':3, 'toughness':3,'toCast':['1','white']}, \
+      'images/mtg/creatures/thor.jpg':{'power':6, 'toughness':6,'toCast':['2','white','blue','red']}, \
+      'images/mtg/creatures/thorGodOfThunder.png':{'power':5, 'toughness':5,'toCast':['6',['blue','red'],['blue','red']]}, \
+      'images/mtg/creatures/thorSonOfOdin.png':{'power':5, 'toughness':4,'toCast':['4','white','green']}, \
+      'images/mtg/creatures/timmyPowerGamer.jpg':{'power':1, 'toughness':1,'toCast':['2','green','green']}, \
+      'images/mtg/creatures/tigerTank.png':{'power':9, 'toughness':9,'toCast':['8']}, \
+      'images/mtg/creatures/tinman.png':{'power':1, 'toughness':2,'toCast':['3']}, \
+      'images/mtg/creatures/toughNerd.jpeg':{'power':3, 'toughness':5,'toCast':['2','red','red','red']}, \
+      'images/mtg/creatures/tournamentGrinder.jpg':{'power':1, 'toughness':1,'toCast':['2','black','black']}, \
+      'images/mtg/creatures/tribble.png':{'power':1, 'toughness':1,'toCast':['1','white']}, \
       'images/mtg/creatures/trooperCommander.jpg':{'power':3, 'toughness':3,'toCast':['2','green']}, \
-      'images/mtg/creatures/trump.jpg':{'power':3, 'toughness':3,'toCast':['1','white','blue','red']}, \
-      'images/mtg/creatures/unwillingVolunteer.jpg':{'power':3, 'toughness':3,'toCast':['1','green']}, \
+      'images/mtg/creatures/trump.jpg':{'power':3, 'toughness':5,'toCast':['1','white','blue','red']}, \
+      'images/mtg/creatures/unwillingVolunteer.jpg':{'power':1, 'toughness':2,'toCast':['1','green']}, \
       'images/mtg/creatures/vegeta.png':{'power':3, 'toughness':3,'toCast':['black','green','red']}, \
-      'images/mtg/creatures/vespaDruishPrincess.jpg':{'power':3, 'toughness':3,'toCast':['green','green']}, \
-      'images/mtg/creatures/vizziniSicilianMastermind.jpg':{'power':3, 'toughness':3,'toCast':['black','blue','red']}, \
-      'images/mtg/creatures/wallOfTrump.png':{'power':3, 'toughness':3,'toCast':['white','white','blue','blue']}, \
-      'images/mtg/creatures/warriorBug.png':{'power':3, 'toughness':3,'toCast':['1','green','red']}, \
+      'images/mtg/creatures/vespaDruishPrincess.jpg':{'power':2, 'toughness':3,'toCast':['green','green']}, \
+      'images/mtg/creatures/vizziniSicilianMastermind.jpg':{'power':2, 'toughness':4,'toCast':['black','blue','red']}, \
+      'images/mtg/creatures/wallOfTrump.png':{'power':0, 'toughness':6,'toCast':['white','white','blue','blue']}, \
+      'images/mtg/creatures/warriorBug.png':{'power':1, 'toughness':1,'toCast':['1','green','red']}, \
       'images/mtg/creatures/weepingStatue.jpg':{'power':3, 'toughness':3,'toCast':['4']}, \
-      'images/mtg/creatures/westleyMasterofEverything.jpg':{'power':3, 'toughness':3,'toCast':['green','blue','red']}, \
-      'images/mtg/creatures/youngChild.jpeg':{'power':3, 'toughness':3,'toCast':['white']} \
+      'images/mtg/creatures/westleyMasterofEverything.jpg':{'power':4, 'toughness':5,'toCast':['green','blue','red']}, \
+      'images/mtg/creatures/vladimirPutin.jpg':{'power':4,'toughness':4,'toCast':['3','green','green']}, \
+      'images/mtg/creatures/youngChild.jpeg':{'power':1, 'toughness':1,'toCast':['white']} \
    }
    def __init__(self):
       pass

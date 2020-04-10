@@ -11,7 +11,7 @@ def bindRfcomm0():
          print ("Binding rfcomm0" )
          # This will block yo
          ready = True 
-         os.system ('rfcomm connect /dev/rfcomm0 30:15:01:07:09:37 1' )
+         os.system ('rfcomm connect /dev/rfcomm0 98:D3:31:20:53:D4 1') # 30:15:01:07:09:37 1' )
          print ( "Done binding rfcomm0" )
          ready = False 
       except Exception as ex:
