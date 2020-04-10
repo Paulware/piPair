@@ -142,6 +142,24 @@ def showStatus (status):
     global statusMessage
     statusMessage = status 
     print ( 'showStatus(' + statusMessage + ')' )
+    
+lastPrintMessage = ''    
+nextPrintTime = 0
+def myPrint (message):    
+   global lastPrintMessage
+   global nextPrintTime
+   #if message != lastPrintMessage: 
+   #   pass
+   #el
+   if time.time() > nextPrintTime:
+      pass
+   else:
+      message = ''
+      
+   if message != '':
+      print ( message ) 
+      nextPrintTime = time.time() + 1 
+   
 
 lastUdpCount = -1
 resync = -1
@@ -239,25 +257,26 @@ def getKeyOrUdp():
              data = data.decode();
              addr = str(addr[0])
              if (addr == '192.168.4.1') and (myIpAddress == '127.0.1.1'): 
-                print ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
+                myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
                 data = ''
              elif (addr == myIpAddress):
-                print ( "Ignoring udp message [" + data + "] from me" )
+                myPrint ( "Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
-                print ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress + ' data: [' + data + ']')
                 ind = data.find ( ':' )
                 udpCount = int(data[0:ind])
                 if (lastUdpCount + 1) != udpCount: 
-                   print ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
-                   resync = lastUdpCount + 1
+                   myPrint ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
+                   resync = lastUdpCount + 1 # requestResync will use this value
                    data = ''
                 else:
+                   myPrint ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress + ' data: [' + data + '] (good no resync)')
+                   if (resync != -1):
+                      print ( 'Resynced on ' + str(resync) + '!!!')
                    resync = -1
-                   print ( 'Good (no resync) [' + str(lastUdpCount) + ',' + str(udpCount) + ']' )
                    lastUdpCount = udpCount               
                    data = data[(ind+1):]
-                   print ( "Received udp message [" + str(udpCount) + "] with data: [" + data + "]")
+                   myPrint ( "Received udp message [" + str(udpCount) + "] with data: [" + data + "] Good (no resync)")
                    
                    ind = data.find ( 'exec:')
                    if ind > -1: # joining=, games=, move= 
@@ -516,11 +535,26 @@ def joinSSID (ssid):
 lastMessage = ""    
 udpCount = 0
 udpMessages = [] 
-
+resyncTimeout = 0
+def requestResync(): 
+   global resync
+   global resyncTimeout
+   
+   if resync != -1: 
+      if time.time() > resyncTimeout: 
+         resyncTimeout = time.time() + 1 # Do not spam the request
+         myPrint ( 'Requesting resync on (' + str(resync) + ')')
+         udpBroadcast ( 'exec:resyncMessages(' + str(resync) + ')' )   
+         
+# TODO: Once a second send current message value
+#       If this doesn't match how many sent, send up to 10 messages          
+# This procedure should only be called from exec message
 def resyncMessages (which): 
    global client
-   redo = udpMessages [which:]
-   
+   print ( 'I am trying to resync on (' + str(which) + ')')
+   print ( 'len(udpMessages): ' + str(len(udpMessages)))
+   redo = udpMessages [which:]   
+   print ( 'I have ' + str(len(redo)) + ' messages which need to be sent' )   
    for message in redo: 
       try: 
          print ( 'resync/resend: [' + message + ']' )
@@ -531,21 +565,13 @@ def resyncMessages (which):
 def udpBroadcast (message):
     global client
     global lastMessage
-    global udpCount
     global udpMessages
+    global UDPPORT
     
     try: 
-       UDP_IP = '<broadcast>'
-       #if message != lastMessage: 
-       #   print ("broadcast message:", message)
-       #   lastMessage = message
-       # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
        if client == None:
           print ("client udp network not set yet" )
        else:
-          #try: 
-          #   client.sendto(str.encode(message), (UDP_IP, UDPPORT)) #Ethernet   
-          #except Exception as ex:
           message = str(len(udpMessages)) + ':' + message
           client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
           udpMessages.append (message) 
@@ -571,7 +597,6 @@ def readLines (filename, match):
        print ( 'Could not readLines because: ' + str(ex)) 
        
     return (lines,found)
-
     
 def modifyDhcpcd():
     filename = '/etc/dhcpcd.conf' 
@@ -807,10 +832,13 @@ def gamePage(showOnly=False):
 
     quit = False
     showTimeout = 0
+    count = 0
     while not quit and not showOnly:  
+       requestResync()
        (eventType,data,addr) = getKeyOrUdp() # This should set games
        
        if time.time() > showTimeout: 
+          count = count + 1
           DISPLAYSURF.fill((BLACK))
           labels = showSsids(games)
           showTimeout = time.time() + 1 

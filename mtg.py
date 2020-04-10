@@ -113,7 +113,7 @@ def mtgPage():
    
    def showCards (indexList,startLocation,width):
       filenames = indexesToFilenames(indexList)
-      #print ( 'showCards (indexList: ' + str(indexList) + \
+      print ( 'showCards (indexList: ' + str(indexList))
       #        ' startLocation: ' + str(startLocation) + ',width: ' + str(width) + ')' )
       x = startLocation [0]
       y = startLocation [1]
@@ -270,17 +270,17 @@ def mtgPage():
       global iAmHost
       global hostTurn
       global resync
-      global statusMessage
-      
+      global statusMessage     
       
       myHealth = 20
       manaPool = [] 
       opponentIndexes = []
+      hand = []
       state = 0 
       hasPlayedLand = False
       power = 20
       
-      def getButtons (state,myTurn): 
+      def getButtons (state,myTurn,hand): 
          if myTurn:
             pygame.display.set_caption('Click on card to perform action')         
          else:
@@ -291,8 +291,12 @@ def mtgPage():
                buttons = ['untap', 'quit']
             elif state == 1:
                buttons = ['draw', 'quit']
-            elif state == 2: 
-               buttons =  ['turndone','quit']
+            elif state == 2:
+               if len(hand) > 7:
+                  pygame.display.set_caption ( 'You need to discard a card' )
+                  buttons = ['quit']
+               else:
+                  buttons =  ['turndone','quit']
          else:
             buttons = ['quit']
          print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + \
@@ -306,16 +310,15 @@ def mtgPage():
          #print ( 'drawBoard.showBoard, draw cards in hand' )         
          (images,handSprites) = showCards (handIndexes, (0,70), 100 )
          hand = indexesToFilenames (handIndexes)
-         #print ( 'drawBoard hand: ' + str(hand))
-         #print ( 'drawBoard.showBoard, draw cards in play' )
+         
+         print ( 'showBoard, draw cards in play' )
          (images,inplaySprites) = showCards (inplayIndexes, (0, 210), 100)  
          inplay = indexesToFilenames (inplayIndexes)
-         #print ( 'drawBoard inplay: ' + str(inplay))
-         #print ( 'drawBoard.showBoard, draw opponent cards' )
+         
+         #print ( 'showBoard opponentCards: ' + str(opponentCards))
          (images,opponentSprites) = showCards (opponentIndexes, (0, 360), 100)  
          opponentCards = indexesToFilenames (opponentIndexes)
-         #print ( 'drawBoard opponentCards: ' + str(opponentCards))
-         #print ( 'Done in drawBoard.showBoard' )
+         
          pygame.draw.line(DISPLAYSURF, RED, (0, 350), (DISPLAYWIDTH, 350))
 
          if statusMessage != "":
@@ -333,19 +336,17 @@ def mtgPage():
          
       quit = False  
       myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)
-      buttons = getButtons (state,myTurn)
+      buttons = getButtons (state,myTurn,hand)
       (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
       
       while not quit and (myHealth > 0):            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()
          
-         if resync != -1: 
-            showStatus ( "Resync on " + str(resync) )
-            udpBroadcast ( 'exec:resyncMessages(' + str(resync) + ')' )             
+         if (resync != -1):
+            requestResync()
          else: 
             if move != None:
-               print ( "Got a move yo" )
                print ( '  moveType: ' + move['moveType'])
                if move['moveType'] == 'turndone':
                   hostTurn = not hostTurn
@@ -354,36 +355,86 @@ def mtgPage():
                   if not myTurn:
                      print ('ERR: Should be my turn, hostTurn is not correct: ' + str(hostTurn) + ' iAmHost: ' + str(iAmHost))
                   state = 0
-                  buttons = getButtons (state,myTurn)
+                  buttons = getButtons (state,myTurn,hand)
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                elif move['moveType'] == 'cast':
                   filename = move['filename']
                   print ( '  filename: ' + move['filename'])
                   index = addCard (filename, False, 'opponent', False)
                   opponentIndexes.append (index)
-                  print ( 'opponentIndexes: ' + str(opponentIndexes))
+                  # print ( 'opponentIndexes: ' + str(opponentIndexes))
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                elif move['moveType'] == 'tap':
                   index = opponentIndexes[int(move['index'])]
                   allCards[index]['tapped'] = True
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+               elif move['moveType'] == 'block':
+                  blocker = move['blocker']
+                  attacker = move['attacker']
+                  blockerIndex = opponentIndexes[blocker]
+                  attackerIndex = inplayIndexes[attacker]
+                  blockerFilename = allCards[blockerIndex]['filename']
+                  attackerFilename = allCards[attackerIndex]['filename']
+                  print ( blockerFilename + ' is blocking: ' + attackerFilename ) 
                elif move['moveType'] == 'attack':
-                  ind = int(move['index'])
-                  print ( 'Tapping opponent card' + str(ind) )                  
-                  index = opponentIndexes[ind]
-                  allCards[index]['tapped'] = True
-                  filename = allCards[index]['filename']
-                  myHealth = myHealth - allCards[index]['power']                  
-                  showStatus ( ' You are getting attacked by: ' + filename + ' new health: ' + str(myHealth))
-                  if myHealth <= 0: 
-                     showStatus ( 'You have lost yo' )
+                  opponentIndex = int(move['index'])
+                  print ( 'Tapping opponent card [' + str(opponentIndex) + ']')                  
+                  ind = opponentIndexes[opponentIndex]
+                  allCards[ind]['tapped'] = True
+                  attackFilename = allCards[ind]['filename']
+                  attackPower = allCards[ind]['power']
+                  attackToughness = allCards[ind]['toughness']
+                  showStatus ( ' You are getting attacked by: ' + attackFilename )
+                  blocked = False
+                  count = 0
+                  for index in inplayIndexes:
+                     tapped = allCards[index]['tapped']
+                     filename = allCards[index]['filename']                     
+                     if not tapped and (filename.find ( '/creatures/' ) > -1):                         
+                        power = str(allCards[index]['power'])
+                        toughness = str(allCards[index]['toughness'])
+                        caption = 'You are getting attacked by ' + power + '/' + toughness + filename
+                        pygame.display.set_caption(caption)              
+                        action = getSingleCardAction ( filename, 'Select an action', ['ok','block'])  
+                        if action != '':
+                           print ( 'Perform action: [' + action + '] on card: ' + filename)                                
+                           if action == 'block': 
+                              blocked = True 
+                              udpBroadcast ( 'exec:move={\'moveType\':\'block\',' + \
+                                             '\'blocker\':\'' + str(count) + '\',' + \
+                                             '\'attacker\':\'' + str(opponentIndex) + '\'}' )                               
+                              print ( 'Creature is blocked ' )
+                              break
+                           else:
+                              pass
+                              #print ( 'Pop card: ' + str(card) + ' len(handIndexes: ' + str(len(handIndexes)) )
+                              #handIndexes.pop(card)
+                              #TODO: Add to discard pile 
+                              #hand.remove (selectedCard)                       
+                     count = count + 1
+                     
+                  if blocked:
+                     # TODO check for trample
+                     print ( 'Assign damage ' + str(attackPower) + ' to creature: ' + filename )
+                     if attackPower >= toughness: 
+                        print ( filename + ' has died in battle' )
+                        inplay.pop (count)
+                     if power >= attackToughness:
+                        print ( 'You killed ' + attackFilename )
+                        opponentIndexes.pop (opponentIndex)
+                        
+                  else:                  
+                     myHealth = myHealth - allCards[ind]['power']                  
+                     showStatus ( ' New health: ' + str(myHealth))
+                     if myHealth <= 0: 
+                        showStatus ( 'You have lost yo' )
                      
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                elif move['moveType'] == 'untap':
                   print ( 'Untap all opponent cards yo' )
                   for index in opponentIndexes: 
                      allCards[index]['tapped'] = False
-                  buttons = getButtons (state,myTurn)
+                  buttons = getButtons (state,myTurn,hand)
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                   print ( 'Done untapping all opponent cards' )
                elif move['moveType'] == 'quit':
@@ -433,7 +484,7 @@ def mtgPage():
                      udpBroadcast ( 'exec:move={\'moveType\':\'cast\',' + \
                                     '\'filename\':\'' + selectedCard + '\'}') 
                                     
-               buttons = getButtons (state,myTurn)                                    
+               buttons = getButtons (state,myTurn,hand)                                    
                (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
 
             # Handle the opponent cards ( you can target them )             
@@ -452,7 +503,7 @@ def mtgPage():
                action = getSingleCardAction (selectedCard,'Select an action',actions)
                if action != '':
                   print ( 'Perform action: [' + action + '] on opponent card: ' + selectedCard )
-                  buttons = getButtons (state,myTurn)                  
+                  buttons = getButtons (state,myTurn,hand)                  
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
               
                
@@ -479,7 +530,7 @@ def mtgPage():
                if action != '':
                   print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
                   if action == 'tap':
-                     print ( 'Tapping card ' + str(index) )
+                     print ( 'Tapping card inplay [' + str(card) + ']' )
                      allCards[index]['tapped'] = True
                      ind = selectedCard.find ( '/lands/' )
                      if ind > -1:
@@ -498,7 +549,7 @@ def mtgPage():
                      allCards[index]['tapped'] = True
                      udpBroadcast ( 'exec:move={\'moveType\':\'attack\',' + \
                                     '\'index\':\'' + str(card) + '\'}')
-               buttons = getButtons (state,myTurn)                     
+               buttons = getButtons (state,myTurn,hand)                     
                (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
 
             # Handle button press
@@ -521,7 +572,7 @@ def mtgPage():
                      buttons = ['quit']
                      showStatus ( 'Waiting on other player to finish their turn' )
 
-                     buttons = getButtons (state,False)
+                     buttons = getButtons (state,False,hand)
                      (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)                      
 
                   '''
@@ -535,7 +586,7 @@ def mtgPage():
                   print ( 'Draw a card yo' )
                   handIndexes = drawCard(handIndexes)                                      
                   state = 2
-                  buttons = getButtons (state,myTurn)
+                  buttons = getButtons (state,myTurn,handIndexes)
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
                elif action == 'untap':
                   state = 1
@@ -547,10 +598,10 @@ def mtgPage():
                      card['summoned'] = False
                   udpBroadcast ( 'exec:move={\'moveType\':\'untap\'}')
                      
-                  buttons = getButtons (state,myTurn)
+                  buttons = getButtons (state,myTurn,hand)
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
 
-   hostTurn = True # Host gets to move first       
+   hostTurn = True # Host gets to move first
    myTurn = True
    if iAmHost:
       # Set opponents list of games
@@ -584,12 +635,24 @@ def mtgPage():
    print ( 'Got a creature filename: ' + creature )
    showCreatedDeck(deck,creature) # Show the list of cards 
    
-   pygame.display.set_caption('Getting artifact,lands,instants and sorceries that share mana with:' + creature)
    hand = []
    inPlay = []
    # Deal 7 cards 
    for i in range(7):
-      hand = drawCard(hand)      
+      hand = drawCard(hand)    
+
+   pygame.display.set_caption('Waiting for player to join MTG')
+   print ( 'Waiting for player to join...' )   
+
+   transmitTimeout = 0   
+   while joining != 'MTG':
+      (eventType,data,addr) = getKeyOrUdp() # This should set games   
+      if time.time() > transmitTimeout: 
+         udpBroadcast ( 'exec:games=[\'MTG\']')
+         transmitTimeout = time.time() + 2
+   print ( 'joining: ' + joining )
+      
+   pygame.display.set_caption('Player joined...Ready')
       
    drawBoard(hand, inPlay) # Also give options for play
         
