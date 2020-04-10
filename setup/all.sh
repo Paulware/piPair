@@ -8,7 +8,7 @@ cd /home/pi/piPair
 touch mainConfig.txt
 chmod 777 *.*
 cd /boot/
-cp /hotm/pi/piPair/setup/*.sh
+cp /home/pi/piPair/setup/*.sh .
 apt-get update
 ./ssh.sh
 ./keyboard.sh
@@ -16,8 +16,10 @@ apt-get update
 # echo "dns-nameservers 8.8.8.8 8.8.4.4" >> /etc/network/interfaces
 ./ap.sh
 pip install glob3
-sudo ifup wlan0
 ./runMain.sh
+cp runPython.sh /home/pi/Desktop/runPython.sh
+apt-get install bluetooth bluez blueman -y
+#ifup wlan0
 echo "Done in setup, Using the wifi icon on desktop:turn wifi on, and set wifi country.  Then reboot"
 
 
