@@ -1,6 +1,6 @@
 <h1>Raspberry Pi Pairing project</h1>
-This project is based on the 10 in Maker Shack laptop: <img src="images/makerShack.jpg"><br>
-But can also be tested on a LAN network with windows pcs.<p>
+This project is based on the 10 in Maker Shack laptop (available on ebay): <img src="images/makerShack.jpg"><br>
+But, the python code itself can be tested solely on a LAN network with windows pcs (if desired).<p>
 The idea is to connect 2 (or more) raspberry pi using the pi's wifi chip and then chat or play games.
 <br>Recommended bluetooth keyboard (Logitech K380):<br>
 <img src="images/k380.jpg">
@@ -26,13 +26,12 @@ Currently the games that are supported are:
   <li>Open a line terminal and enter the commands</li>
   <ul>
      <li>sudo bash</li>
-     <li>cd /boot/setup</li>
+     <li>cd /boot</li>
      <li>./setup.sh</li>
      <li>Let the setup.sh complete (this will take a few minutes)</li>
      <li>Turn on wifi (via desktop icon)</li>
      <li>Pair to your bluetooth keyboard (via bluetooth icon)</li>
-     <li>reboot</li>
-     <li>A wifi accesspoint with SSID=Walker and password=ABCD1234. Should appear</li>
+     <li>reboot - The game should appear and an access point with SSID=Walker and password=ABCD1234</li>
   </ul>
 </ul>
 
@@ -46,16 +45,4 @@ Currently the games that are supported are:
        <li>Select K380 Keyboard in list of devices</li>
      </ul>
      <li>Enter the number in the K380 keyboard as directed by the raspberry pi</li>
-</ul>
-
-<h1>Test Setup</h1>
-<ul>
-   <li>Open a line terminal
-   <li>Enter the commands:</li>
-   <ul>
-      <li>sudo bash</li>
-      <li>cd /boot</li>
-      <li>python main.py</li>
-      <li>A python program should open</li>
-   </ul>
 </ul>
