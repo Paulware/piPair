@@ -160,7 +160,6 @@ def myPrint (message):
    
 
 lastUdpCount = -1
-resync = -1
 resyncTimeout = time.time()
 def getKeyOrUdp():
   global client 
@@ -169,7 +168,6 @@ def getKeyOrUdp():
   global cast
   global rightClick
   global lastUdpCount
-  global resync
   global resyncTimeout
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
@@ -272,17 +270,12 @@ def getKeyOrUdp():
                 ind = data.find ( ':' )
                 udpCount = int(data[0:ind])
                 if (lastUdpCount + 1) != udpCount: 
-                   #myPrint ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
-                   #resync = lastUdpCount + 1 # requestResync will use this value
                    data = ''
+                   myPrint ( 'ERR Ignoring bad message out of order, data: [' + data + '] (This will require a resync to fix)')                   
                 else:
-                   myPrint ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress + ' data: [' + data + '] (good no resync)')
-                   if (resync != -1):
-                      print ( 'Resynced on ' + str(resync) + '!!!')
-                   resync = -1
+                   myPrint ( 'Got a good message from addr: ' + addr + ' data: [' + data + ']')
                    lastUdpCount = udpCount               
                    data = data[(ind+1):]
-                   myPrint ( "Received udp message [" + str(udpCount) + "] with data: [" + data + "] Good (no resync)")
                    
                    ind = data.find ( 'exec:')
                    if ind > -1: # joining=, games=, move= 
@@ -461,7 +454,10 @@ def showImages (filenames,locations):
        for filename in filenames:
           images.append ( pygame.image.load (filename) )     
     except Exception as ex:
-       print ( 'Could not load: ' + filename + ' because: ' + str(ex))
+       if str(ex).find ('Couldn\'t open') > -1: 
+          print ( '\n***ERR\nDoes this file exist?: ' + filename + '\n')
+       else:
+          print ( '\n***ERR\nCould not load: ' + filename + ' because: ' + str(ex) + '\n')      
 
     sprites = []
     try:
@@ -542,16 +538,6 @@ lastMessage = ""
 udpCount = 0
 udpMessages = [] 
 resyncTimeout = 0
-def requestResync(): 
-   global resync
-   global resyncTimeout
-   
-   if resync != -1:
-      if time.time() > resyncTimeout:
-         resyncTimeout = time.time() + 1 # Do not spam the request
-         myPrint ( 'Requesting resync on (' + str(resync) + ')')
-         udpBroadcast ( 'exec:resyncMessages(' + str(resync) + ')' )
-         
 # TODO: Once a second send current message value
 #       If this doesn't match how many sent, send up to 10 messages
 # This procedure should only be called from exec message
@@ -840,7 +826,6 @@ def gamePage(showOnly=False):
     showTimeout = 0
     count = 0
     while not quit and not showOnly:  
-       requestResync()
        (eventType,data,addr) = getKeyOrUdp() # This should set games
        
        if time.time() > showTimeout: 

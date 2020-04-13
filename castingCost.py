@@ -74,7 +74,7 @@ class castingCost:
       'images/mtg/creatures/hela.png':{'power':4, 'toughness':5,'toCast':['4',['black','red'],'green']}, \
       'images/mtg/creatures/hillaryClinton.jpeg':{'power':4, 'toughness':3,'toCast':['2','white','red']}, \
       'images/mtg/creatures/hirohito.png':{'power':4, 'toughness':3,'toCast':['3','red','white']}, \
-      'images/mtg/creatures/hitler.jpg':{'power':4, 'toughness':5,'toCast':['black','black','black','black']}, \
+      'images/mtg/creatures/hitler.jpg':{'affects':{'cast':'destroyTarget()'}, 'power':4, 'toughness':5,'toCast':['black','black','black','black']}, \
       'images/mtg/creatures/hulk.png':{'power':6, 'toughness':6,'toCast':['green','green','green','green','green','green']}, \
       'images/mtg/creatures/indianaJones.jpg':{'power':1, 'toughness':3,'toCast':['1','white','blue']}, \
       'images/mtg/creatures/infinityElemental.jpg':{'power':99, 'toughness':5,'toCast':['4','red','red','red']}, \
