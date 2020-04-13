@@ -342,7 +342,7 @@ def mtgPage():
       while not quit and (myHealth > 0):            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()
-         
+
          if (resync != -1):
             requestResync()
          else: 
@@ -391,11 +391,12 @@ def mtgPage():
                      tapped = allCards[index]['tapped']
                      filename = allCards[index]['filename']                     
                      if not tapped and (filename.find ( '/creatures/' ) > -1):                         
-                        power = str(allCards[index]['power'])
-                        toughness = str(allCards[index]['toughness'])
-                        caption = 'You are getting attacked by ' + power + '/' + toughness + filename
+                        power = allCards[index]['power']
+                        toughness = allCards[index]['toughness']
+                        caption = 'You are getting attacked by a ' + str(attackPower) + '/' + str(attackToughness) + ' ' + filename
                         pygame.display.set_caption(caption)              
-                        action = getSingleCardAction ( filename, 'Select an action', ['ok','block'])  
+                        action = getSingleCardAction ( filename, 'You are being attacked by a ' + \
+                                                       str(attackPower) + '/' + str(attackToughness), ['ok','block'])  
                         if action != '':
                            print ( 'Perform action: [' + action + '] on card: ' + filename)                                
                            if action == 'block': 
@@ -439,7 +440,7 @@ def mtgPage():
                   print ( 'Done untapping all opponent cards' )
                elif move['moveType'] == 'quit':
                   showStatus( 'You have won, opponent has quit' )
-                  time.sleep (10)
+                  time.sleep (3)
                   quit = True 
                move = None
                

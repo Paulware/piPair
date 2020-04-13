@@ -13,13 +13,11 @@ import castingCost
 import checkers
 import tictactoe
 import chess
-import tank
 import mtg
 import diplomacy
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
-exec (tank.TANK)
 exec (mtg.MTG)
 exec (diplomacy.DIPLOMACY)
 
@@ -163,6 +161,7 @@ def myPrint (message):
 
 lastUdpCount = -1
 resync = -1
+resyncTimeout = time.time()
 def getKeyOrUdp():
   global client 
   global joining 
@@ -171,6 +170,7 @@ def getKeyOrUdp():
   global rightClick
   global lastUdpCount
   global resync
+  global resyncTimeout
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -186,14 +186,20 @@ def getKeyOrUdp():
   
   while data == '':
     rightClick = False
+    if time.time() > resyncTimeout:
+       resyncTimeout = time.time() + 10
+       if lastUdpCount != -1: 
+          myPrint ( 'Requesting resync on (' + str(lastUdpCount) + ')')
+          udpBroadcast ( 'exec:resyncMessages(' + str(lastUdpCount) + ')' )
+    
     ev = pygame.event.get()
-    for event in ev:  
+    for event in ev:
        if event.type == pygame.KEYDOWN:
           #print( "Got a keydown with value: " + str(event.key) )
           if (event.key == 303) or (event.key == 304): #shift
              upperCase = True
           # chr(273), 'w', chr(274), 's',  chr(275), 'd', chr (276), 'a']             
-          elif (event.key == 273): 
+          elif (event.key == 273):
              data = 'w'
              typeInput = 'key'
           elif (event.key == 274): 
@@ -266,8 +272,8 @@ def getKeyOrUdp():
                 ind = data.find ( ':' )
                 udpCount = int(data[0:ind])
                 if (lastUdpCount + 1) != udpCount: 
-                   myPrint ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
-                   resync = lastUdpCount + 1 # requestResync will use this value
+                   #myPrint ( 'ERR....Resync! on ' + str(lastUdpCount + 1) ) 
+                   #resync = lastUdpCount + 1 # requestResync will use this value
                    data = ''
                 else:
                    myPrint ( 'addr: ' + addr + ' myIpAddress: ' + myIpAddress + ' data: [' + data + '] (good no resync)')
@@ -540,14 +546,14 @@ def requestResync():
    global resync
    global resyncTimeout
    
-   if resync != -1: 
-      if time.time() > resyncTimeout: 
+   if resync != -1:
+      if time.time() > resyncTimeout:
          resyncTimeout = time.time() + 1 # Do not spam the request
          myPrint ( 'Requesting resync on (' + str(resync) + ')')
-         udpBroadcast ( 'exec:resyncMessages(' + str(resync) + ')' )   
+         udpBroadcast ( 'exec:resyncMessages(' + str(resync) + ')' )
          
 # TODO: Once a second send current message value
-#       If this doesn't match how many sent, send up to 10 messages          
+#       If this doesn't match how many sent, send up to 10 messages
 # This procedure should only be called from exec message
 def resyncMessages (which): 
    global client
@@ -573,6 +579,7 @@ def udpBroadcast (message):
           print ("client udp network not set yet" )
        else:
           message = str(len(udpMessages)) + ':' + message
+          print (message)
           client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
           udpMessages.append (message) 
                    
@@ -685,8 +692,7 @@ def hostPage (showOnly=False):
     DISPLAYSURF.blit(surface, rect)
     pygame.display.update()
     #(typeInput,ssid,addr) = getInput(300,55)
-   
-       
+          
     quit = False
     while not quit: 
        (eventType,data,addr) = getInput (300,55) 

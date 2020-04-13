@@ -79,11 +79,12 @@ echo "  dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h" >> /etc/dnsmasq.c
 echo "Modify /etc/hostapd/hostapd.conf to create the ap1 access point"
 #press_key
 
+#  Note: hw_mode=b for 201b, mode=g for 2.4 ghz
 cat > /etc/hostapd/hostapd.conf <<EOF
 interface=wlan0
 driver=nl80211
 ssid=Walker
-hw_mode=g
+hw_mode=b
 channel=7
 wmm_enabled=0
 macaddr_acl=0
