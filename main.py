@@ -24,12 +24,17 @@ exec (diplomacy.DIPLOMACY)
 
 WHITE      = (255, 255, 255)
 BLACK      = (  0,   0,   0)
-GREEN      = (  0, 155,   0)
+GREEN      = (  0, 255,   0)
 BRIGHTBLUE = (  0,  50, 255)
 BROWN      = (174,  94,   0)
 RED        = (255,   0,   0)
 DARKRED    = (139,  26,  26)
 DARKGREY   = (128, 128, 128)
+BLUE       = (0,     0, 255)
+YELLOW     = (255, 255,   0)
+DARKGREEN  = (0,   100,   0)
+DARKBLUE   = (75,    0, 130)
+LIGHTBLUE  = (64,  244, 208)
 
 TEXTBGCOLOR1 = BRIGHTBLUE
 TEXTBGCOLOR2 = GREEN
@@ -58,6 +63,7 @@ udpCounter = 0
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
 statusMessage = ""
+lastStatusMessage = ''
 
 # Read configuration data
 try: 
@@ -136,6 +142,7 @@ def blitRotate(image, pos, angle):
     # draw rectangle around the image
     # pygame.draw.rect (surf, (255, 0, 0), (*origin, *rotated_image.get_size()),2)  
 
+lastStatus = ''    
 def showStatus (status):
     global statusMessage
     statusMessage = status 
@@ -280,7 +287,6 @@ def getKeyOrUdp():
                    ind = data.find ( 'exec:')
                    if ind > -1: # joining=, games=, move= 
                       command = data[ind+5:]
-                      #showStatus ("Executing command: [" + command + "]")
                       exec (command, globals())
                 typeInput = 'udp'                         
                 
@@ -314,8 +320,8 @@ def showCh (ch,x,y):
 
 def chOffset (ch): 
    offsets = { '.':4, ':':4, ',':4, '-':4, ' ':4, '(':4, ')':4, '[':5, ']':5, '\'':4, '/':4, '=':9, \
-               'I':4, 'W':14, 'O':12, 'M':14, \
-               'a':9, 'b':9, 'c':9, 'e':9, 'f':4, 'i':4, 'j':4, 'k':9, 'l':4, 'm':13, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, 'z':8, \
+               'A':11, 'I':4, 'W':14, 'O':12, 'M':13, \
+               'a':9, 'b':9, 'c':9, 'e':9, 'f':6, 'i':4, 'j':4, 'k':9, 'l':4, 'm':14, 'r':6, 's':9, 't':5, 'x':9, 'v':9, 'w':12, 'y':9, 'z':8, \
                '0':9, '1':9, '2':9, '3':9, '4':9, '5':9, '6':9, '7':9, '8':9, '9':9 \
              }
    offset = 10
