@@ -46,3 +46,5 @@ Currently the games that are supported are:
      </ul>
      <li>Enter the number in the K380 keyboard as directed by the raspberry pi</li>
 </ul>
+<H1>Design</H1>
+   <a href="http://paulware.github.io/piPair">Doc</a>
