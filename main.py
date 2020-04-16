@@ -15,12 +15,13 @@ import tictactoe
 import chess
 import mtg
 import diplomacy
+import panzerleader
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
 exec (mtg.MTG)
 exec (diplomacy.DIPLOMACY)
-
+exec (panzerleader.PANZERLEADER)
 
 WHITE      = (255, 255, 255)
 BLACK      = (  0,   0,   0)
@@ -47,7 +48,7 @@ tcpConnection = None
 client = None
 
 games = [] 
-gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG', 'Diplomacy']
+gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG', 'Diplomacy', 'PanzerLeader']
 iAmHost = False
 joining = ''
 DISPLAYWIDTH=800
@@ -141,8 +142,22 @@ def blitRotate(image, pos, angle):
 
     # draw rectangle around the image
     # pygame.draw.rect (surf, (255, 0, 0), (*origin, *rotated_image.get_size()),2)  
-
+    
 lastStatus = ''    
+def drawStatus (message):  
+   global lastStatus    
+   # print ( 'Show status: ' + message )
+   height = DISPLAYHEIGHT - 23
+   pygame.draw.line(DISPLAYSURF, RED, (0, height), (DISPLAYWIDTH, height)) #status line
+   pygame.draw.rect(DISPLAYSURF, BLACK, (0,height+2,DISPLAYWIDTH,25))    
+   showLine (message, 1, height+4) # Show status message     
+   pygame.display.update()     
+   lastStatus = message
+   
+def showLastStatus ():
+   # global lastStatus 
+   drawStatus (lastStatus)
+    
 def showStatus (status):
     global statusMessage
     statusMessage = status 
@@ -482,19 +497,18 @@ def getSpriteClick (eventType, pos, sprites):
     try:
        if sprites != None:
           if eventType == pygame.MOUSEBUTTONDOWN:
-             print (str(pos)) 
-        
-             # get a list of all sprites that are under the mouse cursor         
-             clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
-             
-             if clicked_sprite != []:
-                for i in range (len(sprites)):
-                   if clicked_sprite[0] == sprites[i]: # just check the first sprite
-                      print ( "getSpriteClick: " + str(i)) 
-                      found = i
-                      break
+             #print ( 'click: ' + str(pos) + ' in sprites: ' + str(sprites) + '?') 
+             count = 0
+             for sprite in sprites: 
+                if sprite.collidepoint(pos):
+                   found = count
+                   #print ( "Yes! in sprite: " + str(count)) 
+                   break
+                count = count + 1
     except Exception as ex:
        print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprites: ' + str(sprites)) 
+    #if found == -1:
+    #   print ( 'No!')
     return found
 
 def scanForSsids ():
@@ -519,11 +533,9 @@ def scanForSsids ():
     print (str(ssids)) 
     return ssids
     
-def showSsids(ssids):
-    DISPLAYSURF.fill((BLACK))
-    
+def showList(ssids):    
     i = 0    
-    y = 55 
+    y = 75 
     locations = []
     for ssid in ssids:
        x = 150
@@ -728,7 +740,7 @@ def joinPage(showOnly=False):
     quit = False
     
     ssids = scanForSsids()      
-    labels = showSsids(ssids)
+    labels = showList(ssids)
         
     quit = False
     while not quit and not showOnly:   
@@ -837,7 +849,7 @@ def gamePage(showOnly=False):
        if time.time() > showTimeout: 
           count = count + 1
           DISPLAYSURF.fill((BLACK))
-          labels = showSsids(games)
+          labels = showList(games)
           showTimeout = time.time() + 1 
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
