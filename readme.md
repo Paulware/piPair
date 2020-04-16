@@ -16,7 +16,7 @@ Currently the games that are supported are:
   <li>MTG (Magic the Gathering)</li>
   <li>Diplomacy (in progress)</li>
 </ul>
-<h1>Setup</h1>
+<h1>Raspberry Pi Setup</h1>
 <ul>
   <li>Download the latest raspbian image from: <a href="https://www.raspberrypi.org/downloads/raspbian">https://www.raspberrypi.org/downloads/raspbian</a></li>
   <li>Copy the .img to an 8gb sd card using <a href="https://www.sourceforge.net/projects/win32diskimager">win32diskimager</a></li>
