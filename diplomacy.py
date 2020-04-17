@@ -157,6 +157,8 @@ def diplomacyPage():
                        
       def findLocation(pos):
          city = ''
+         x = pos[0]
+         y = pos[1]
          minDistance = 1000
          for key in locations:
             pos = locations[key]
@@ -174,8 +176,8 @@ def diplomacyPage():
          
       def findPiece (pos): 
          city = findLocation (pos)
-         player = None
-         unit = None
+         player = ''
+         unit = ''
          for player_ in players:
             positions = players[player_]
             for town in positions:
@@ -183,8 +185,9 @@ def diplomacyPage():
                   unit = positions[town] 
                   player = player_
                   break
-            if unit != None:
+            if unit != '':
                break
+         print ( 'findPiece got (player,city,unit): (' + str(player) + ',' + str(city) + ',' + str(unit) + ')' )
          return (player,city,unit) 
       
       def drawArmy (pos,color):
@@ -201,7 +204,65 @@ def diplomacyPage():
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)
          points = [(x+40,y-3), (x+20,y-23), (x+20, y-3)]         
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)         
-         
+               
+      def showPiece (imgPos): 
+         global selectTransport
+         print ( 'showPiece, imgPos: ' + str(imgPos)) 
+         (player,city,unit) = findPiece (imgPos)
+         if player != '':
+            pygame.display.set_caption('Select action for the ' + player + ' ' + unit + ' stationed at ' + city)
+            DISPLAYSURF.fill((WHITE))         
+            if unit == 'navy': 
+               drawNavy ((100,100), colors[player])   
+               actions = ['transport','attack','support','ok']
+            else:        
+               drawArmy ((100,100), colors[player])  
+               actions = ['selectTransport', 'attack','support','ok']
+                      
+            (filenames,locations) = actionsToIcons (actions) 
+            (images,buttonSprites) = showImages (filenames, locations )      
+            cityList = adjacents[city]         
+            cities = showList (cityList)          
+            pygame.display.update() 
+            quit = False
+            selectedTown = ''
+            while not quit:
+               (eventType,data,addr) = getKeyOrUdp()                  
+               sprite = getSpriteClick (eventType, data, buttonSprites ) 
+               if sprite != -1:  
+                  print ( 'actions: ' + str(actions) + ' sprite: ' + str(sprite))             
+                  action = actions[sprite]        
+                  if action == 'ok': 
+                     quit = True
+                  else:
+                     if action == 'selectTransport':
+                        selectTransport = city
+                        quit = True
+                     else:
+                        if action == 'transport':
+                           if selectTransport == '':
+                              drawStatus ( 'First select an army unit for transport')
+                           elif selectedTown == '':
+                              drawStatus ( 'Select a destination town')
+                           else:
+                              if isAdjacent (selectTransport, city):
+                                 drawStatus ( selectTransport + ' will be transported to: ' + selectedTown)
+                                 orders.append (['transport',selectTranport,selectedTown])
+                              else:
+                                 drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + selectTransport + ' (it is too far away).')
+                        elif selectedTown == '':
+                           drawStatus ('Select a town first (for ' + action + ')')
+                        else:
+                           print ( action + ' ' + selectedTown )
+                           orders.append ([action,selectedTown])
+                           quit = True
+                  
+               # Check if a town was clicked on       
+               sprite = getSpriteClick (eventType, data, cities ) 
+               if sprite != -1:
+                  selectedTown = cityList [sprite]            
+                  drawStatus ( 'You have selected: ' + selectedTown)
+                  
       def showPieces (imgPos): 
          for player in players:
             color = colors[player]
@@ -215,62 +276,7 @@ def diplomacyPage():
                   drawNavy ((x,y),color)
                else:
                   drawArmy ((x,y),color)                  
-      
-      def showPiece (imgPos): 
-         global selectTransport
-         (player,city,unit) = findPiece (imgPos)
-         pygame.display.set_caption('Select action for the ' + player + ' ' + unit + ' stationed at ' + city)
-         DISPLAYSURF.fill((WHITE))         
-         if unit == 'navy': 
-            drawNavy ((100,100), colors[player])   
-            actions = ['transport','attack','support','ok']
-         else:        
-            drawArmy ((100,100), colors[player])  
-            actions = ['selectTransport', 'attack','support','ok']
-                   
-         (filenames,locations) = actionsToIcons (actions) 
-         (images,buttonSprites) = showImages (filenames, locations )      
-         cityList = adjacents[city]         
-         cities = showList (cityList)          
-         pygame.display.update() 
-         quit = False
-         selectedTown = ''
-         while not quit:
-            (eventType,data,addr) = getKeyOrUdp()                  
-            sprite = getSpriteClick (eventType, data, buttonSprites ) 
-            if sprite != -1:  
-               print ( 'actions: ' + str(actions) + ' sprite: ' + str(sprite))             
-               action = actions[sprite]        
-               if action == 'ok': 
-                  quit = True
-               else:
-                  if action == 'selectTransport':
-                     selectTransport = city
-                     quit = True
-                  else:
-                     if action == 'transport':
-                        if selectTransport == '':
-                           drawStatus ( 'First select an army unit for transport')
-                        elif selectedTown == '':
-                           drawStatus ( 'Select a destination town')
-                        else:
-                           if isAdjacent (selectTransport, city):
-                              drawStatus ( selectTransport + ' will be transported to: ' + selectedTown)
-                              orders.append (['transport',selectTranport,selectedTown])
-                           else:
-                              drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + selectTransport + ' (it is too far away).')
-                     elif selectedTown == '':
-                        drawStatus ('Select a town first (for ' + action + ')')
-                     else:
-                        print ( action + ' ' + selectedTown )
-                        orders.append ([action,selectedTown])
-                        quit = True
-               
-            # Check if a town was clicked on       
-            sprite = getSpriteClick (eventType, data, cities ) 
-            if sprite != -1:
-               selectedTown = cityList [sprite]            
-               drawStatus ( 'You have selected: ' + selectedTown)
+                  
                
       def showBoard (actions,imgPos): 
          DISPLAYSURF.fill((WHITE))
@@ -291,6 +297,7 @@ def diplomacyPage():
       selected = None
       drag = None
       lastCity = ''
+      lastPosition = (0,0)
       while not quit:            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()         
@@ -310,6 +317,8 @@ def diplomacyPage():
             #print ( '[' + str(x) + ',' + str(y) + ']' )
             city = findLocation ((x,y))
             
+            lastPosition = (x,y)
+            
             if (city != '') and (city != lastCity):
                drawStatus (city)
                lastCity = city
@@ -323,7 +332,7 @@ def diplomacyPage():
                imgPos = (x,y)
          elif eventType == pygame.MOUSEBUTTONUP:
             if data == selected: 
-               showPiece (pos)
+               showPiece (lastPosition)
             drag = None
 
          showBoard (buttons,imgPos) 

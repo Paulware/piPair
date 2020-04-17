@@ -16,6 +16,8 @@ This function will find the nearest town to the current mouse position (pos)
 <pre>
       def findLocation(pos):
          city = ''
+         x = pos[0]
+         y = pos[1]
          minDistance = 1000
          for key in locations:
             pos = locations[key]
