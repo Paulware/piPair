@@ -1,0 +1,33 @@
+Based on a dictionary object of locations which match up to x,y positions in the background gif:
+<pre>
+   locations = {'North Atlantic':(104,236), 'Norwegian Sea':(463,140), 'Barents Sea':(840,29), \
+                'Norway': (546,284), 'Sweden': (604,318), 'Gulf of Bothnia': (666,283), 'Finland': (747,242), 'St Petersburg (North Coast)': (853,212), 'St Petersburg (South Coast)': (795,324), \
+                'Clyde': (318,360), 'Edinburgh': (340,366), 'North Sea': (433,385), 'Skagerrak': (537,350), 'Denmark': (533,410), 'Baltic Sea': (624,427), 'Livonia': (744,418), 'Moscow': (920,395), \
+                'Irish Sea': (239,467), 'Wales': (320,460), 'Liverpool': (330,431), 'Yorkshire': (356,434), 'London': (350,480), 'Helgeland Bight': (470,444), 'Kiel': (500,485), 'Berlin': (565,510), 'Prussia': (630,484), 'Warsaw': (686,526), \
+                'Mid Atlantic': (85,580), 'English Channel': (310,517), 'Belgium': (406,523), 'Holland': (439,505), 'Ruhr': (473,543), 'Munich': (522,591), 'Bohemia': (574,573), 'Silesia': (606,533), 'Galicia': (727,580), 'Ukraine': (826,550), 'Stevastopol': (1000,570), \
+                'Brest': (288,563), 'Paris': (370,580), 'Picardy': (374,545), 'Burgundy': (400,600), 'Tyrolia': (540,648), 'Vienna': (620,625), 'Budapest': (672,642), 'Rumania': (797,702), 'Black Sea': (936,719), \
+                'Gascony': (322,677), 'Marseilles': (400,700), 'Piemonte': (467,684), 'Venezia': (535,676), 'Trieste': (601,692), 'Serbia': (683,729), \
+                'Portugal': (118,744), 'Spain (North Coast)': (240,691), 'Spain (South Coast)': (254,806), 'Gulf of Lyon': (404,771), 'Tuscany': (512,736), 'Roma': (542,782), 'Apulia': (586,792), 'Napoli': (570,809), 'Adriatic Sea': (593,756), 'Albania': (675,796), 'Bulgaria (East Coast)': (810,738), 'Bulgaria (South Coast)': (776,799), 'Constantinople': (839,795), 'Ankara': (936,800), 'Armenia': (1102,798), \
+                'North Africa': (145,913), 'West Mediterranean': (316,850), 'Tunisia': (459,920), 'Tyrhennian Sea': (504,841), 'Ionian Sea': (626,930), 'Greece': (720,854), 'Aegean Sea': (785,883), 'Smyrna': (932,863), 'East Mediterranean': (873,938), 'Syria': (1082,896) \
+               }             
+</pre>
+This function will find the nearest town to the current mouse position (pos)
+
+<pre>
+      def findLocation(pos):
+         city = ''
+         minDistance = 1000
+         for key in locations:
+            pos = locations[key]
+            difference = abs ( x - pos[0]) + abs (y - pos[1])
+            if difference < minDistance:                
+               if ((key != 'Portugal') or (x < 156)) and \
+                  ((key != 'West Mediterranean') or (y < 876)) and \
+                  ((key != 'Spain (South Coast)') or (y < 848 )) and \
+                  ((key != 'North Africa') or (y > 886)) and \
+                  ((key != 'Portugal') or (y < 807)) and \
+                  ((key != 'Tuscany') or (y > 708)):                  
+                  city = key
+                  minDistance = difference
+         return city  
+</pre>
