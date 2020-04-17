@@ -1,12 +1,12 @@
 import inspect
-def diplomacyPage():
+def diplomacyPage(numPlayers=2):
    global joining 
    global move 
    global iAmHost
    global hostTurn
    global myTurn
    global statusMessage
-   global selectTransport
+   global fromCity
  
    Object = type('Object', (object,), {} ) # Generic object definition
 
@@ -14,18 +14,23 @@ def diplomacyPage():
    myTurn = True
    state = 0
    lastStatusMessage = ''
-   selectTransport = ''
+   fromCity = ''
    colors = {'Germany': BLACK, 'Austria': RED, 'France': LIGHTBLUE, 'Italy': GREEN, \
              'Russia':DARKGREEN, 'Turkey': YELLOW, 'England': DARKBLUE}   
    
-   players = {'Germany': {'Kiel':'navy', 'Berlin':'army', 'Munich':'army'}, \
-              'Austria': {'Vienna':'army', 'Budapest':'army', 'Trieste':'navy'}, \
-              'France':  {'Marseilles':'army', 'Paris':'army', 'Brest':'navy'}, \
-              'England': {'Liverpool':'army', 'London':'navy', 'Edinburgh':'navy'}, \
-              'Italy':   {'Napoli':'navy', 'Roma':'army', 'Venezia':'navy'}, \
-              'Russia':  {'St Petersburg (South Coast)': 'navy', 'Warsaw':'army', 'Moscow':'army', 'Stevastopol': 'navy'} , \
-              'Turkey':  {'Constantinople': 'army', 'Ankara':'navy', 'Smyrna':'army'} \
-             }
+   if numPlayers == 2: 
+      players = {'Austria': {'Vienna':'army', 'Budapest':'army', 'Trieste':'navy'}, \
+                 'France':  {'Marseilles':'army', 'Paris':'army', 'Brest':'navy'}, \
+                 }   
+   else:
+      players = {'Germany': {'Kiel':'navy', 'Berlin':'army', 'Munich':'army'}, \
+                 'Austria': {'Vienna':'army', 'Budapest':'army', 'Trieste':'navy'}, \
+                 'France':  {'Marseilles':'army', 'Paris':'army', 'Brest':'navy'}, \
+                 'England': {'Liverpool':'army', 'London':'navy', 'Edinburgh':'navy'}, \
+                 'Italy':   {'Napoli':'navy', 'Roma':'army', 'Venezia':'navy'}, \
+                 'Russia':  {'St Petersburg (South Coast)': 'navy', 'Warsaw':'army', 'Moscow':'army', 'Stevastopol': 'navy'} , \
+                 'Turkey':  {'Constantinople': 'army', 'Ankara':'navy', 'Smyrna':'army'} \
+                }
              
    locations = {'North Atlantic':(104,236), 'Norwegian Sea':(463,140), 'Barents Sea':(840,29), \
                 'Norway': (546,284), 'Sweden': (604,318), 'Gulf of Bothnia': (666,283), 'Finland': (747,242), 'St Petersburg (North Coast)': (853,212), 'St Petersburg (South Coast)': (795,324), \
@@ -87,7 +92,7 @@ def diplomacyPage():
                  'Marseilles':['Burgundy','Piemonte','Gascony','Spain','Gulf of Lyon'], \
                  'Piemonte':['Tyrolia','Venezia','Tuscany','Marseilles','Gulf of Lyon'], \
                  'Venezia':['Tyrolia','Trieste','Piemonte','Tuscany','Roma','Apulia'], \
-                 'Trieste':['Tyrolia','Vienna','Budapest','Serbia','Albania','Adriatic Sea'], \
+                 'Trieste':['Tyrolia','Vienna','Budapest','Serbia','Albania','Adriatic Sea','Venezia'], \
                  'Serbia':['Budapest','Bulgaria','Rumania','Greece','Albania','Trieste'], \
                  'Rumania':['Ukraine','Stevastopol','Black Sea','Bulgaria (South Coast)','Bulgaria (East Coast)','Serbia','Galicia'], \
                  'Black Sea':['Stevastopol','Armenia','Ankara','Constantinople','Bulgaria (South Coast)','Bulgaria (East Coast)','Rumania'], \
@@ -132,11 +137,11 @@ def diplomacyPage():
    def drawBoard():
       global myTurn
       global lastStatusMessage
-      global selectTransport
+      global fromCity
       background = pygame.image.load ('images/diplomacy.gif')
       # background = pygame.transform.scale(background, (DISPLAYWIDTH, DISPLAYHEIGHT)) 
                
-      def getButtons (state,myTurn): 
+      def getButtons (state=0,myTurn=True): 
          if myTurn:
             pygame.display.set_caption('Click on card to perform action')         
          else:
@@ -144,7 +149,7 @@ def diplomacyPage():
          
          if myTurn:
             if state == 0: 
-               buttons = ['quit']
+               buttons = ['quit','viewOrders']
             elif state == 1:
                buttons = ['quit']
             elif state == 2: 
@@ -205,12 +210,16 @@ def diplomacyPage():
          points = [(x+40,y-3), (x+20,y-23), (x+20, y-3)]         
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)         
                
-      def showPiece (imgPos): 
-         global selectTransport
+      def showPiece (imgPos,orders):
+         global fromCity
+         action = ''
+         destination = ''
          print ( 'showPiece, imgPos: ' + str(imgPos)) 
          (player,city,unit) = findPiece (imgPos)
          if player != '':
-            pygame.display.set_caption('Select action for the ' + player + ' ' + unit + ' stationed at ' + city)
+            msg = 'Select action for the ' + player + ' ' + unit + ' stationed at ' + city
+            pygame.display.set_caption(msg)
+            print (msg)
             DISPLAYSURF.fill((WHITE))         
             if unit == 'navy': 
                drawNavy ((100,100), colors[player])   
@@ -236,25 +245,25 @@ def diplomacyPage():
                      quit = True
                   else:
                      if action == 'selectTransport':
-                        selectTransport = city
+                        fromCity = city
                         quit = True
                      else:
                         if action == 'transport':
-                           if selectTransport == '':
+                           if fromCity == '':
                               drawStatus ( 'First select an army unit for transport')
                            elif selectedTown == '':
                               drawStatus ( 'Select a destination town')
                            else:
-                              if isAdjacent (selectTransport, city):
-                                 drawStatus ( selectTransport + ' will be transported to: ' + selectedTown)
-                                 orders.append (['transport',selectTranport,selectedTown])
+                              if isAdjacent (fromCity, city):
+                                 drawStatus ( fromCity + ' will be transported to: ' + selectedTown)
+                                 orders.append ([city,'transport',fromCity,selectedTown])
                               else:
-                                 drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + selectTransport + ' (it is too far away).')
+                                 drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
                         elif selectedTown == '':
                            drawStatus ('Select a town first (for ' + action + ')')
                         else:
                            print ( action + ' ' + selectedTown )
-                           orders.append ([action,selectedTown])
+                           orders.append ([city,action,selectedTown,destination])
                            quit = True
                   
                # Check if a town was clicked on       
@@ -262,7 +271,25 @@ def diplomacyPage():
                if sprite != -1:
                   selectedTown = cityList [sprite]            
                   drawStatus ( 'You have selected: ' + selectedTown)
+                  if action != '': 
+                     if action == 'transport':
+                        if isAdjacent (fromCity, city):
+                           drawStatus ( fromCity + ' will be transported to: ' + selectedTown)
+                           orders.append ([city,'transport',fromCity,selectedTown])
+                        else:
+                           drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
+                     else:
+                        orders.append ([city,action,selectedTown])
+                     quit = True
                   
+
+      def showOrders(orders):                  
+         drawStatus ( "View the " + str(len(orders)) + " orders yo")
+         count = 0
+         for order in orders:
+            print ( 'order [' + str(count) + ']: ' + str(order))
+            count = count + 1
+          
       def showPieces (imgPos): 
          for player in players:
             color = colors[player]
@@ -290,7 +317,7 @@ def diplomacyPage():
          return buttonSprites   
          
       imgPos = (0,0)   
-      buttons = getButtons (state,myTurn)
+      buttons = getButtons ()
       buttonSprites = showBoard(buttons,imgPos)
 
       quit = False      
@@ -298,6 +325,7 @@ def diplomacyPage():
       drag = None
       lastCity = ''
       lastPosition = (0,0)
+      orders = []
       while not quit:            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()         
@@ -332,18 +360,22 @@ def diplomacyPage():
                imgPos = (x,y)
          elif eventType == pygame.MOUSEBUTTONUP:
             if data == selected: 
-               showPiece (lastPosition)
+               showPiece (lastPosition,orders)
             drag = None
 
-         showBoard (buttons,imgPos) 
-                
          # Handle button press
          sprite = getSpriteClick (eventType, data, buttonSprites ) 
          if sprite > -1:
-            action = buttons[sprite]
-            
+            action = buttons[sprite]          
             if action == 'quit':
                quit = True
+            elif action == 'viewOrders':
+               showOrders(orders)
+            else: 
+               print ( 'action: [' + action + ']')
+               
+         showBoard (buttons,imgPos) 
+                
    if iAmHost:
       # Set opponents list of games
       udpBroadcast ( 'exec:games=[\'Diplomacy\']')
