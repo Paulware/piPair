@@ -20,14 +20,8 @@ This function will find the nearest town to the current mouse position (pos)
          for key in locations:
             pos = locations[key]
             difference = abs ( x - pos[0]) + abs (y - pos[1])
-            if difference < minDistance:                
-               if ((key != 'Portugal') or (x < 156)) and \
-                  ((key != 'West Mediterranean') or (y < 876)) and \
-                  ((key != 'Spain (South Coast)') or (y < 848 )) and \
-                  ((key != 'North Africa') or (y > 886)) and \
-                  ((key != 'Portugal') or (y < 807)) and \
-                  ((key != 'Tuscany') or (y > 708)):                  
-                  city = key
-                  minDistance = difference
+            if difference < minDistance:                                 
+               city = key
+               minDistance = difference
          return city  
 </pre>
