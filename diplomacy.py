@@ -299,7 +299,7 @@ def diplomacyPage(numPlayers=2):
             count = count + 1
          
          labels = showList(myOrders)      
-         (images,buttonSprites) = showImages (['images/quit.jpg'], [(400,400)] )
+         (images,buttonSprites) = showImages (['images/ok.jpg'], [(400,400)] )
          pygame.display.update()
          
          quit = False      
@@ -324,13 +324,13 @@ def diplomacyPage(numPlayers=2):
          return occupied 
          
       def showPieces (imgPos):
-         print ( 'showPieces: locations[Galicia]:' + str(locations['Galicia']) )     
-         print ( 'showPieces: players:' + str (players))          
+         #print ( 'showPieces: locations[Galicia]:' + str(locations['Galicia']) )     
+         #print ( 'showPieces: players:' + str (players))          
          for player in players:
             color = colors[player]
             positions = players[player]
-            if player == 'Austria': 
-               print ( 'Austrias positions: ' + str(positions)) 
+            #if player == 'Austria': 
+            #   print ( 'Austrias positions: ' + str(positions)) 
             for town in positions:
                unit = positions[town]
                x = locations[town][0] + imgPos[0]
