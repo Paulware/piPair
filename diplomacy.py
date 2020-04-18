@@ -7,6 +7,8 @@ def diplomacyPage(numPlayers=2):
    global myTurn
    global statusMessage
    global fromCity
+   global locations
+   global players
  
    Object = type('Object', (object,), {} ) # Generic object definition
 
@@ -32,15 +34,15 @@ def diplomacyPage(numPlayers=2):
                  'Turkey':  {'Constantinople': 'army', 'Ankara':'navy', 'Smyrna':'army'} \
                 }
              
-   locations = {'North Atlantic':(104,236), 'Norwegian Sea':(463,140), 'Barents Sea':(840,29), \
-                'Norway': (546,284), 'Sweden': (604,318), 'Gulf of Bothnia': (666,283), 'Finland': (747,242), 'St Petersburg (North Coast)': (853,212), 'St Petersburg (South Coast)': (795,324), \
-                'Clyde': (318,360), 'Edinburgh': (340,366), 'North Sea': (433,385), 'Skagerrak': (537,350), 'Denmark': (533,410), 'Baltic Sea': (624,427), 'Livonia': (744,418), 'Moscow': (920,395), \
-                'Irish Sea': (239,467), 'Wales': (320,460), 'Liverpool': (330,431), 'Yorkshire': (356,434), 'London': (350,480), 'Helgeland Bight': (470,444), 'Kiel': (500,485), 'Berlin': (565,510), 'Prussia': (630,484), 'Warsaw': (686,526), \
-                'Mid Atlantic': (85,580), 'English Channel': (310,517), 'Belgium': (406,523), 'Holland': (439,505), 'Ruhr': (473,543), 'Munich': (522,591), 'Bohemia': (574,573), 'Silesia': (606,533), 'Galicia': (727,580), 'Ukraine': (826,550), 'Stevastopol': (1000,570), \
-                'Brest': (288,563), 'Paris': (370,580), 'Picardy': (374,545), 'Burgundy': (400,600), 'Tyrolia': (540,648), 'Vienna': (620,625), 'Budapest': (672,642), 'Rumania': (797,702), 'Black Sea': (936,719), \
-                'Gascony': (322,677), 'Marseilles': (400,700), 'Piemonte': (467,684), 'Venezia': (535,676), 'Trieste': (601,692), 'Serbia': (683,729), \
-                'Portugal': (118,744), 'Spain (North Coast)': (240,691), 'Spain (South Coast)': (254,806), 'Gulf of Lyon': (404,771), 'Tuscany': (512,736), 'Roma': (542,782), 'Apulia': (586,792), 'Napoli': (570,809), 'Adriatic Sea': (593,756), 'Albania': (675,796), 'Bulgaria (East Coast)': (810,738), 'Bulgaria (South Coast)': (776,799), 'Constantinople': (839,795), 'Ankara': (936,800), 'Armenia': (1102,798), \
-                'North Africa': (145,913), 'West Mediterranean': (316,850), 'Tunisia': (459,920), 'Tyrhennian Sea': (504,841), 'Ionian Sea': (626,930), 'Greece': (720,854), 'Aegean Sea': (785,883), 'Smyrna': (932,863), 'East Mediterranean': (873,938), 'Syria': (1082,896) }
+   locations = {'North Atlantic':(104,236,None), 'Norwegian Sea':(463,140,None), 'Barents Sea':(840,29,None), \
+                'Norway': (546,284,None), 'Sweden': (604,318,None), 'Gulf of Bothnia': (666,283,None), 'Finland': (747,242,None), 'St Petersburg (North Coast)': (853,212,None), 'St Petersburg (South Coast)': (795,324,None), \
+                'Clyde': (318,360,None), 'Edinburgh': (340,366,None), 'North Sea': (433,385,None), 'Skagerrak': (537,350,None), 'Denmark': (533,410,None), 'Baltic Sea': (624,427,None), 'Livonia': (744,418,None), 'Moscow': (920,395,None), \
+                'Irish Sea': (239,467,None), 'Wales': (320,460,None), 'Liverpool': (330,431,None), 'Yorkshire': (356,434,None), 'London': (350,480,None), 'Helgeland Bight': (470,444,None), 'Kiel': (500,485,None), 'Berlin': (565,510,None), 'Prussia': (630,484,'Germany'), 'Warsaw': (686,526,None), \
+                'Mid Atlantic': (85,580,None), 'English Channel': (310,517,None), 'Belgium': (406,523,None), 'Holland': (439,505,None), 'Ruhr': (473,543,None), 'Munich': (522,591,None), 'Bohemia': (574,573,None), 'Silesia': (606,533,None), 'Galicia': (727,580,None), 'Ukraine': (826,550,None), 'Stevastopol': (1000,570,None), \
+                'Brest': (288,563,None), 'Paris': (370,580,None), 'Picardy': (374,545,None), 'Burgundy': (400,600,None), 'Tyrolia': (540,648,None), 'Vienna': (620,625,None), 'Budapest': (672,642,None), 'Rumania': (797,702,None), 'Black Sea': (936,719,None), \
+                'Gascony': (322,677,None), 'Marseilles': (400,700,None), 'Piemonte': (467,684,None), 'Venezia': (535,676,None), 'Trieste': (601,692,None), 'Serbia': (683,729,None), \
+                'Portugal': (118,744,None), 'Spain (North Coast)': (240,691,None), 'Spain (South Coast)': (254,806,None), 'Gulf of Lyon': (404,771,None), 'Tuscany': (512,736,None), 'Roma': (542,782,None), 'Apulia': (586,792,None), 'Napoli': (570,809,None), 'Adriatic Sea': (593,756,None), 'Albania': (675,796,None), 'Bulgaria (East Coast)': (810,738,None), 'Bulgaria (South Coast)': (776,799,None), 'Constantinople': (839,795,None), 'Ankara': (936,800,None), 'Armenia': (1102,798,None), \
+                'North Africa': (145,913,None), 'West Mediterranean': (316,850,None), 'Tunisia': (459,920,None), 'Tyrhennian Sea': (504,841,None), 'Ionian Sea': (626,930,None), 'Greece': (720,854,None), 'Aegean Sea': (785,883,None), 'Smyrna': (932,863,None), 'East Mediterranean': (873,938,None), 'Syria': (1082,896,None) }
              
    adjacents = { \
                  'North Atlantic':['Norwegian Sea','Irish Sea','Mid Atlantic'], \
@@ -149,15 +151,10 @@ def diplomacyPage(numPlayers=2):
          
          if myTurn:
             if state == 0: 
-               buttons = ['quit','viewOrders']
-            elif state == 1:
-               buttons = ['quit']
-            elif state == 2: 
-               buttons =  ['turndone','quit']
+               buttons = ['viewOrders','turnDone','quit']
          else:
             buttons = ['quit']
-         print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + \
-                 str(buttons) ) 
+         # print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + str(buttons) ) 
          return buttons
                        
       def findLocation(pos):
@@ -208,6 +205,13 @@ def diplomacyPage(numPlayers=2):
          points = [(x,y), (x+40,y), (x+30,y+7), (x+10,y+7)]
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)
          points = [(x+40,y-3), (x+20,y-23), (x+20, y-3)]         
+         pygame.draw.polygon (DISPLAYSURF, color, points, 0)         
+         
+      def drawFlag (pos,color):
+         # print ( 'Draw a flag at ' + str(pos)) 
+         x = pos[0] - 20
+         y = pos[1]
+         points = [(x+25,y-3), (x+35,y-15), (x+35, y+7), (x+33,y+7), (x+33,y-3)]         
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)         
                
       def showPiece (imgPos,orders):
@@ -283,17 +287,50 @@ def diplomacyPage(numPlayers=2):
                      quit = True
                   
 
-      def showOrders(orders):                  
+      def showOrders(orders):
+         DISPLAYSURF.fill((BLACK))     
          drawStatus ( "View the " + str(len(orders)) + " orders yo")
          count = 0
+         myOrders = []
          for order in orders:
-            print ( 'order [' + str(count) + ']: ' + str(order))
+            msg = 'order [' + str(count) + ']: ' + str(order)
+            print (msg)
+            myOrders.append (msg)
             count = count + 1
-          
-      def showPieces (imgPos): 
+         
+         labels = showList(myOrders)      
+         (images,buttonSprites) = showImages (['images/quit.jpg'], [(400,400)] )
+         pygame.display.update()
+         
+         quit = False      
+         while not quit: 
+            (eventType,data,addr) = getKeyOrUdp()         
+            sprite = getSpriteClick (eventType, data, buttonSprites ) 
+            if sprite > -1:
+               quit = True            
+                                      
+      def townOccupied(town):
+         occupied = False
+         for player in players:
+            positions = players[player]
+            for city in positions:
+               if city == town:
+                  #print ( town + ' occupied, by ' + player + ' based on players position')
+                  occupied = True 
+                  break                  
+            if occupied: 
+               break
+               
+         return occupied 
+         
+      def showPieces (imgPos):
+         print ( 'showPieces: locations[Galicia]:' + str(locations['Galicia']) )     
+         print ( 'showPieces: players:' + str (players))          
          for player in players:
             color = colors[player]
             positions = players[player]
+            if player == 'Austria': 
+               print ( 'Austrias positions: ' + str(positions)) 
             for town in positions:
                unit = positions[town]
                x = locations[town][0] + imgPos[0]
@@ -302,8 +339,50 @@ def diplomacyPage(numPlayers=2):
                if unit == 'navy': 
                   drawNavy ((x,y),color)
                else:
-                  drawArmy ((x,y),color)                  
+                  drawArmy ((x,y),color)
+ 
+               x = locations[town][0]
+               y = locations[town][1]
+               locations [town] = (x,y,player) 
                   
+         for location in locations: 
+            # print( 'Got a location of: ' + str(location))
+            owner = locations[location][2]
+            if owner != None:
+               x = locations[location][0] + imgPos[0]
+               y = locations[location][1] + imgPos[1]
+               # print ( 'Get the color for : ' + owner )
+               color = colors[owner]
+               if not townOccupied (location):
+                  drawFlag ( (x,y), color)             
+                  
+      def executeOrders(orders):
+         global locations
+         global players
+         for order in orders:
+            fromTown = order[0]
+            toTown = order[2]
+            player = locations[fromTown][2]
+            print ( 'execute this order: for ' + player + ':' + str(order)) 
+            # update locations
+            x = locations[toTown][0]
+            y = locations[toTown][1]
+            locations[toTown] = (x,y,player)
+            print ( 'locations[Galicia]:' + str(locations['Galicia']) )
+            
+            # update players 
+            playerUnits = players[player]
+            print ( 'playerUnits before update: ' + str(playerUnits))
+            unit = playerUnits[fromTown]
+            print ( 'Delete ' + fromTown + ' from playerUnits' )
+            del playerUnits[fromTown]
+            print ( 'Add ' + toTown + ' to playerUnits' )
+            playerUnits[toTown] = unit # add back the unit
+            print ( 'playerUnits after update: ' + str(playerUnits))
+            players[player] = playerUnits
+                            
+         orders = []   
+         return orders         
                
       def showBoard (actions,imgPos): 
          DISPLAYSURF.fill((WHITE))
@@ -371,6 +450,10 @@ def diplomacyPage(numPlayers=2):
                quit = True
             elif action == 'viewOrders':
                showOrders(orders)
+            elif action == 'turnDone':
+               orders = executeOrders(orders)
+               showBoard (['viewOrders','turnDone','quit'],imgPos)
+
             else: 
                print ( 'action: [' + action + ']')
                

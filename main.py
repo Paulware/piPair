@@ -436,6 +436,7 @@ def updateWpaSupplicant (ssid, password):
          f.close()      
    except Exception as ex:
       print ("Could not modify wpa_supplicate because: " + str(ex) )
+      
 def createLabel (msg, x, y):
     surface = FONT.render(msg, True, TEXTCOLOR, TEXTBGCOLOR2)
     rect = surface.get_rect()

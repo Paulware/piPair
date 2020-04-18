@@ -290,7 +290,7 @@ def mtgPage():
                   buttons = ['quit']
                else:
                   showStatus ( 'Tap a land card to play a create, instant or sorcery')
-                  buttons =  ['turndone','quit']
+                  buttons =  ['turnDone','quit']
          else:
             buttons = ['quit']
          print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + \
@@ -341,7 +341,7 @@ def mtgPage():
          # Check for opponent move 
          if move != None: 
             print ( '  moveType: ' + move['moveType'])
-            if move['moveType'] == 'turndone':
+            if move['moveType'] == 'turnDone':
                hostTurn = not hostTurn
                hasPlayedLand = False
                myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)
@@ -561,12 +561,12 @@ def mtgPage():
                udpBroadcast ( 'exec:move={\'moveType\':\'quit\'}') 
                
                quit = True
-            elif action == 'turndone':
+            elif action == 'turnDone':
                if len(hand) > 7: 
                   showStatus ( 'You must discard a card (maximum hand size == 7)' )
                else:
                   print ( 'Other players turn' )
-                  udpBroadcast ( 'exec:move={\'moveType\':\'turndone\'}') 
+                  udpBroadcast ( 'exec:move={\'moveType\':\'turnDone\'}') 
                   hostTurn = not hostTurn
                   buttons = ['quit']
                   showStatus ( 'Waiting on other player to finish their turn' )
