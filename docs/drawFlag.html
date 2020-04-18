@@ -1,0 +1,10 @@
+<H1>Draw Flag at location:pos with specified color </H1>
+This snippet of code will draw a flag
+<pre>
+     def drawFlag (pos,color):
+         # print ( 'Draw a flag at ' + str(pos)) 
+         x = pos[0] - 20
+         y = pos[1]
+         points = [(x+25,y-3), (x+35,y-15), (x+35, y+7), (x+33,y+7), (x+33,y-3)]         
+         pygame.draw.polygon (DISPLAYSURF, color, points, 0)
+</pre>
