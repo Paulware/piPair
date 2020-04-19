@@ -146,6 +146,8 @@ def blitRotate(image, pos, angle):
 lastStatus = ''    
 def drawStatus (message):  
    global lastStatus    
+   if message != lastStatus: 
+      print (message)
    # print ( 'Show status: ' + message )
    height = DISPLAYHEIGHT - 23
    pygame.draw.line(DISPLAYSURF, RED, (0, height), (DISPLAYWIDTH, height)) #status line
@@ -534,7 +536,8 @@ def scanForSsids ():
     print (str(ssids)) 
     return ssids
     
-def showList(ssids):    
+def showList(ssids):
+    print ('showList' + str(ssids) )     
     i = 0    
     y = 75 
     locations = []
@@ -599,7 +602,7 @@ def readLines (filename, match):
     try: 
        f = open (filename, 'r') 
        lines = f.readlines()
-       f.close
+       f.close()
        
        for line in lines:
           if line.find (match) > -1:

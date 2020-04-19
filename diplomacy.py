@@ -33,16 +33,27 @@ def diplomacyPage(numPlayers=2):
                  'Russia':  {'St Petersburg (South Coast)': 'navy', 'Warsaw':'army', 'Moscow':'army', 'Stevastopol': 'navy'} , \
                  'Turkey':  {'Constantinople': 'army', 'Ankara':'navy', 'Smyrna':'army'} \
                 }
-             
-   locations = {'North Atlantic':(104,236,None), 'Norwegian Sea':(463,140,None), 'Barents Sea':(840,29,None), \
-                'Norway': (546,284,None), 'Sweden': (604,318,None), 'Gulf of Bothnia': (666,283,None), 'Finland': (747,242,None), 'St Petersburg (North Coast)': (853,212,None), 'St Petersburg (South Coast)': (795,324,None), \
-                'Clyde': (318,360,None), 'Edinburgh': (340,366,None), 'North Sea': (433,385,None), 'Skagerrak': (537,350,None), 'Denmark': (533,410,None), 'Baltic Sea': (624,427,None), 'Livonia': (744,418,None), 'Moscow': (920,395,None), \
-                'Irish Sea': (239,467,None), 'Wales': (320,460,None), 'Liverpool': (330,431,None), 'Yorkshire': (356,434,None), 'London': (350,480,None), 'Helgeland Bight': (470,444,None), 'Kiel': (500,485,None), 'Berlin': (565,510,None), 'Prussia': (630,484,'Germany'), 'Warsaw': (686,526,None), \
-                'Mid Atlantic': (85,580,None), 'English Channel': (310,517,None), 'Belgium': (406,523,None), 'Holland': (439,505,None), 'Ruhr': (473,543,None), 'Munich': (522,591,None), 'Bohemia': (574,573,None), 'Silesia': (606,533,None), 'Galicia': (727,580,None), 'Ukraine': (826,550,None), 'Stevastopol': (1000,570,None), \
-                'Brest': (288,563,None), 'Paris': (370,580,None), 'Picardy': (374,545,None), 'Burgundy': (400,600,None), 'Tyrolia': (540,648,None), 'Vienna': (620,625,None), 'Budapest': (672,642,None), 'Rumania': (797,702,None), 'Black Sea': (936,719,None), \
-                'Gascony': (322,677,None), 'Marseilles': (400,700,None), 'Piemonte': (467,684,None), 'Venezia': (535,676,None), 'Trieste': (601,692,None), 'Serbia': (683,729,None), \
-                'Portugal': (118,744,None), 'Spain (North Coast)': (240,691,None), 'Spain (South Coast)': (254,806,None), 'Gulf of Lyon': (404,771,None), 'Tuscany': (512,736,None), 'Roma': (542,782,None), 'Apulia': (586,792,None), 'Napoli': (570,809,None), 'Adriatic Sea': (593,756,None), 'Albania': (675,796,None), 'Bulgaria (East Coast)': (810,738,None), 'Bulgaria (South Coast)': (776,799,None), 'Constantinople': (839,795,None), 'Ankara': (936,800,None), 'Armenia': (1102,798,None), \
-                'North Africa': (145,913,None), 'West Mediterranean': (316,850,None), 'Tunisia': (459,920,None), 'Tyrhennian Sea': (504,841,None), 'Ionian Sea': (626,930,None), 'Greece': (720,854,None), 'Aegean Sea': (785,883,None), 'Smyrna': (932,863,None), 'East Mediterranean': (873,938,None), 'Syria': (1082,896,None) }
+                
+   if iAmHost: 
+      for player in players:
+         iAmPlayer = player 
+         break
+   else:
+      iAmPlayer = ''
+      for player in players:
+         if iAmPlayer != '':
+            break  # Take the seoond player
+         iAmPlayer = player
+                         
+   locations = {'North Atlantic':[104,236,None,'sea'], 'Norwegian Sea':[463,140,None,'sea'], 'Barents Sea':[840,29,None,'sea'], \
+                'Norway': [546,284,None,'coast'], 'Sweden': [604,318,None,'land'], 'Gulf of Bothnia': [666,283,None,'sea'], 'Finland': [747,242,None,'coast'], 'St Petersburg [North Coast]': [853,212,None,'coast'], 'St Petersburg [South Coast]': [795,324,None,'coast'], \
+                'Clyde': [318,360,None,'coast'], 'Edinburgh': [340,366,None,'coast'], 'North Sea': [433,385,None,'sea'], 'Skagerrak': [537,350,None,'sea'], 'Denmark': [533,410,None,'coast'], 'Baltic Sea': [624,427,None,'sea'], 'Livonia': [744,418,None,'coast'], 'Moscow': [920,395,None,'land'], \
+                'Irish Sea': [239,467,None,'sea'], 'Wales': [320,460,None,'coast'], 'Liverpool': [330,431,None,'coast'], 'Yorkshire': [356,434,None,'coast'], 'London': [350,480,None,'coast'], 'Helgeland Bight': [470,444,None,'sea'], 'Kiel': [500,485,None,'coast'], 'Berlin': [565,510,None,'coast'], 'Prussia': [630,484,'Germany','coast'], 'Warsaw': [686,526,None,'land'], \
+                'Mid Atlantic': [85,580,None,'sea'], 'English Channel': [310,517,None,'sea'], 'Belgium': [406,523,None,'coast'], 'Holland': [439,505,None,'coast'], 'Ruhr': [473,543,None,'land'], 'Munich': [522,591,None,'land'], 'Bohemia': [574,573,None,'land'], 'Silesia': [606,533,None,'land'], 'Galicia': [727,580,None,'land'], 'Ukraine': [826,550,None,'land'], 'Stevastopol': [1000,570,None,'coast'], \
+                'Brest': [288,563,None,'coast'], 'Paris': [370,580,None,'land'], 'Picardy': [374,545,None,'coast'], 'Burgundy': [400,600,None,'land'], 'Tyrolia': [540,648,None,'land'], 'Vienna': [620,625,None,'land'], 'Budapest': [672,642,None,'land'], 'Rumania': [797,702,None,'coast'], 'Black Sea': [936,719,None,'sea'], \
+                'Gascony': [322,677,None,'coast'], 'Marseilles': [400,700,None,'coast'], 'Piemonte': [467,684,None,'coast'], 'Venezia': [535,676,None,'coast'], 'Trieste': [601,692,None,'coast'], 'Serbia': [683,729,None,'land'], \
+                'Portugal': [118,744,None,'coast'], 'Spain [North Coast]': [240,691,None,'coast'], 'Spain [South Coast]': [254,806,None,'coast'], 'Gulf of Lyon': [404,771,None,'sea'], 'Tuscany': [512,736,None,'coast'], 'Roma': [542,782,None,'coast'], 'Apulia': [586,792,None,'coast'], 'Napoli': [570,809,None,'coast'], 'Adriatic Sea': [593,756,None,'sea'], 'Albania': [675,796,None,'coast'], 'Bulgaria [East Coast]': [810,738,None,'coast'], 'Bulgaria [South Coast]': [776,799,None,'coast'], 'Constantinople': [839,795,None,'coast'], 'Ankara': [936,800,None,'coast'], 'Armenia': [1102,798,None,'coast'], \
+                'North Africa': [145,913,None,'coast'], 'West Mediterranean': [316,850,None,'sea'], 'Tunisia': [459,920,None,'coast'], 'Tyrhennian Sea': [504,841,None,'sea'], 'Ionian Sea': [626,930,None,'sea'], 'Greece': [720,854,None,'coast'], 'Aegean Sea': [785,883,None,'sea'], 'Smyrna': [932,863,None,'coast'], 'East Mediterranean': [873,938,None,'sea'], 'Syria': [1082,896,None,'coast'] }
              
    adjacents = { \
                  'North Atlantic':['Norwegian Sea','Irish Sea','Mid Atlantic'], \
@@ -191,6 +202,44 @@ def diplomacyPage(numPlayers=2):
                break
          print ( 'findPiece got (player,city,unit): (' + str(player) + ',' + str(city) + ',' + str(unit) + ')' )
          return (player,city,unit) 
+         
+      def moveAdjacentList (city,unit):
+         print ( 'moveAdjacentList (' + city + ',' + unit + ')' )
+         cityList = []
+         for city in adjacents[city]:
+            info = locations[city]
+            landType = info[3]
+            if unit == 'navy':
+               if (landType == 'sea') or (landType == 'coast'): 
+                  cityList.append (city)               
+            else: 
+               if (landType == 'coast') or (landType == 'land'):
+                  cityList.append (city)
+         print ('cityList: ' + str(cityList))                   
+         return cityList
+         
+      def convoyFromList (city):
+         print ( 'convoyFromList (' + city + ')' )
+         cityList = []
+         for city in adjacents[city]:
+            info = locations[city]
+            landType = info[3]
+            if (landType == 'coast') or (landType == 'land'): 
+               cityList.append (city)   
+         print ('cityList: ' + str(cityList))                
+         return cityList
+         
+      def convoyToList (city):
+         print ( 'convoyTotList (' + city + ')' )
+         cityList = []
+         for city in adjacents[city]:
+            info = locations[city]
+            landType = info[3]
+            if (landType == 'coast'): 
+               cityList.append (city)   
+         print ('cityList: ' + str(cityList))                
+         return cityList
+         
       
       def drawArmy (pos,color):
          x = pos[0]
@@ -213,14 +262,40 @@ def diplomacyPage(numPlayers=2):
          y = pos[1]
          points = [(x+25,y-3), (x+35,y-15), (x+35, y+7), (x+33,y+7), (x+33,y-3)]         
          pygame.draw.polygon (DISPLAYSURF, color, points, 0)         
+         
+      def validateConvoyOrder(orders,convoyCity,fromCity,destinationCity):
+         print ( 'Do a convoy yo [convoyCity,fromCity,destinationCity]: [' + convoyCity + ',' + fromCity + ',' + destinationCity + ']' )
+         if convoyCity == '':
+            drawStatus ( 'convoy city not specified yo')
+         elif fromCity == '':
+            drawStatus ( 'First select an army unit for transport')
+         elif destinationCity == '':
+            drawStatus ( 'Select a destination town')
+         elif destinationCity == fromCity: 
+            drawStatus ( 'Cannot transport unit from ' + fromCity + ' to ' + destinationCity + ' (pick different destination)')
+         else:
+            print ( 'locations[' + destinationCity + '] : ' + str(locations[destinationCity]))
+            destinationType = locations[destinationCity][3]
+            print ( 'locations[' + fromCity + '] : ' + str(locations[fromCity]))
+            fromType = locations[fromCity][3]
+            print ( 'convoy, [fromType,destinationType], [' + fromType + ',' + destinationCity + ']')
+            if isAdjacent (fromCity, city):
+               drawStatus ( fromCity + ' will be transported to: ' + destinationCity)
+               orders.append ([city,'convoy',fromCity,destinationCity])
+            elif destinationType != 'coast': 
+               drawStatus ('Err, destination must be a coastal location' )                              
+            else:
+               drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
                
       def showPiece (imgPos,orders):
-         global fromCity
          action = ''
          destination = ''
+         cities = []
+         fromCity = ''
+         toCity = ''
          print ( 'showPiece, imgPos: ' + str(imgPos)) 
          (player,city,unit) = findPiece (imgPos)
-         if player != '':
+         if player == iAmPlayer:
             msg = 'Select action for the ' + player + ' ' + unit + ' stationed at ' + city
             pygame.display.set_caption(msg)
             print (msg)
@@ -230,61 +305,72 @@ def diplomacyPage(numPlayers=2):
                actions = ['convoy','move','support','hold','ok']
             else:        
                drawArmy ((100,100), colors[player])  
-               actions = ['selectTransport', 'move','support','hold','ok']
+               actions = ['move','support','hold','ok']
                       
-            (filenames,locations) = actionsToIcons (actions) 
-            (images,buttonSprites) = showImages (filenames, locations )      
-            cityList = adjacents[city]         
-            cities = showList (cityList)          
+            (filenames,buttons) = actionsToIcons (actions) 
+            (images,buttonSprites) = showImages (filenames, buttons)      
             pygame.display.update() 
             quit = False
             selectedTown = ''
             while not quit:
                (eventType,data,addr) = getKeyOrUdp()                  
+               
+               # Check for click on action 
                sprite = getSpriteClick (eventType, data, buttonSprites ) 
                if sprite != -1:  
-                  print ( 'actions: ' + str(actions) + ' sprite: ' + str(sprite))             
+                  print ( 'actions: ' + str(actions) + ' sprite: ' + str(sprite))
                   action = actions[sprite]        
                   if action == 'ok': 
                      quit = True
                   else:
-                     if action == 'selectTransport':
-                        fromCity = city
+                     if action == 'convoy':
+                        pygame.display.set_caption('Select From Town')                     
+                        cityList = convoyFromList (city)
+                        cities = showList (cityList)                            
+                     elif action == 'move': 
+                        cityList = moveAdjacentList (city,unit)
+                        cities = showList (cityList)                            
+                     elif action == 'support':
+                        print ( 'suport yo')
+                        cityList = moveAdjacentList (city,unit)
+                        cities = showList (cityList)                                                       
+                     elif action == 'hold':
+                        print ( 'hold yo')
                         quit = True
                      else:
-                        if action == 'transport':
-                           if fromCity == '':
-                              drawStatus ( 'First select an army unit for transport')
-                           elif selectedTown == '':
-                              drawStatus ( 'Select a destination town')
-                           else:
-                              if isAdjacent (fromCity, city):
-                                 drawStatus ( fromCity + ' will be transported to: ' + selectedTown)
-                                 orders.append ([city,'transport',fromCity,selectedTown])
-                              else:
-                                 drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
-                        elif selectedTown == '':
-                           drawStatus ('Select a town first (for ' + action + ')')
-                        else:
-                           print ( action + ' ' + selectedTown )
-                           orders.append ([city,action,selectedTown,destination])
-                           quit = True
+                        print ( 'did not handle action: ' + action)
                   
                # Check if a town was clicked on       
                sprite = getSpriteClick (eventType, data, cities ) 
                if sprite != -1:
-                  selectedTown = cityList [sprite]            
-                  drawStatus ( 'You have selected: ' + selectedTown)
+                  print ( 'sprite: ' + str(sprite) + ' cities: ' + str(cityList)) 
+                  destinationCity = cityList [sprite]            
+                  drawStatus ( 'You have selected: ' + destinationCity)
                   if action != '': 
-                     if action == 'transport':
-                        if isAdjacent (fromCity, city):
-                           drawStatus ( fromCity + ' will be transported to: ' + selectedTown)
-                           orders.append ([city,'transport',fromCity,selectedTown])
+                     if action == 'move':
+                        orders.append ([city,action,selectedTown,destinationCity])
+                        quit = True
+                     elif action == 'convoy':
+                        if fromCity == '':                       
+                           fromCity = cityList[sprite]
+                           pygame.display.set_caption('Select destination city')
+                           cityList = convoyToList (city)
+                           DISPLAYSURF.fill((WHITE))                            
+                           drawNavy ((100,100), colors[player])   
+                           actions = ['ok']                      
+                           (filenames,buttons) = actionsToIcons (actions) 
+                           (images,buttonSprites) = showImages (filenames, buttons)      
+                           pygame.display.update() 
+                           cities = showList (cityList)                            
                         else:
-                           drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
+                           toCity = cityList[sprite]                           
+                           convoyCity = city
+                           validateConvoyOrder (orders,convoyCity,fromCity,toCity)
+                           quit = True
                      else:
+                        print ( 'Can add order? [city,action,selectedTown]:[' + city + ',' + action + ',' + selectedTown + ']' )
                         orders.append ([city,action,selectedTown])
-                     quit = True
+                        quit = True
                   
 
       def showOrders(orders):
@@ -341,9 +427,7 @@ def diplomacyPage(numPlayers=2):
                else:
                   drawArmy ((x,y),color)
  
-               x = locations[town][0]
-               y = locations[town][1]
-               locations [town] = (x,y,player) 
+               locations [town][2] = player
                   
          for location in locations: 
             # print( 'Got a location of: ' + str(location))
@@ -365,10 +449,9 @@ def diplomacyPage(numPlayers=2):
             player = locations[fromTown][2]
             print ( 'execute this order: for ' + player + ':' + str(order)) 
             # update locations
-            x = locations[toTown][0]
-            y = locations[toTown][1]
-            locations[toTown] = (x,y,player)
+            locations[toTown][2] = player
             print ( 'locations[Galicia]:' + str(locations['Galicia']) )
+            print ( 'try again: ' + str(locations['Galicia']))
             
             # update players 
             playerUnits = players[player]
@@ -382,7 +465,7 @@ def diplomacyPage(numPlayers=2):
             players[player] = playerUnits
                             
          orders = []   
-         return orders         
+         # return orders         
                
       def showBoard (actions,imgPos): 
          DISPLAYSURF.fill((WHITE))
@@ -451,7 +534,7 @@ def diplomacyPage(numPlayers=2):
             elif action == 'viewOrders':
                showOrders(orders)
             elif action == 'turnDone':
-               orders = executeOrders(orders)
+               executeOrders(orders)
                showBoard (['viewOrders','turnDone','quit'],imgPos)
 
             else: 
