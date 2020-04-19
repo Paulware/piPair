@@ -227,10 +227,10 @@ def diplomacyPage(numPlayers=2):
             DISPLAYSURF.fill((WHITE))         
             if unit == 'navy': 
                drawNavy ((100,100), colors[player])   
-               actions = ['transport','attack','support','ok']
+               actions = ['convoy','move','support','hold','ok']
             else:        
                drawArmy ((100,100), colors[player])  
-               actions = ['selectTransport', 'attack','support','ok']
+               actions = ['selectTransport', 'move','support','hold','ok']
                       
             (filenames,locations) = actionsToIcons (actions) 
             (images,buttonSprites) = showImages (filenames, locations )      
