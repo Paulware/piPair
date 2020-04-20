@@ -1,5 +1,5 @@
 import inspect
-#TODO: Each while loop has its own def 
+
 def mtgPage():
    global joining 
    global move 
@@ -83,12 +83,14 @@ def mtgPage():
          print ( 'This affect: ' + affect + ' is not part of the card: ' + filename )         
    
    def indexesToFilenames (indexList): 
-      # print ( 'indexesToFilenames list: ' + str(indexList) + ' len(allCards): ' + str(len(allCards))  ) 
+      print ( 'indexesToFilenames list: ' + str(indexList) + ' len(allCards): ' + str(len(allCards))  ) 
       filenames = []
       element = None
       try:
          for index in indexList: 
-            if str(index).isnumeric():   
+            ind = str(index)
+            print ( 'Checking index: [' + ind + ']')             
+            if ind.isnumeric():   
                if int(index) <= len(allCards):  
                   element = allCards [index]               
                   filename = allCards[index]['filename']
@@ -98,7 +100,7 @@ def mtgPage():
             else:
                print ( 'ERR index invalid (should be a number): ' + str(index) ) 
       except Exception as ex:
-         print ( 'Could not convert indexes to filenames with element: ' + str(element) + ' because: ' + str(ex)  )      
+         print ( 'Could not convert indexList: ' + str(indexList) + ' indexes to filenames with element: ' + str(element) + ' because: ' + str(ex)  )      
 
       return filenames
    
@@ -196,7 +198,7 @@ def mtgPage():
          global sprites
          # Show the deck
          DISPLAYSURF.fill((WHITE))       
-         (images,sprites) = showImages (['images/ok.jpg'], [(400,50)] ) 
+         (images,sprites) = showImages (['images/ok.jpg','images/quit.jpg'], [(400,50),(550,50)] ) 
          print ( 'showCreatedDeck.showDeck' )
          (images,cards) = showCards (indexList, (0,90), 35 )
          
@@ -204,6 +206,7 @@ def mtgPage():
       showDeck()
       quit = False  
       joinTimeout = 0
+      done = False 
       while not quit:  
          (eventType,data,addr) = getKeyOrUdp()
       
@@ -222,8 +225,13 @@ def mtgPage():
             action = getSingleCardAction ( filename, 'View card', actions)          
 
          sprite = getSpriteClick (eventType, data, sprites ) 
-         if sprite != -1: # Quit is the only other option           
-            quit = True
+         if sprite != -1: # Quit is the only other option                    
+            if sprite == 0:            
+               quit = True
+            elif sprite == 1:
+               done = True
+               break
+      return done
                   
    # Get action from a single card 
    def getSingleCardAction (card,caption,actions):
@@ -626,7 +634,7 @@ def mtgPage():
  
    creature = deckBasis   
    print ( 'Got a creature filename: ' + creature )
-   showCreatedDeck(deck,creature) # Show the list of cards 
+   done = showCreatedDeck(deck,creature) # Show the list of cards 
    
    hand = []
    inPlay = []
@@ -638,7 +646,7 @@ def mtgPage():
    print ( 'Waiting for player to join...' )   
 
    transmitTimeout = 0   
-   while joining != 'MTG':
+   while not done and (joining != 'MTG'):
       (eventType,data,addr) = getKeyOrUdp() # This should set games   
       if time.time() > transmitTimeout: 
          udpBroadcast ( 'exec:games=[\'MTG\']')

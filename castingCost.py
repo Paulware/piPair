@@ -47,7 +47,6 @@ class castingCost:
       'images/mtg/creatures/deadPoolIII.png':{'power':3, 'toughness':3,'toCast':['4','black','red']}, \
       'images/mtg/creatures/dickJones.png':{'power':7, 'toughness':7,'toCast':['3','black','black']}, \
       'images/mtg/creatures/doctorEmmettBrown.jpg':{'power':1, 'toughness':3,'toCast':['2','blue','blue']}, \
-      'images/mtg/creatures/doge.jpg':{'power':0, 'toughness':1,'toCast':['1']}, \
       'images/mtg/creatures/donkeyKong.png':{'power':7, 'toughness':6,'toCast':['5','green','red']}, \
       'images/mtg/creatures/draxDestroyer.jpg':{'power':6,'toughness':4,'toCast':['4',['black','blue'],'red']}, \
       'images/mtg/creatures/drHouse.jpg':{'power':2, 'toughness':8,'toCast':['5','white','white','white']}, \
@@ -57,7 +56,6 @@ class castingCost:
       # Add tap, creature gains flying and is destroyed at end of turn (Fezzik)
       'images/mtg/creatures/fezzikTheKindlyGiant.jpg':{'power':5, 'toughness':6,'toCast':['1','white','green','red']}, \
       'images/mtg/creatures/frieza.jpg':{'power':1, 'toughness':2,'toCast':['black','blue','blue']}, \
-      'images/mtg/creatures/galactus.jpg':{'power':1, 'toughness':1,'toCast':['10']}, \
       'images/mtg/creatures/gamora.jpg':{'power':3, 'toughness':2, 'toCast':['white','blue','red']}, \
       'images/mtg/creatures/gameStoreEmployee.jpg':{'power':2, 'toughness':2,'toCast':['blue','blue']}, \
       'images/mtg/creatures/gandalf.png':{'power':2, 'toughness':4,'toCast':['2','white','blue']}, \
@@ -65,6 +63,7 @@ class castingCost:
       'images/mtg/creatures/georgeBushII.jpg':{'power':1, 'toughness':4,'toCast':['white','blue','red']}, \
       'images/mtg/creatures/georgeMcfly.jpg':{'power':1, 'toughness':2,'toCast':['1','white','blue']}, \
       'images/mtg/creatures/georgeWBush.jpg':{'power':1, 'toughness':1,'toCast':['red']}, \
+      'images/mtg/creatures/gilligan.png':{'power':1, 'toughness':2,'toCast':['1','white']}, \
       'images/mtg/creatures/god.png':{'power':11, 'toughness':11,'toCast':['white','black','green','blue','red']}, \
       'images/mtg/creatures/godzilla.jpg':{'power':7, 'toughness':6,'toCast':['5','green','blue','red']}, \
       'images/mtg/creatures/gordonRamsey.jpg':{'power':3, 'toughness':2,'toCast':['3','red']}, \
@@ -163,8 +162,6 @@ class castingCost:
       'images/mtg/creatures/thorGodOfThunder.png':{'power':5, 'toughness':5,'toCast':['6',['blue','red'],['blue','red']]}, \
       'images/mtg/creatures/thorSonOfOdin.png':{'power':5, 'toughness':4,'toCast':['4','white','green']}, \
       'images/mtg/creatures/timmyPowerGamer.jpg':{'power':1, 'toughness':1,'toCast':['2','green','green']}, \
-      'images/mtg/creatures/tigerTank.png':{'power':9, 'toughness':9,'toCast':['8']}, \
-      'images/mtg/creatures/tinman.png':{'power':1, 'toughness':2,'toCast':['3']}, \
       'images/mtg/creatures/toughNerd.jpeg':{'power':3, 'toughness':5,'toCast':['2','red','red','red']}, \
       'images/mtg/creatures/tournamentGrinder.jpg':{'power':1, 'toughness':1,'toCast':['2','black','black']}, \
       'images/mtg/creatures/tribble.png':{'power':1, 'toughness':1,'toCast':['1','white']}, \

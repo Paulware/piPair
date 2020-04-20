@@ -9,6 +9,7 @@ import glob
 import random
 
 # Include game files
+import chat
 import castingCost
 import checkers
 import tictactoe
@@ -16,6 +17,7 @@ import chess
 import mtg
 import diplomacy
 import panzerleader
+exec (chat.CHAT)
 exec (checkers.CHECKERS) 
 exec (tictactoe.TICTACTOE)
 exec (chess.CHESS)
@@ -65,6 +67,7 @@ udpCounter = 0
 myIpAddress = socket.gethostbyname(socket.gethostname())
 statusMessage = ""
 lastStatusMessage = ''
+lastUdpCount = -1
 
 # Read configuration data
 try: 
@@ -151,7 +154,6 @@ def drawStatus (message):
    # print ( 'Show status: ' + message )
    height = DISPLAYHEIGHT - 23
    pygame.draw.line(DISPLAYSURF, RED, (0, height), (DISPLAYWIDTH, height)) #status line
-   pygame.draw.rect(DISPLAYSURF, BLACK, (0,height+2,DISPLAYWIDTH,25))    
    showLine (message, 1, height+4) # Show status message     
    pygame.display.update()     
    lastStatus = message
@@ -170,21 +172,17 @@ nextPrintTime = 0
 def myPrint (message):    
    global lastPrintMessage
    global nextPrintTime
-   #if message != lastPrintMessage: 
-   #   pass
-   #el
-   if time.time() > nextPrintTime:
-      pass
-   else:
+   if time.time() <= nextPrintTime:
+      print ( 'Spam filter, clearing message: [' + message + ']')
       message = ''
       
    if message != '':
       print ( message ) 
       nextPrintTime = time.time() + 1 
    
+UDPTIMEOUT = 3 # Maximum time it takes for other unit to respond
+udpTimeout = time.time() + UDPTIMEOUT
 
-lastUdpCount = -1
-resyncTimeout = time.time()
 def getKeyOrUdp():
   global client 
   global joining 
@@ -192,7 +190,10 @@ def getKeyOrUdp():
   global cast
   global rightClick
   global lastUdpCount
-  global resyncTimeout
+  global udpMessages
+  global acks
+  global udpTimeout
+  global UDPTIMEOUT
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -205,14 +206,18 @@ def getKeyOrUdp():
   # Note: If timeout is too close to time.time() 
   #       udp could be lost
   timeEvent = time.time() + 1
-  
   while data == '':
+
+    if time.time() > udpTimeout:  
+       if len(udpMessages) > len (acks): # Some messages have not been acked.
+          print ( 'udpTimeout [len(udpMessages),len(acks)]: [' + \
+               str(len(udpMessages)) + ',' +  str(len(acks)) + ']')    
+          message = udpMessages [len(acks)]
+          print ( 'Sending: ' + message )
+          client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+       udpTimeout = time.time() + UDPTIMEOUT
+                
     rightClick = False
-    if time.time() > resyncTimeout:
-       resyncTimeout = time.time() + 10
-       if lastUdpCount != -1: 
-          myPrint ( 'Requesting resync on (' + str(lastUdpCount) + ')')
-          udpBroadcast ( 'exec:resyncMessages(' + str(lastUdpCount) + ')' )
     
     ev = pygame.event.get()
     for event in ev:
@@ -288,24 +293,34 @@ def getKeyOrUdp():
                 myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
                 data = ''
              elif (addr == myIpAddress):
-                myPrint ( "Ignoring udp message [" + data + "] from me" )
+                myPrint ( "[" + myIpAddress + "]: Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
                 ind = data.find ( ':' )
-                udpCount = int(data[0:ind])
-                if (lastUdpCount + 1) != udpCount: 
-                   data = ''
-                   myPrint ( 'ERR Ignoring bad message out of order, data: [' + data + '] (This will require a resync to fix)')                   
-                else:
-                   myPrint ( 'Got a good message from addr: ' + addr + ' data: [' + data + ']')
-                   lastUdpCount = udpCount               
-                   data = data[(ind+1):]
-                   
-                   ind = data.find ( 'exec:')
-                   if ind > -1: # joining=, games=, move= 
-                      command = data[ind+5:]
-                      exec (command, globals())
-                typeInput = 'udp'                         
+                if data != '':
+                   if data[0:3] == 'ack': 
+                      print ( 'Got an ack yo: ' + data)
+                      ackCount = data[4:] 
+                      print ( 'ackcount: [' + ackCount + ']')
+                      ackCount = int(ackCount)
+                      if ackCount == len(acks): 
+                         acks.append (data)
+                      else:
+                         print ( 'Ignoring this ack: ' + data)
+                      print ( 'acks: ' + str(acks) + ' ack: ' + data )
+                      data = '' # Do not send this forward
+                   else:                       
+                      udpCount = int(data[0:ind])
+                      message = 'ack:' + str(udpCount) 
+                      print ( 'acking...' + message )
+                      client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+                      myPrint ( '[' + myIpAddress + ']:Got a good message from addr: ' + addr + ' data: [' + data + ']')
+                      data = data[(ind+1):]                   
+                      ind = data.find ( 'exec:')
+                      if ind > -1: # joining=, games=, move= 
+                         command = data[ind+5:]
+                         exec (command, globals())
+                      typeInput = 'udp'                         
                 
           elif s == tcpConnection: 
              data, addr = tcpConnection.recvfrom (1024)
@@ -347,6 +362,9 @@ def chOffset (ch):
    return offset 
   
 def showLine ( line, x,y ):
+  height = DISPLAYHEIGHT - 23
+  pygame.draw.rect(DISPLAYSURF, BLACK, (0,height+2,DISPLAYWIDTH,height+2+25))    
+  pygame.display.update()
   for ch in line:
      showCh (ch, x, y)
      x = x + chOffset (ch)
@@ -483,6 +501,7 @@ def showImages (filenames,locations):
        else:
           print ( '\n***ERR\nCould not load: ' + filename + ' because: ' + str(ex) + '\n')      
 
+    # Sprites contain rectangular information
     sprites = []
     try:
        i = 0
@@ -559,22 +578,7 @@ def joinSSID (ssid):
 lastMessage = ""    
 udpCount = 0
 udpMessages = [] 
-resyncTimeout = 0
-# TODO: Once a second send current message value
-#       If this doesn't match how many sent, send up to 10 messages
-# This procedure should only be called from exec message
-def resyncMessages (which): 
-   global client
-   print ( 'I am trying to resync on (' + str(which) + ')')
-   print ( 'len(udpMessages): ' + str(len(udpMessages)))
-   redo = udpMessages [which:]   
-   print ( 'I have ' + str(len(redo)) + ' messages which need to be sent' )   
-   for message in redo: 
-      try: 
-         print ( 'resync/resend: [' + message + ']' )
-         client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
-      except Exception as ex:
-         print ( "Could not re-broadcast: [" + message + "] because: " + str(ex))
+acks = [] 
          
 def udpBroadcast (message):
     global client
@@ -587,8 +591,7 @@ def udpBroadcast (message):
           print ("client udp network not set yet" )
        else:
           message = str(len(udpMessages)) + ':' + message
-          print (message)
-          client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+          print ('udpBroadcast: [' + message + ']')
           udpMessages.append (message) 
                    
     except Exception as ex:
@@ -766,78 +769,6 @@ def joinPage(showOnly=False):
           mainPage (True)
           quit = True
      
-# Show the chat page
-def chatPage(showOnly=False):
-    global tcpSocket 
-    global tcpConnection 
-    
-    DISPLAYSURF.fill((BLACK))
-    showLabel ('Chat:', 250, 55)
-    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
-    
-    pygame.display.set_caption('Chatting: ')        
-    pygame.display.update()  
-
-    quit = False
-    y = 55
-    if iAmHost:
-       udpBroadcast ("hosting chat")
-       
-    while not quit and not showOnly:   
-       (typeInput,chat,addr) = getInput (300,y)
-       if (typeInput == 'key') and (chat.lower() == 'exit'): 
-          quit = True
-          udpBroadcast ('Player left chat') # key input
-       elif typeInput == 'key': 
-          if chat.lower() == 'bind': # server
-             myAddress = socket.gethostbyname(socket.gethostname()) 
-             tcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-             serverAddress = (myAddress,6666)
-             tcpSocket.bind (serverAddress)
-             tcpSocket.listen(1)   
-             print ("tcp server binding at: port 6666.  Blocking on the accept, other should issue command: connect " + myAddress)
-             udpBroadcast ("tcp server waiting... connect " + myAddress) # key input              
-             tcpConnection, addr = tcpSocket.accept()
-             print ("tcp socket accepted and connected with: " + str(addr) + " tcpConnection initialized")
-             tcpConnection.sendall (b'We are all good and ready')
-             print ("tcp message sent")
-          elif chat.lower().find ('connect') > -1: #client
-             if tcpSocket == None: 
-                info = chat.split ( ' ' )
-                addr = info[1]
-                print ( 'TODO; get addr from chat? Server will be 192.164.4.1 if using pis' )
-                print ( 'Now connect to: ' + addr + ' using tcp yo' )
-                tcpSocket = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-                tcpSocket.connect ( (addr, 6666)) 
-                print ( 'We may now be connected possibly with address:' + addr + 'sending message now')
-                tcpSocket.sendall (b'Client ready yo')
-             else:
-                print ( 'Cannot connect to ' + addr + ' my tcpSocket is already used yo' )        
-          elif tcpConnection != None:             
-             tcpConnection.sendall (str.encode(chat))          
-          elif tcpSocket != None:
-             tcpSocket.sendall (str.encode(chat))
-          else:             
-             udpBroadcast (chat) # key input 
-          y = y + 20  
-       elif typeInput == 'udp':       
-          print ('Got udp ' + chat + ' from: ' + addr )
-          if addr == myIpAddress: 
-             print ('Ignore this message because it is from myself')
-          else:
-             showLine (addr + '(udp):' + chat, 300, y)               
-             y = y + 20             
-       elif typeInput == 'tcp':
-          print ( 'Got tcp input: ' + chat + ' from: ' + addr)
-          showLine (addr + ':' + chat, 300, y)
-          y = y + 20
-          
-       sprite = getSpriteClick (typeInput, chat, sprites ) 
-       if sprite != -1: # Quit is the only other option           
-          print ("Selected command: " + str(sprite))
-          mainPage (True)
-          quit = True
-           
         
 # Show the list the games and play a game when it is selected
 def gamePage(showOnly=False):
@@ -854,7 +785,7 @@ def gamePage(showOnly=False):
           count = count + 1
           DISPLAYSURF.fill((BLACK))
           labels = showList(games)
-          showTimeout = time.time() + 1 
+          showTimeout = time.time() + 5 
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
           else:
