@@ -33,6 +33,94 @@ def diplomacyPage(numPlayers=2):
                  'Russia':  {'St Petersburg (South Coast)': 'navy', 'Warsaw':'army', 'Moscow':'army', 'Stevastopol': 'navy'} , \
                  'Turkey':  {'Constantinople': 'army', 'Ankara':'navy', 'Smyrna':'army'} \
                 }
+
+   locations = { \
+      'North Atlantic':{'adjacents':['Norwegian Sea', 'Irish Sea', 'Mid Atlantic'],'x':104,'y':236, 'owner':None,'landType':'sea','occupied':False}, \
+      'Norwegian Sea':{'adjacents':['Barents Sea', 'North Sea'],'x':463,'y':140, 'owner':None,'landType':'sea','occupied':False}, \
+      'Barents Sea':{'adjacents':['Norwegian Sea'],'x':840,'y':29, 'owner':None,'landType':'sea','occupied':False}, \
+      'Norway':{'adjacents':['Norwegian Sea', 'Barents Sea', 'Sweden', 'Finland', 'St Petersburg (North Coast)', 'St Petersburg (South Coast)'],'x':546,'y':284, 'owner':None,'landType':'coast','occupied':False}, \
+      'Sweden':{'adjacents':['Norway', 'Finland', 'Gulf of Bothnia', 'Baltic Sea', 'Skagerrak'],'x':604,'y':318, 'owner':None,'landType':'land','occupied':False}, \
+      'Gulf of Bothnia':{'adjacents':['Sweden', 'Finland', 'Livonia', 'St Petersburg (South Coast)'],'x':666,'y':283, 'owner':None,'landType':'sea','occupied':False}, \
+      'Finland':{'adjacents':['Gulf of Bothnia', 'Norway', 'Sweden', 'St Petersburg (South Coast)', 'St Petersburg (North Coast)'],'x':747,'y':242, 'owner':None,'landType':'coast','occupied':False}, \
+      'St Petersburg (North Coast)':{'adjacents':['Barents Sea', 'Finland', 'Moscow'],'x':853,'y':212, 'owner':None,'landType':'coast','occupied':False}, \
+      'St Petersburg (South Coast)':{'adjacents':['Gulf of Bothnia', 'Finland', 'Moscow', 'Livonia'],'x':795,'y':324, 'owner':None,'landType':'coast','occupied':False}, \
+      'Clyde':{'adjacents':['Edinburgh', 'Liverpool', 'North Atlantic'],'x':318,'y':360, 'owner':None,'landType':'coast','occupied':False}, \
+      'Edinburgh':{'adjacents':['Clyde', 'Yorkshire', 'Liverpool', 'North Sea', 'Norwegian Sea'],'x':340,'y':366, 'owner':None,'landType':'coast','occupied':False}, \
+      'North Sea':{'adjacents':['Edinburgh', 'Yorkshire', 'London', 'Belgium', 'Holland', 'Denmark', 'Norway', 'English Channel', 'Helgeland', 'Skagerrak', 'Norwegian Sea'],'x':433,'y':385, 'owner':None,'landType':'sea','occupied':False}, \
+      'Skagerrak':{'adjacents':['Norway', 'Sweden', 'Denmark', 'North Sea', 'Baltic Sea'],'x':537,'y':350, 'owner':None,'landType':'sea','occupied':False}, \
+      'Denmark':{'adjacents':['Kiel', 'Helgeland Bight', 'North Sea', 'Baltic Sea', 'Skagerrak'],'x':533,'y':410, 'owner':None,'landType':'coast','occupied':False}, \
+      'Baltic Sea':{'adjacents':['Skagerrak', 'Gulf of Bothnia', 'Denmark', 'Sweden', 'Livonia', 'Prussia', 'Berlin', 'Kiel'],'x':624,'y':427, 'owner':None,'landType':'sea','occupied':False}, \
+      'Livonia':{'adjacents':['Moscow', 'Prussia', 'Warsaw', 'St Petersburg (North Coast)', 'St Petersburg (South Coast)', 'Gulf of Bothnia', 'Baltic Sea'],'x':744,'y':418, 'owner':None,'landType':'coast','occupied':False}, \
+      'Moscow':{'adjacents':['Livonia', 'Warsaw', 'Ukraine', 'St Petersburg (North Coast)', 'St Petersburg (South Coast)', 'Stevastopol'],'x':920,'y':395, 'owner':None,'landType':'land','occupied':False}, \
+      'Irish Sea':{'adjacents':['North Atlantic', 'Mid Atlantic', 'English Channel', 'Liverpool', 'Wales'],'x':239,'y':467, 'owner':None,'landType':'sea','occupied':False}, \
+      'Wales':{'adjacents':['Liverpool', 'Yorkshire', 'London', 'Irish Sea', 'English Channel'],'x':320,'y':460, 'owner':None,'landType':'coast','occupied':False}, \
+      'Liverpool':{'adjacents':['Clyde', 'Edinburgh', 'Yorkshire', 'London', 'Wales', 'North Atlantic', 'Irish Sea'],'x':330,'y':431, 'owner':None,'landType':'coast','occupied':False}, \
+      'Yorkshire':{'adjacents':['Edinburgh', 'Liverpool', 'London', 'Wales', 'North Sea'],'x':356,'y':434, 'owner':None,'landType':'coast','occupied':False}, \
+      'London':{'adjacents':['Yorkshire', 'Wales', 'North Sea', 'English Channel'],'x':350,'y':480, 'owner':None,'landType':'coast','occupied':False}, \
+      'Helgeland Bight':{'adjacents':['Denmark', 'Kiel', 'Holland', 'North Sea'],'x':470,'y':444, 'owner':None,'landType':'sea','occupied':False}, \
+      'Kiel':{'adjacents':['Denmark', 'Berlin', 'Munich', 'Ruhr', 'Holland', 'Helgeland Bight', 'Baltic Sea'],'x':500,'y':485, 'owner':None,'landType':'coast','occupied':False}, \
+      'Berlin':{'adjacents':['Prussia', 'Silesia', 'Munich', 'Kiel', 'Baltic Sea'],'x':565,'y':510, 'owner':None,'landType':'coast','occupied':False}, \
+      'Prussia':{'adjacents':['Livonia', 'Silesia', 'Warsaw', 'Berlin', 'Baltic Sea'],'x':630,'y':484, 'owner':'Germany','landType':'coast','occupied':False}, \
+      'Warsaw':{'adjacents':['Prussia', 'Livonia', 'Moscow', 'Ukraine', 'Silesia', 'Galicia'],'x':686,'y':526, 'owner':None,'landType':'land','occupied':False}, \
+      'Mid Atlantic':{'adjacents':['North Atlantic', 'Irish Sea', 'English Channel', 'West Mediterranean', 'Brest', 'Gascony', 'Spain', 'Portugal', 'North Africa'],'x':85,'y':580, 'owner':None,'landType':'sea','occupied':False}, \
+      'English Channel':{'adjacents':['Irish Sea', 'Mid Atlantic', 'North Sea'],'x':310,'y':517, 'owner':None,'landType':'sea','occupied':False}, \
+      'Belgium':{'adjacents':['English Channel', 'North Sea', 'Holland', 'Ruhr', 'Burgundy', 'Picardy'],'x':406,'y':523, 'owner':None,'landType':'coast','occupied':False}, \
+      'Holland':{'adjacents':['Kiel', 'Ruhr', 'Belgium', 'Helgeland Bight', 'North Sea'],'x':439,'y':505, 'owner':None,'landType':'coast','occupied':False}, \
+      'Ruhr':{'adjacents':['Kiel', 'Munich', 'Burgundy', 'Belgium', 'Holland'],'x':473,'y':543, 'owner':None,'landType':'land','occupied':False}, \
+      'Munich':{'adjacents':['Burgundy', 'Ruhr', 'Kiel', 'Berlin', 'Silesia', 'Bohemia', 'Tyrolia'],'x':522,'y':591, 'owner':None,'landType':'land','occupied':False}, \
+      'Bohemia':{'adjacents':['Silesia', 'Galicia', 'Vienna', 'Tyrolia', 'Munich'],'x':574,'y':573, 'owner':None,'landType':'land','occupied':False}, \
+      'Silesia':{'adjacents':['Berlin', 'Prussia', 'Warsaw', 'Galicia', 'Bohemia', 'Munich'],'x':606,'y':533, 'owner':None,'landType':'land','occupied':False}, \
+      'Galicia':{'adjacents':['Warsaw', 'Ukraine', 'Rumania', 'Budapest', 'Vienna', 'Bohemia', 'Silesia'],'x':727,'y':580, 'owner':None,'landType':'land','occupied':False}, \
+      'Ukraine':{'adjacents':['Moscow', 'Stevastopol', 'Rumania', 'Galicia', 'Warsaw'],'x':826,'y':550, 'owner':None,'landType':'land','occupied':False}, \
+      'Stevastopol':{'adjacents':['Moscow', 'Ukraine', 'Armenia', 'Rumania', 'Black Sea'],'x':1000,'y':570, 'owner':None,'landType':'coast','occupied':False}, \
+      'Brest':{'adjacents':['Picardy', 'Paris', 'Gascony', 'English Channel', 'Mid Atlantic'],'x':288,'y':563, 'owner':'France','landType':'coast','occupied':True}, \
+      'Paris':{'adjacents':['Picardy', 'Burgundy', 'Gascony', 'Brest'],'x':370,'y':580, 'owner':'France','landType':'land','occupied':True}, \
+      'Picardy':{'adjacents':['Belgium', 'Burgundy', 'Paris', 'Bret', 'English Channel'],'x':374,'y':545, 'owner':None,'landType':'coast','occupied':False}, \
+      'Burgundy':{'adjacents':['Belgium', 'Ruhr', 'Munich', 'Marseilles', 'Gascony', 'Paris', 'Picardy'],'x':400,'y':600, 'owner':None,'landType':'land','occupied':False}, \
+      'Tyrolia':{'adjacents':['Munich', 'Bohemia', 'Venezia', 'Piemonte', 'Trieste'],'x':540,'y':648, 'owner':None,'landType':'land','occupied':False}, \
+      'Vienna':{'adjacents':['Bohemia', 'Galicia', 'Budapest', 'Trieste', 'Tyrolia'],'x':620,'y':625, 'owner':'Austria','landType':'land','occupied':True}, \
+      'Budapest':{'adjacents':['Galicia', 'Rumania', 'Serbia', 'Trieste', 'Vienna'],'x':672,'y':642, 'owner':'Austria','landType':'land','occupied':True}, \
+      'Rumania':{'adjacents':['Ukraine', 'Stevastopol', 'Black Sea', 'Bulgaria (South Coast)', 'Bulgaria (East Coast)', 'Serbia', 'Galicia'],'x':797,'y':702, 'owner':None,'landType':'coast','occupied':False}, \
+      'Black Sea':{'adjacents':['Stevastopol', 'Armenia', 'Ankara', 'Constantinople', 'Bulgaria (South Coast)', 'Bulgaria (East Coast)', 'Rumania'],'x':936,'y':719, 'owner':None,'landType':'sea','occupied':False}, \
+      'Gascony':{'adjacents':['Brest', 'Paris', 'Burgundy', 'Spain', 'Marseilles', 'Mid Atlantic'],'x':322,'y':677, 'owner':None,'landType':'coast','occupied':False}, \
+      'Marseilles':{'adjacents':['Burgundy', 'Piemonte', 'Gascony', 'Spain', 'Gulf of Lyon'],'x':400,'y':700, 'owner':'France','landType':'coast','occupied':True}, \
+      'Piemonte':{'adjacents':['Tyrolia', 'Venezia', 'Tuscany', 'Marseilles', 'Gulf of Lyon'],'x':467,'y':684, 'owner':None,'landType':'coast','occupied':False}, \
+      'Venezia':{'adjacents':['Tyrolia', 'Trieste', 'Piemonte', 'Tuscany', 'Roma', 'Apulia'],'x':535,'y':676, 'owner':None,'landType':'coast','occupied':False}, \
+      'Trieste':{'adjacents':['Tyrolia', 'Vienna', 'Budapest', 'Serbia', 'Albania', 'Adriatic Sea', 'Venezia'],'x':601,'y':692, 'owner':'Austria','landType':'coast','occupied':True}, \
+      'Serbia':{'adjacents':['Budapest', 'Bulgaria', 'Rumania', 'Greece', 'Albania', 'Trieste'],'x':683,'y':729, 'owner':None,'landType':'land','occupied':False}, \
+      'Portugal':{'adjacents':['Spain', 'Mid Atlantic'],'x':118,'y':744, 'owner':None,'landType':'coast','occupied':False}, \
+      'Spain (North Coast)':{'adjacents':['Portugal', 'Gascony', 'Marseilles', 'Mid Atlantic', 'Gulf of Lyon', 'West Mediterranean'],'x':240,'y':691, 'owner':None,'landType':'coast','occupied':False}, \
+      'Spain (South Coast)':{'adjacents':['Portugal', 'Gascony', 'Marseilles', 'Mid Atlantic', 'Gulf of Lyon', 'West Mediterranean'],'x':254,'y':806, 'owner':None,'landType':'coast','occupied':False}, \
+      'Gulf of Lyon':{'adjacents':['Spain (South Coast)', 'Marseilles', 'Piemonte', 'Tuscany', 'Tyrhennian Sea', 'West Mediterranean'],'x':404,'y':771, 'owner':None,'landType':'sea','occupied':False}, \
+      'Tuscany':{'adjacents':['Piemonte', 'Venezia', 'Roma', 'Gulf of Lyon', 'Tyrhennian Sea'],'x':512,'y':736, 'owner':None,'landType':'coast','occupied':False}, \
+      'Roma':{'adjacents':['Tuscany', 'Venezia', 'Apulia', 'Napoli', 'Tyrhennian Sea'],'x':542,'y':782, 'owner':None,'landType':'coast','occupied':False}, \
+      'Apulia':{'adjacents':['Venezia', 'Napoli', 'Roma', 'Adriatic Sea', 'Ionian Sea'],'x':586,'y':792, 'owner':None,'landType':'coast','occupied':False}, \
+      'Napoli':{'adjacents':['Roma', 'Apulia', 'Tyrhennian Sea', 'Ionian Sea'],'x':570,'y':809, 'owner':None,'landType':'coast','occupied':False}, \
+      'Adriatic Sea':{'adjacents':['Venezia', 'Trieste', 'Albania', 'Apulia', 'Ionian Sea'],'x':593,'y':756, 'owner':None,'landType':'sea','occupied':False}, \
+      'Albania':{'adjacents':['Trieste', 'Serbia', 'Greece', 'Adriatic Sea', 'Ionian Sea'],'x':675,'y':796, 'owner':None,'landType':'coast','occupied':False}, \
+      'Bulgaria (East Coast)':{'adjacents':['Rumania', 'Constantinople', 'Serbia', 'Greece', 'Black Sea'],'x':810,'y':738, 'owner':None,'landType':'coast','occupied':False}, \
+      'Bulgaria (South Coast)':{'adjacents':['Rumania', 'Constantinople', 'Serbia', 'Greece', 'Aegean Sea'],'x':776,'y':799, 'owner':None,'landType':'coast','occupied':False}, \
+      'Constantinople':{'adjacents':['Bulgaria (South Coast)', 'Bulgaria (East Coast)', 'Ankara', 'Smyrna', 'Black Sea', 'Aegean Sea'],'x':839,'y':795, 'owner':None,'landType':'coast','occupied':False}, \
+      'Ankara':{'adjacents':['Armenia', 'Smyrna', 'Constantinople', 'Black Sea'],'x':936,'y':800, 'owner':None,'landType':'coast','occupied':False}, \
+      'Armenia':{'adjacents':['Stevastopol', 'Syria', 'Ankara', 'Smyrna', 'Black Sea'],'x':1102,'y':798, 'owner':None,'landType':'coast','occupied':False}, \
+      'North Africa':{'adjacents':['Tunisia', 'Mid Atlantic', 'West Mediterranean'],'x':145,'y':913, 'owner':None,'landType':'coast','occupied':False}, \
+      'West Mediterranean':{'adjacents':['Spain', 'North Africa', 'Tunisia', 'Mid Atlantic'],'x':316,'y':850, 'owner':None,'landType':'sea','occupied':False}, \
+      'Tunisia':{'adjacents':['North Africa', 'West Mediterranean', 'Tyrhennian Sea', 'Ionian Sea'],'x':459,'y':920, 'owner':None,'landType':'coast','occupied':False}, \
+      'Tyrhennian Sea':{'adjacents':['Tuscany', 'Roma', 'Napoli', 'Tunisia', 'Gulf of Lyon', 'West Mediterranean', 'Ionian Sea'],'x':504,'y':841, 'owner':None,'landType':'sea','occupied':False}, \
+      'Ionian Sea':{'adjacents':['Napoli', 'Apulia', 'Greece', 'Tunisia', 'Tyrhennian Sea', 'Adriatic Sea', 'Aegean Sea'],'x':626,'y':930, 'owner':None,'landType':'sea','occupied':False}, \
+      'Greece':{'adjacents':['Albania', 'Serbia', 'Bulgaria (South Coast)', 'Bulgaria (East Coast)', 'Aegean Sea', 'Ionian Sea', 'Adriatic Sea'],'x':720,'y':854, 'owner':None,'landType':'coast','occupied':False}, \
+      'Aegean Sea':{'adjacents':['Greece', 'Bulgaria (South Coast)', 'Constantinople', 'Smyrna', 'East Mediterranean', 'Ionian Sea'],'x':785,'y':883, 'owner':None,'landType':'sea','occupied':False}, \
+      'Smyrna':{'adjacents':['Constantinople', 'Ankara', 'Armenia', 'Syria', 'East Mediterranean', 'Aegean Sea'],'x':932,'y':863, 'owner':None,'landType':'coast','occupied':False}, \
+      'East Mediterranean':{'adjacents':['Smyrna', 'Syria', 'Aegean Sea', 'Ionian Sea'],'x':873,'y':938, 'owner':None,'landType':'sea','occupied':False}, \
+      'Syria':{'adjacents':['Armenia', 'Smyrna', 'East Mediterranean'],'x':1082,'y':896, 'owner':None,'landType':'coast','occupied':False}, \
+   }
+                   
+   for player in players:
+      cities = players[player]
+      for city in cities:
+         print ( player + ' occupies city: ' + city )
+         locations[city][4] = True # occupied
+         locations[city][2] = player # Set owner         
                 
    if iAmHost: 
       for player in players:
@@ -44,103 +132,12 @@ def diplomacyPage(numPlayers=2):
          if iAmPlayer != '':
             break  # Take the seoond player
          iAmPlayer = player
-                         
-   locations = {'North Atlantic':[104,236,None,'sea'], 'Norwegian Sea':[463,140,None,'sea'], 'Barents Sea':[840,29,None,'sea'], \
-                'Norway': [546,284,None,'coast'], 'Sweden': [604,318,None,'land'], 'Gulf of Bothnia': [666,283,None,'sea'], 'Finland': [747,242,None,'coast'], 'St Petersburg [North Coast]': [853,212,None,'coast'], 'St Petersburg [South Coast]': [795,324,None,'coast'], \
-                'Clyde': [318,360,None,'coast'], 'Edinburgh': [340,366,None,'coast'], 'North Sea': [433,385,None,'sea'], 'Skagerrak': [537,350,None,'sea'], 'Denmark': [533,410,None,'coast'], 'Baltic Sea': [624,427,None,'sea'], 'Livonia': [744,418,None,'coast'], 'Moscow': [920,395,None,'land'], \
-                'Irish Sea': [239,467,None,'sea'], 'Wales': [320,460,None,'coast'], 'Liverpool': [330,431,None,'coast'], 'Yorkshire': [356,434,None,'coast'], 'London': [350,480,None,'coast'], 'Helgeland Bight': [470,444,None,'sea'], 'Kiel': [500,485,None,'coast'], 'Berlin': [565,510,None,'coast'], 'Prussia': [630,484,'Germany','coast'], 'Warsaw': [686,526,None,'land'], \
-                'Mid Atlantic': [85,580,None,'sea'], 'English Channel': [310,517,None,'sea'], 'Belgium': [406,523,None,'coast'], 'Holland': [439,505,None,'coast'], 'Ruhr': [473,543,None,'land'], 'Munich': [522,591,None,'land'], 'Bohemia': [574,573,None,'land'], 'Silesia': [606,533,None,'land'], 'Galicia': [727,580,None,'land'], 'Ukraine': [826,550,None,'land'], 'Stevastopol': [1000,570,None,'coast'], \
-                'Brest': [288,563,None,'coast'], 'Paris': [370,580,None,'land'], 'Picardy': [374,545,None,'coast'], 'Burgundy': [400,600,None,'land'], 'Tyrolia': [540,648,None,'land'], 'Vienna': [620,625,None,'land'], 'Budapest': [672,642,None,'land'], 'Rumania': [797,702,None,'coast'], 'Black Sea': [936,719,None,'sea'], \
-                'Gascony': [322,677,None,'coast'], 'Marseilles': [400,700,None,'coast'], 'Piemonte': [467,684,None,'coast'], 'Venezia': [535,676,None,'coast'], 'Trieste': [601,692,None,'coast'], 'Serbia': [683,729,None,'land'], \
-                'Portugal': [118,744,None,'coast'], 'Spain [North Coast]': [240,691,None,'coast'], 'Spain [South Coast]': [254,806,None,'coast'], 'Gulf of Lyon': [404,771,None,'sea'], 'Tuscany': [512,736,None,'coast'], 'Roma': [542,782,None,'coast'], 'Apulia': [586,792,None,'coast'], 'Napoli': [570,809,None,'coast'], 'Adriatic Sea': [593,756,None,'sea'], 'Albania': [675,796,None,'coast'], 'Bulgaria [East Coast]': [810,738,None,'coast'], 'Bulgaria [South Coast]': [776,799,None,'coast'], 'Constantinople': [839,795,None,'coast'], 'Ankara': [936,800,None,'coast'], 'Armenia': [1102,798,None,'coast'], \
-                'North Africa': [145,913,None,'coast'], 'West Mediterranean': [316,850,None,'sea'], 'Tunisia': [459,920,None,'coast'], 'Tyrhennian Sea': [504,841,None,'sea'], 'Ionian Sea': [626,930,None,'sea'], 'Greece': [720,854,None,'coast'], 'Aegean Sea': [785,883,None,'sea'], 'Smyrna': [932,863,None,'coast'], 'East Mediterranean': [873,938,None,'sea'], 'Syria': [1082,896,None,'coast'] }
-             
-   adjacents = { \
-                 'North Atlantic':['Norwegian Sea','Irish Sea','Mid Atlantic'], \
-                 'Norwegian Sea':['Barents Sea','North Sea'], \
-                 'Barents Sea':['Norwegian Sea'], \
-                 'Norway':['Norwegian Sea', 'Barents Sea', 'Sweden', 'Finland', 'St Petersburg (North Coast)', 'St Petersburg (South Coast)'], \
-                 'Sweden':['Norway', 'Finland', 'Gulf of Bothnia', 'Baltic Sea', 'Skagerrak'], \
-                 'Gulf of Bothnia':['Sweden','Finland','Livonia','St Petersburg (South Coast)'], \
-                 'Finland':['Gulf of Bothnia','Norway', 'Sweden', 'St Petersburg (South Coast)','St Petersburg (North Coast)'], \
-                 'St Petersburg (North Coast)':['Barents Sea','Finland', 'Moscow'], \
-                 'St Petersburg (South Coast)':['Gulf of Bothnia','Finland','Moscow','Livonia'], \
-                 'Clyde':['Edinburgh','Liverpool','North Atlantic'], \
-                 'Edinburgh':['Clyde','Yorkshire','Liverpool','North Sea','Norwegian Sea'], \
-                 'North Sea':['Edinburgh','Yorkshire','London','Belgium','Holland','Denmark','Norway','English Channel','Helgeland','Skagerrak','Norwegian Sea'], \
-                 'Skagerrak':['Norway','Sweden','Denmark','North Sea','Baltic Sea'], \
-                 'Denmark':['Kiel','Helgeland Bight','North Sea','Baltic Sea','Skagerrak'], \
-                 'Baltic Sea':['Skagerrak','Gulf of Bothnia','Denmark','Sweden','Livonia','Prussia','Berlin','Kiel'], \
-                 'Livonia':['Moscow','Prussia','Warsaw','St Petersburg (North Coast)', 'St Petersburg (South Coast)','Gulf of Bothnia','Baltic Sea'], \
-                 'Moscow':['Livonia','Warsaw','Ukraine','St Petersburg (North Coast)', 'St Petersburg (South Coast)','Stevastopol'], \
-                 'Irish Sea':['North Atlantic','Mid Atlantic','English Channel','Liverpool','Wales'], \
-                 'Wales':['Liverpool','Yorkshire','London','Irish Sea','English Channel'], \
-                 'Liverpool':['Clyde','Edinburgh','Yorkshire','London','Wales','North Atlantic','Irish Sea'], \
-                 'Yorkshire':['Edinburgh','Liverpool','London','Wales','North Sea'], \
-                 'London':['Yorkshire','Wales','North Sea','English Channel'], \
-                 'Helgeland Bight':['Denmark','Kiel','Holland','North Sea'], \
-                 'Kiel':['Denmark','Berlin','Munich','Ruhr','Holland','Helgeland Bight','Baltic Sea'], \
-                 'Berlin':['Prussia','Silesia','Munich','Kiel','Baltic Sea'], \
-                 'Prussia':['Livonia','Silesia','Warsaw','Berlin','Baltic Sea'], \
-                 'Warsaw':['Prussia','Livonia','Moscow','Ukraine','Silesia','Galicia'], \
-                 'Mid Atlantic':['North Atlantic','Irish Sea','English Channel','West Mediterranean','Brest','Gascony','Spain','Portugal','North Africa'], \
-                 'English Channel':['Irish Sea','Mid Atlantic','North Sea'], \
-                 'Belgium':['English Channel','North Sea','Holland','Ruhr','Burgundy','Picardy'], \
-                 'Holland':['Kiel','Ruhr','Belgium','Helgeland Bight','North Sea'], \
-                 'Ruhr':['Kiel','Munich','Burgundy','Belgium','Holland'], \
-                 'Munich':['Burgundy','Ruhr','Kiel','Berlin','Silesia','Bohemia','Tyrolia'], \
-                 'Bohemia':['Silesia','Galicia','Vienna','Tyrolia','Munich'], \
-                 'Silesia':['Berlin','Prussia','Warsaw','Galicia','Bohemia','Munich'], \
-                 'Galicia':['Warsaw','Ukraine','Rumania','Budapest','Vienna','Bohemia','Silesia'], \
-                 'Ukraine':['Moscow','Stevastopol','Rumania','Galicia','Warsaw'], \
-                 'Stevastopol':['Moscow','Ukraine','Armenia','Rumania','Black Sea'], \
-                 'Brest':['Picardy','Paris','Gascony','English Channel','Mid Atlantic'], \
-                 'Paris':['Picardy','Burgundy','Gascony','Brest'], \
-                 'Picardy':['Belgium','Burgundy','Paris','Bret','English Channel'], \
-                 'Burgundy':['Belgium','Ruhr','Munich','Marseilles','Gascony','Paris','Picardy'], \
-                 'Tyrolia':['Munich','Bohemia','Venezia','Piemonte','Trieste'], \
-                 'Vienna':['Bohemia','Galicia','Budapest','Trieste','Tyrolia'], \
-                 'Budapest':['Galicia','Rumania','Serbia','Trieste','Vienna'], \
-                 'Gascony':['Brest','Paris','Burgundy','Spain','Marseilles','Mid Atlantic'], \
-                 'Marseilles':['Burgundy','Piemonte','Gascony','Spain','Gulf of Lyon'], \
-                 'Piemonte':['Tyrolia','Venezia','Tuscany','Marseilles','Gulf of Lyon'], \
-                 'Venezia':['Tyrolia','Trieste','Piemonte','Tuscany','Roma','Apulia'], \
-                 'Trieste':['Tyrolia','Vienna','Budapest','Serbia','Albania','Adriatic Sea','Venezia'], \
-                 'Serbia':['Budapest','Bulgaria','Rumania','Greece','Albania','Trieste'], \
-                 'Rumania':['Ukraine','Stevastopol','Black Sea','Bulgaria (South Coast)','Bulgaria (East Coast)','Serbia','Galicia'], \
-                 'Black Sea':['Stevastopol','Armenia','Ankara','Constantinople','Bulgaria (South Coast)','Bulgaria (East Coast)','Rumania'], \
-                 'Portugal':['Spain','Mid Atlantic'], \
-                 'Spain (North Coast)':['Portugal','Gascony','Marseilles','Mid Atlantic','Gulf of Lyon','West Mediterranean'], \
-                 'Spain (South Coast)':['Portugal','Gascony','Marseilles','Mid Atlantic','Gulf of Lyon','West Mediterranean'], \
-                 'Gulf of Lyon':['Spain (South Coast)','Marseilles','Piemonte','Tuscany','Tyrhennian Sea','West Mediterranean'], \
-                 'Tuscany':['Piemonte','Venezia','Roma','Gulf of Lyon','Tyrhennian Sea'], \
-                 'Roma':['Tuscany','Venezia','Apulia','Napoli','Tyrhennian Sea'], \
-                 'Apulia':['Venezia','Napoli','Roma','Adriatic Sea', 'Ionian Sea'], \
-                 'Napoli':['Roma','Apulia','Tyrhennian Sea','Ionian Sea'], \
-                 'Adriatic Sea':['Venezia','Trieste','Albania','Apulia','Ionian Sea'], \
-                 'Albania':['Trieste','Serbia','Greece','Adriatic Sea','Ionian Sea'], \
-                 'Bulgaria (East Coast)':['Rumania','Constantinople','Serbia','Greece','Black Sea'], \
-                 'Bulgaria (South Coast)':['Rumania','Constantinople','Serbia','Greece','Aegean Sea'], \
-                 'Constantinople':['Bulgaria (South Coast)','Bulgaria (East Coast)','Ankara','Smyrna','Black Sea','Aegean Sea'], \
-                 'Ankara':['Armenia','Smyrna','Constantinople','Black Sea'], \
-                 'Armenia':['Stevastopol','Syria','Ankara','Smyrna','Black Sea'], \
-                 'North Africa':['Tunisia','Mid Atlantic','West Mediterranean'], \
-                 'West Mediterranean':['Spain','North Africa','Tunisia','Mid Atlantic'], \
-                 'Tunisia':['North Africa', 'West Mediterranean', 'Tyrhennian Sea', 'Ionian Sea'], \
-                 'Tyrhennian Sea':['Tuscany','Roma','Napoli','Tunisia','Gulf of Lyon','West Mediterranean','Ionian Sea'], \
-                 'Ionian Sea':['Napoli','Apulia','Greece','Tunisia','Tyrhennian Sea', 'Adriatic Sea', 'Aegean Sea'], \
-                 'Greece':['Albania','Serbia','Bulgaria (South Coast)','Bulgaria (East Coast)','Aegean Sea','Ionian Sea','Adriatic Sea'], \
-                 'Aegean Sea':['Greece','Bulgaria (South Coast)','Constantinople','Smyrna','East Mediterranean','Ionian Sea'], \
-                 'Smyrna':['Constantinople','Ankara','Armenia','Syria','East Mediterranean','Aegean Sea'], \
-                 'East Mediterranean':['Smyrna','Syria','Aegean Sea','Ionian Sea'], \
-                 'Syria':['Armenia','Smyrna','East Mediterranean'] \
-               }
-               
+                                           
    orders = []
    
    def isAdjacent (city1,city2): 
       adjacent = False
-      adjacentCities = adjacents[city1]
+      adjacentCities = locations[city1]['adjacents'] # adjacents[city1]
       for city in adjacentCities:
          if city == city2:
             adjacent = True
@@ -174,7 +171,7 @@ def diplomacyPage(numPlayers=2):
          y = pos[1]
          minDistance = 1000
          for key in locations:
-            pos = locations[key]
+            pos = (locations[key]['x'], locations[key]['y'])
             difference = abs ( x - pos[0]) + abs (y - pos[1])
             if difference < minDistance:                
                if ((key != 'Portugal') or (x < 156)) and \
@@ -185,7 +182,7 @@ def diplomacyPage(numPlayers=2):
                   ((key != 'Tuscany') or (y > 708)):                  
                   city = key
                   minDistance = difference
-         return city              
+         return city
          
       def findPiece (pos): 
          city = findLocation (pos)
@@ -206,9 +203,9 @@ def diplomacyPage(numPlayers=2):
       def moveAdjacentList (city,unit):
          print ( 'moveAdjacentList (' + city + ',' + unit + ')' )
          cityList = []
-         for city in adjacents[city]:
-            info = locations[city]
-            landType = info[3]
+         adjacents = locations [city]['adjacents']
+         for city in adjacents:
+            landType = locations[city]['landType']
             if unit == 'navy':
                if (landType == 'sea') or (landType == 'coast'): 
                   cityList.append (city)               
@@ -221,26 +218,30 @@ def diplomacyPage(numPlayers=2):
       def convoyFromList (city):
          print ( 'convoyFromList (' + city + ')' )
          cityList = []
-         for city in adjacents[city]:
-            info = locations[city]
-            landType = info[3]
-            if (landType == 'coast') or (landType == 'land'): 
-               cityList.append (city)   
+         adjacents = locations [city]['adjacents']         
+         for city in adjacents:
+            landType = locations[city]['landType']
+            occupied = locations[city]['occupied']
+            if (landType == 'coast') or (landType == 'land'):
+               print ( city + ' occupied: ?' + str(occupied)) 
+               if occupied:                
+                  cityList.append (city)   
+            else:
+               print ( city + ' ignored because it is of type: ' + landType)
          print ('cityList: ' + str(cityList))                
          return cityList
          
       def convoyToList (city):
          print ( 'convoyTotList (' + city + ')' )
          cityList = []
-         for city in adjacents[city]:
-            info = locations[city]
-            landType = info[3]
+         adjacents = locations [city]['adjacents']          
+         for city in adjacents:
+            landType = locations[city]['landType']
             if (landType == 'coast'): 
                cityList.append (city)   
          print ('cityList: ' + str(cityList))                
          return cityList
-         
-      
+               
       def drawArmy (pos,color):
          x = pos[0]
          y = pos[1]         
@@ -274,10 +275,10 @@ def diplomacyPage(numPlayers=2):
          elif destinationCity == fromCity: 
             drawStatus ( 'Cannot transport unit from ' + fromCity + ' to ' + destinationCity + ' (pick different destination)')
          else:
-            print ( 'locations[' + destinationCity + '] : ' + str(locations[destinationCity]))
-            destinationType = locations[destinationCity][3]
-            print ( 'locations[' + fromCity + '] : ' + str(locations[fromCity]))
-            fromType = locations[fromCity][3]
+            # print ( 'locations[' + destinationCity + '] : ' + str(locations[destinationCity]))
+            destinationType = locations[destinationCity]['landType']
+            # print ( 'locations[' + fromCity + '] : ' + str(locations[fromCity]))
+            fromType = locations[fromCity]['landType']
             print ( 'convoy, [fromType,destinationType], [' + fromType + ',' + destinationCity + ']')
             if isAdjacent (fromCity, city):
                drawStatus ( fromCity + ' will be transported to: ' + destinationCity)
@@ -286,7 +287,25 @@ def diplomacyPage(numPlayers=2):
                drawStatus ('Err, destination must be a coastal location' )                              
             else:
                drawStatus ( 'Navy unit at: ' + city + ' cannot transport a unit located from ' + fromCity + ' (it is too far away).')
-               
+
+                     
+      def waitingOn ( player): 
+         # players = {'Austria': {'Vienna':'army', 'Budapest':'army', 'Trieste':'navy'}, \
+         #            'France':  {'Marseilles':'army', 'Paris':'army', 'Brest':'navy'}, \   
+         units = players[player]
+         waiting = False          
+         for city in units:
+            found = False
+            for order in orders:
+               if order[0] == city:
+                  found = True 
+                  break
+            if not found:
+               print ( city + ' has not been assigned an order yet')
+               waiting = True
+               break               
+         return waiting
+       
       def showPiece (imgPos,orders):
          action = ''
          destination = ''
@@ -295,12 +314,14 @@ def diplomacyPage(numPlayers=2):
          toCity = ''
          print ( 'showPiece, imgPos: ' + str(imgPos)) 
          (player,city,unit) = findPiece (imgPos)
-         if player == iAmPlayer:
+         if player != iAmPlayer:
+            print ( 'You do not own this piece, no action required')
+         else:
             msg = 'Select action for the ' + player + ' ' + unit + ' stationed at ' + city
             pygame.display.set_caption(msg)
             print (msg)
-            DISPLAYSURF.fill((WHITE))         
-            if unit == 'navy': 
+            DISPLAYSURF.fill((WHITE))
+            if unit == 'navy':
                drawNavy ((100,100), colors[player])   
                actions = ['convoy','move','support','hold','ok']
             else:        
@@ -331,7 +352,6 @@ def diplomacyPage(numPlayers=2):
                         cityList = moveAdjacentList (city,unit)
                         cities = showList (cityList)                            
                      elif action == 'support':
-                        print ( 'suport yo')
                         cityList = moveAdjacentList (city,unit)
                         cities = showList (cityList)                                                       
                      elif action == 'hold':
@@ -347,8 +367,8 @@ def diplomacyPage(numPlayers=2):
                   destinationCity = cityList [sprite]            
                   drawStatus ( 'You have selected: ' + destinationCity)
                   if action != '': 
-                     if action == 'move':
-                        orders.append ([city,action,selectedTown,destinationCity])
+                     if (action == 'move') or (action == 'support'):
+                        orders.append ([city,action,destinationCity])
                         quit = True
                      elif action == 'convoy':
                         if fromCity == '':                       
@@ -415,26 +435,23 @@ def diplomacyPage(numPlayers=2):
          for player in players:
             color = colors[player]
             positions = players[player]
-            #if player == 'Austria': 
-            #   print ( 'Austrias positions: ' + str(positions)) 
             for town in positions:
                unit = positions[town]
-               x = locations[town][0] + imgPos[0]
-               y = locations[town][1] + imgPos[1]
-               # print ( 'player: ' + player + ' has a ' + unit + ' in ' + town + 'located at [' + str(x) + ',' + str(y) + ']' )
+               
+               x = locations[town]['x'] + imgPos[0]
+               y = locations[town]['y'] + imgPos[1]
                if unit == 'navy': 
                   drawNavy ((x,y),color)
                else:
                   drawArmy ((x,y),color)
- 
-               locations [town][2] = player
+               # locations [town]['owner'] = player
                   
          for location in locations: 
             # print( 'Got a location of: ' + str(location))
-            owner = locations[location][2]
+            owner = locations[location]['owner']
             if owner != None:
-               x = locations[location][0] + imgPos[0]
-               y = locations[location][1] + imgPos[1]
+               x = locations[location]['x'] + imgPos[0]
+               y = locations[location]['y'] + imgPos[1]
                # print ( 'Get the color for : ' + owner )
                color = colors[owner]
                if not townOccupied (location):
@@ -446,22 +463,22 @@ def diplomacyPage(numPlayers=2):
          for order in orders:
             fromTown = order[0]
             toTown = order[2]
-            player = locations[fromTown][2]
-            print ( 'execute this order: for ' + player + ':' + str(order)) 
+            player = locations[fromTown]['owner']
+            #print ( 'execute this order: for ' + player + ':' + str(order)) 
             # update locations
-            locations[toTown][2] = player
-            print ( 'locations[Galicia]:' + str(locations['Galicia']) )
-            print ( 'try again: ' + str(locations['Galicia']))
+            locations[toTown]['owner'] = player
+            #print ( 'locations[Galicia]:' + str(locations['Galicia']) )
+            #print ( 'try again: ' + str(locations['Galicia']))
             
             # update players 
             playerUnits = players[player]
-            print ( 'playerUnits before update: ' + str(playerUnits))
+            #print ( 'playerUnits before update: ' + str(playerUnits))
             unit = playerUnits[fromTown]
-            print ( 'Delete ' + fromTown + ' from playerUnits' )
+            #print ( 'Delete ' + fromTown + ' from playerUnits' )
             del playerUnits[fromTown]
-            print ( 'Add ' + toTown + ' to playerUnits' )
+            #print ( 'Add ' + toTown + ' to playerUnits' )
             playerUnits[toTown] = unit # add back the unit
-            print ( 'playerUnits after update: ' + str(playerUnits))
+            #print ( 'playerUnits after update: ' + str(playerUnits))
             players[player] = playerUnits
                             
          orders = []   
@@ -471,9 +488,9 @@ def diplomacyPage(numPlayers=2):
          DISPLAYSURF.fill((WHITE))
          DISPLAYSURF.blit (background,imgPos)    
          # print ( "show board at: [" + str(imgPos[0]) + "," + str(imgPos[1]) + "]" )          
-         (filenames,locations) = actionsToIcons (actions) 
+         (filenames,rectangles) = actionsToIcons (actions) 
          showPieces (imgPos) 
-         (images,buttonSprites) = showImages (filenames, locations )      
+         (images,buttonSprites) = showImages (filenames,rectangles)      
          showLastStatus()
          pygame.display.update() 
          return buttonSprites   
@@ -488,9 +505,17 @@ def diplomacyPage(numPlayers=2):
       lastCity = ''
       lastPosition = (0,0)
       orders = []
+      remindTimeout = 0
       while not quit:            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()         
+         
+         if time.time() > remindTimeout:
+            remindTimeout = time.time() + 10 # Remind every 10 seconds 
+            if waitingOn(iAmPlayer):
+               drawStatus ("Waiting on you to finish orders")
+            else:
+               drawStatus ("Waiting on others to finish orders" )
           
          if eventType == pygame.MOUSEBUTTONDOWN:
             pos = data
@@ -510,7 +535,7 @@ def diplomacyPage(numPlayers=2):
             lastPosition = (x,y)
             
             if (city != '') and (city != lastCity):
-               drawStatus (city)
+               #drawStatus (city)
                lastCity = city
                
             if drag != None:
