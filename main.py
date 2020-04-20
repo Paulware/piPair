@@ -180,7 +180,7 @@ def myPrint (message):
       print ( message ) 
       nextPrintTime = time.time() + 1 
    
-UDPTIMEOUT = 3 # Maximum time it takes for other unit to respond
+UDPTIMEOUT = 0.1 # Maximum time it takes for other unit to respond
 udpTimeout = time.time() + UDPTIMEOUT
 
 def getKeyOrUdp():
@@ -315,12 +315,16 @@ def getKeyOrUdp():
                       print ( 'acking...' + message )
                       client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
                       myPrint ( '[' + myIpAddress + ']:Got a good message from addr: ' + addr + ' data: [' + data + ']')
-                      data = data[(ind+1):]                   
-                      ind = data.find ( 'exec:')
-                      if ind > -1: # joining=, games=, move= 
-                         command = data[ind+5:]
-                         exec (command, globals())
-                      typeInput = 'udp'                         
+                      if data != lastMessage: 
+                         data = data[(ind+1):]                   
+                         ind = data.find ( 'exec:')
+                         if ind > -1: # joining=, games=, move= 
+                            command = data[ind+5:]
+                            exec (command, globals())
+                         typeInput = 'udp'                        
+                         lastMessage = data
+                      else:
+                         print ( 'Not executing this message: [' + data + '] because it is identical to the last message' )                      
                 
           elif s == tcpConnection: 
              data, addr = tcpConnection.recvfrom (1024)
@@ -582,7 +586,6 @@ acks = []
          
 def udpBroadcast (message):
     global client
-    global lastMessage
     global udpMessages
     global UDPPORT
     
