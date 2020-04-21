@@ -1,2 +1,3 @@
 #ignore config file
 mainConfig.txt
+__pycache__
