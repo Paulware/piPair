@@ -180,7 +180,7 @@ def myPrint (message):
       print ( message ) 
       nextPrintTime = time.time() + 1 
    
-UDPTIMEOUT = 0.1 # Maximum time it takes for other unit to respond
+UDPTIMEOUT = 1 # Maximum time it takes for other unit to respond
 udpTimeout = time.time() + UDPTIMEOUT
 
 def getKeyOrUdp():
@@ -194,6 +194,7 @@ def getKeyOrUdp():
   global acks
   global udpTimeout
   global UDPTIMEOUT
+  global lastMessage
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -286,6 +287,7 @@ def getKeyOrUdp():
           
        for s in i:
           if s == client:
+             print ( 'Something from client?' )
              data, addr = client.recvfrom (1024)
              data = data.decode();
              addr = str(addr[0])
