@@ -180,7 +180,7 @@ def myPrint (message):
       print ( message ) 
       nextPrintTime = time.time() + 1 
    
-UDPTIMEOUT = 1 # Maximum time it takes for other unit to respond
+UDPTIMEOUT = 0.1 # Maximum time it takes for other unit to respond
 udpTimeout = time.time() + UDPTIMEOUT
 
 def getKeyOrUdp():
@@ -195,6 +195,7 @@ def getKeyOrUdp():
   global udpTimeout
   global UDPTIMEOUT
   global lastMessage
+  global messageStartTime
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -207,15 +208,17 @@ def getKeyOrUdp():
   # Note: If timeout is too close to time.time() 
   #       udp could be lost
   timeEvent = time.time() + 1
+  
   while data == '':
-
     if time.time() > udpTimeout:  
        if len(udpMessages) > len (acks): # Some messages have not been acked.
           print ( 'udpTimeout [len(udpMessages),len(acks)]: [' + \
-               str(len(udpMessages)) + ',' +  str(len(acks)) + ']')    
+               str(len(udpMessages)) + ',' +  str(len(acks)) + \
+               '] elapsedTime: ' + str(time.time() - messageStartTime))    
           message = udpMessages [len(acks)]
           print ( 'Sending: ' + message )
           client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
+          
        udpTimeout = time.time() + UDPTIMEOUT
                 
     rightClick = False
@@ -585,11 +588,13 @@ lastMessage = ""
 udpCount = 0
 udpMessages = [] 
 acks = [] 
+messageStartTime = time.time()         
          
 def udpBroadcast (message):
     global client
     global udpMessages
     global UDPPORT
+    global messageStartTime
     
     try: 
        if client == None:
@@ -598,6 +603,7 @@ def udpBroadcast (message):
           message = str(len(udpMessages)) + ':' + message
           print ('udpBroadcast: [' + message + ']')
           udpMessages.append (message) 
+          messageStartTime = time.time()
                    
     except Exception as ex:
        print ( "Could not send: [" + message + "] because: " + str(ex))
