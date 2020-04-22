@@ -7,6 +7,12 @@ import math
 import time
 import glob
 import random
+import sys
+
+if (sys.version_info.major < 3) or ((sys.version_info.major <= 3) and (sys.version_info.minor < 7)): 
+   print ( "You must run this program with python 3.7 or greater" ) 
+assert sys.version_info >= (3,7) 
+print (str(sys.version_info)) 
 
 # Include game files
 import chat
@@ -182,7 +188,7 @@ def myPrint (message):
    
 UDPTIMEOUT = 0.1 # Maximum time it takes for other unit to respond
 udpTimeout = time.time() + UDPTIMEOUT
-
+waitingCount = 0
 def getKeyOrUdp():
   global client 
   global joining 
@@ -196,6 +202,7 @@ def getKeyOrUdp():
   global UDPTIMEOUT
   global lastMessage
   global messageStartTime
+  global waitingCount
   
   shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                 '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -216,10 +223,15 @@ def getKeyOrUdp():
                str(len(udpMessages)) + ',' +  str(len(acks)) + \
                '] elapsedTime: ' + str(time.time() - messageStartTime))    
           message = udpMessages [len(acks)]
-          print ( 'Sending: ' + message )
           client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
-          
-       udpTimeout = time.time() + UDPTIMEOUT
+          waitingCount = waitingCount + 1
+          udpTimeout = time.time() + (UDPTIMEOUT * waitingCount)
+          print ( 'Sending: ' + message + ' waitingCount: ' + str(waitingCount))
+          if waitingCount >= 100:
+             print ( 'Wondering if other player is actually there still?' )
+       else:
+          waitingCount = 0       
+          udpTimeout = time.time() + UDPTIMEOUT
                 
     rightClick = False
     
@@ -290,44 +302,42 @@ def getKeyOrUdp():
           
        for s in i:
           if s == client:
-             print ( 'Something from client?' )
              data, addr = client.recvfrom (1024)
              data = data.decode();
              addr = str(addr[0])
              if (addr == '192.168.4.1') and (myIpAddress == '127.0.1.1'): 
-                myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
+                #myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
                 data = ''
              elif (addr == myIpAddress):
-                myPrint ( "[" + myIpAddress + "]: Ignoring udp message [" + data + "] from me" )
+                # myPrint ( "[" + myIpAddress + "]: Ignoring udp message [" + data + "] from me" )
                 data = ''
              else:  
                 ind = data.find ( ':' )
                 if data != '':
                    if data[0:3] == 'ack': 
-                      print ( 'Got an ack yo: ' + data)
                       ackCount = data[4:] 
-                      print ( 'ackcount: [' + ackCount + ']')
                       ackCount = int(ackCount)
                       if ackCount == len(acks): 
                          acks.append (data)
+                         print ( 'ackcount: [' + str(ackCount) + ']')
                       else:
-                         print ( 'Ignoring this ack: ' + data)
-                      print ( 'acks: ' + str(acks) + ' ack: ' + data )
+                         print ( 'old ack: ' + data )
                       data = '' # Do not send this forward
                    else:                       
                       udpCount = int(data[0:ind])
                       message = 'ack:' + str(udpCount) 
-                      print ( 'acking...' + message )
+                      print ( 'acking...[' + message + '] lastMessage: [' + lastMessage + ']')
                       client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
-                      myPrint ( '[' + myIpAddress + ']:Got a good message from addr: ' + addr + ' data: [' + data + ']')
                       if data != lastMessage: 
+                         print ( '[lastMessage,data]: [' + lastMessage + ',' + data + ']' )
+                         myPrint ( '[' + myIpAddress + ']:Got a good message from addr: ' + addr + ' data: [' + data + ']')
+                         lastMessage = data
                          data = data[(ind+1):]                   
                          ind = data.find ( 'exec:')
                          if ind > -1: # joining=, games=, move= 
                             command = data[ind+5:]
                             exec (command, globals())
                          typeInput = 'udp'                        
-                         lastMessage = data
                       else:
                          print ( 'Not executing this message: [' + data + '] because it is identical to the last message' )                      
                 

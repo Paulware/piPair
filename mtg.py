@@ -23,27 +23,29 @@ def mtgPage():
    showStatus ( 'iAmHost: ' + str(iAmHost) )    
    move = None
    lost = None
-                   
-   # filename is relative path to image
-   # iOwnIt:True/False
-   # location:'library', 'inplay','inhand','exiled','discarded'
-   # tapped:True/False
-   # index:0..(len(allCards)-1)
+
+   # affects property is a dictionary of affects    
+   #   for example 'cast':'destoryTarget' is one possible affect 
    def getAffects (data):
-      affects = []
+      affects = {}
       try:
          affects = data['affects']         
       except Exception as ex:
          pass
       return affects
+      
+   # filePath is relative path to image
+   # owned:True/False
+   # location:'library', 'inplay','inhand','exiled','discarded'
+   # tapped:True/False
    def addCard (filePath,owned,location,tapped):
       power = 0
       toughness = 0
-      affects = []
-      if filePath.find ( '/creatures/' ) > -1:
+      affects = {}
+      if filePath.find ( '/creatures/' ) > -1: # This is a creature card
          data = c.cost[filePath]
          affects = getAffects (data)
-         if affects != []: 
+         if affects != {}: 
             print ('\n\n' + filePath + ' has affects: ' + str(affects)) 
          power = data['power']
          toughness = data['toughness']
@@ -72,7 +74,9 @@ def mtgPage():
    STARTX = 50
    
    def executeAffect(index, affect):
+      print ( 'Get allCards[\'affects\']') 
       affects = allCards[index]['affects']
+      print ( 'Get allCards[][\'filename\'')
       filename = allCards[index]['filename']
       
       if affect in affects.keys():
@@ -89,7 +93,7 @@ def mtgPage():
       try:
          for index in indexList: 
             ind = str(index)
-            print ( 'Checking index: [' + ind + ']')             
+            
             if ind.isnumeric():   
                if int(index) <= len(allCards):  
                   element = allCards [index]               
@@ -100,7 +104,7 @@ def mtgPage():
             else:
                print ( 'ERR index invalid (should be a number): ' + str(index) ) 
       except Exception as ex:
-         print ( 'Could not convert indexList: ' + str(indexList) + ' indexes to filenames with element: ' + str(element) + ' because: ' + str(ex)  )      
+         print ( 'index: [' + str(index) + '] Could not convert indexList: ' + str(indexList) + ' indexes to filenames with element: ' + str(element) + ' because: ' + str(ex)  )      
 
       return filenames
    

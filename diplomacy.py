@@ -9,7 +9,10 @@ def diplomacyPage(numPlayers=2):
    global fromCity
    global locations
    global players
- 
+   global remindTimeout
+   
+   remindTimeout = 0
+    
    Object = type('Object', (object,), {} ) # Generic object definition
 
    hostTurn = True # Host gets to move first       
@@ -19,7 +22,6 @@ def diplomacyPage(numPlayers=2):
    fromCity = ''
    colors = {'Germany': BLACK, 'Austria': RED, 'France': LIGHTBLUE, 'Italy': GREEN, \
              'Russia':DARKGREEN, 'Turkey': YELLOW, 'England': DARKBLUE}   
-   
    if numPlayers == 2: 
       players = {'Austria': {'Vienna':'army', 'Budapest':'army', 'Trieste':'navy'}, \
                  'France':  {'Marseilles':'army', 'Paris':'army', 'Brest':'navy'}, \
@@ -135,6 +137,12 @@ def diplomacyPage(numPlayers=2):
                                            
    orders = []
    
+   def ordersAppend (order,orders):  
+     print ( 'Add order: ' + str(order) + ' to orders: ' + str(orders))    
+     message = ','.join (order)
+     udpBroadcast ( message ) # send order to other player 
+     orders.append (order)
+     
    def isAdjacent (city1,city2): 
       adjacent = False
       adjacentCities = locations[city1]['adjacents'] # adjacents[city1]
@@ -148,6 +156,8 @@ def diplomacyPage(numPlayers=2):
       global myTurn
       global lastStatusMessage
       global fromCity
+      global remindTimeout
+      
       background = pygame.image.load ('images/diplomacy.gif')
       # background = pygame.transform.scale(background, (DISPLAYWIDTH, DISPLAYHEIGHT)) 
                
@@ -159,7 +169,7 @@ def diplomacyPage(numPlayers=2):
          
          if myTurn:
             if state == 0: 
-               buttons = ['viewOrders','turnDone','quit']
+               buttons = ['viewOrders','quit']
          else:
             buttons = ['quit']
          # print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + str(buttons) ) 
@@ -282,7 +292,7 @@ def diplomacyPage(numPlayers=2):
             print ( 'convoy, [fromType,destinationType], [' + fromType + ',' + destinationCity + ']')
             if isAdjacent (fromCity, city):
                drawStatus ( fromCity + ' will be transported to: ' + destinationCity)
-               orders.append ([city,'convoy',fromCity,destinationCity])
+               ordersAppend ([city,'convoy',fromCity,destinationCity],orders)
             elif destinationType != 'coast': 
                drawStatus ('Err, destination must be a coastal location' )                              
             else:
@@ -301,7 +311,7 @@ def diplomacyPage(numPlayers=2):
                   found = True 
                   break
             if not found:
-               print ( city + ' has not been assigned an order yet')
+               drawStatus ( city + ' has not been assigned an order yet')
                waiting = True
                break               
          return waiting
@@ -315,7 +325,8 @@ def diplomacyPage(numPlayers=2):
          print ( 'showPiece, imgPos: ' + str(imgPos)) 
          (player,city,unit) = findPiece (imgPos)
          if player != iAmPlayer:
-            print ( 'You do not own this piece, no action required')
+            print ( 'You do not own this piece [player,iAmPlayer] :[' + player + ',' + \
+                    iAmPlayer + ', no action required')
          else:
             msg = 'Select action for the ' + player + ' ' + unit + ' stationed at ' + city
             pygame.display.set_caption(msg)
@@ -354,8 +365,8 @@ def diplomacyPage(numPlayers=2):
                      elif action == 'support':
                         cityList = moveAdjacentList (city,unit)
                         cities = showList (cityList)                                                       
-                     elif action == 'hold':
-                        print ( 'hold yo')
+                     elif action == 'hold':                      
+                        ordersAppend([city,'hold',''],orders)                     
                         quit = True
                      else:
                         print ( 'did not handle action: ' + action)
@@ -364,35 +375,39 @@ def diplomacyPage(numPlayers=2):
                sprite = getSpriteClick (eventType, data, cities ) 
                if sprite != -1:
                   print ( 'sprite: ' + str(sprite) + ' cities: ' + str(cityList)) 
-                  destinationCity = cityList [sprite]            
-                  drawStatus ( 'You have selected: ' + destinationCity)
                   if action != '': 
-                     if (action == 'move') or (action == 'support'):
-                        orders.append ([city,action,destinationCity])
+                     if (action == 'hold'): 
+                        ordersAppend ([city,'hold'],orders)
                         quit = True
-                     elif action == 'convoy':
-                        if fromCity == '':                       
-                           fromCity = cityList[sprite]
-                           pygame.display.set_caption('Select destination city')
-                           cityList = convoyToList (city)
-                           DISPLAYSURF.fill((WHITE))                            
-                           drawNavy ((100,100), colors[player])   
-                           actions = ['ok']                      
-                           (filenames,buttons) = actionsToIcons (actions) 
-                           (images,buttonSprites) = showImages (filenames, buttons)      
-                           pygame.display.update() 
-                           cities = showList (cityList)                            
-                        else:
-                           toCity = cityList[sprite]                           
-                           convoyCity = city
-                           validateConvoyOrder (orders,convoyCity,fromCity,toCity)
-                           quit = True
-                     else:
-                        print ( 'Can add order? [city,action,selectedTown]:[' + city + ',' + action + ',' + selectedTown + ']' )
-                        orders.append ([city,action,selectedTown])
-                        quit = True
-                  
+                     else: 
+                        destinationCity = cityList [sprite]            
+                        drawStatus ( 'You have selected: ' + destinationCity)
 
+                        if (action == 'move') or (action == 'support'):
+                           ordersAppend ([city,action,destinationCity],orders)
+                           quit = True
+                        elif action == 'convoy':
+                           if fromCity == '':                       
+                              fromCity = cityList[sprite]
+                              pygame.display.set_caption('Select destination city')
+                              cityList = convoyToList (city)
+                              DISPLAYSURF.fill((WHITE))                            
+                              drawNavy ((100,100), colors[player])   
+                              actions = ['ok']                      
+                              (filenames,buttons) = actionsToIcons (actions) 
+                              (images,buttonSprites) = showImages (filenames, buttons)      
+                              pygame.display.update() 
+                              cities = showList (cityList)                            
+                           else:
+                              toCity = cityList[sprite]                           
+                              convoyCity = city
+                              validateConvoyOrder (orders,convoyCity,fromCity,toCity)
+                              quit = True
+                        else:
+                           print ( 'Can add order? [city,action,selectedTown]:[' + city + ',' + action + ',' + selectedTown + ']' )
+                           ordersAppend ([city,action,selectedTown],orders)
+                           quit = True
+                     
       def showOrders(orders):
          DISPLAYSURF.fill((BLACK))     
          drawStatus ( "View the " + str(len(orders)) + " orders yo")
@@ -456,10 +471,13 @@ def diplomacyPage(numPlayers=2):
                color = colors[owner]
                if not townOccupied (location):
                   drawFlag ( (x,y), color)             
-                  
+      def allOrdersIn():
+         return False      
+ 
       def executeOrders(orders):
          global locations
          global players
+         print ( 'Execute all orders yo' )
          for order in orders:
             fromTown = order[0]
             toTown = order[2]
@@ -505,7 +523,6 @@ def diplomacyPage(numPlayers=2):
       lastCity = ''
       lastPosition = (0,0)
       orders = []
-      remindTimeout = 0
       while not quit:            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()         
@@ -514,6 +531,8 @@ def diplomacyPage(numPlayers=2):
             remindTimeout = time.time() + 10 # Remind every 10 seconds 
             if waitingOn(iAmPlayer):
                drawStatus ("Waiting on you to finish orders")
+            elif allOrdersIn (): 
+               executeOrders(orders)
             else:
                drawStatus ("Waiting on others to finish orders" )
           
@@ -558,14 +577,15 @@ def diplomacyPage(numPlayers=2):
                quit = True
             elif action == 'viewOrders':
                showOrders(orders)
-            elif action == 'turnDone':
-               executeOrders(orders)
-               showBoard (['viewOrders','turnDone','quit'],imgPos)
+            #elif action == 'turnDone':
+            #   executeOrders(orders)
+            #   showBoard (['viewOrders','turnDone','quit'],imgPos)
 
             else: 
                print ( 'action: [' + action + ']')
                
-         showBoard (buttons,imgPos) 
+         if (eventType != pygame.MOUSEMOTION) or (drag != None):      
+            showBoard (buttons,imgPos) 
                 
    if iAmHost:
       # Set opponents list of games
