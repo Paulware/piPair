@@ -6,7 +6,7 @@ chmod 777 /home/pi/Desktop/runPython.sh
 apt-get update
 ./ssh.sh
 ./keyboard.sh
-./timezone.sh
+timedatectl set-timezone America/Chicago
 ./ap.sh
 pip install glob3
 ./runMain.sh
