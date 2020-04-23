@@ -13,7 +13,7 @@ file_exists() {
    fi
 }
 
-# return true if line exists
+# return true if line exists 
 line_exists_in () {
    if grep -Fxq "$2" $1
    then

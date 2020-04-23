@@ -4,7 +4,7 @@ update_file() {
   mv /f $1
 }
 
-# us keyboard 
+# us keyboard  
 update_file /etc/default/keyboard "XKBLAYOUT=\"gb\"" "XKBLAYOUT=\"us\""
 
 echo "Keyboard set to us.  This will be affected on next reboot" 

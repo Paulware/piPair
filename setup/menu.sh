@@ -14,7 +14,7 @@ one(){
 
 two(){
   echo "two() called"
-     pause
+     pause 
 }
 
 show_menus(){
