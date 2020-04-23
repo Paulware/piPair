@@ -299,10 +299,10 @@ def mtgPage():
                if len(hand) > 7:
                   showStatus ( 'play a card or discard' )
                   pygame.display.set_caption ( 'You need to discard a card' )
-                  buttons = ['quit']
+                  buttons = ['targetPlayer','quit']
                else:
                   showStatus ( 'Tap a land card to play a create, instant or sorcery')
-                  buttons =  ['turnDone','quit']
+                  buttons =  ['targetPlayer','turnDone','quit']
          else:
             buttons = ['quit']
          print ( '[state,myTurn]:[' + str(state) + ',' + str(myTurn) + '] buttons: ' + \
@@ -345,7 +345,7 @@ def mtgPage():
       myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)
       buttons = getButtons (state,myTurn,hand)
       (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
-      
+      target = ''
       while not quit and (myHealth > 0):            
          myTurn = (hostTurn and iAmHost) or (not hostTurn and not iAmHost)       
          (eventType,data,addr) = getKeyOrUdp()
@@ -442,7 +442,7 @@ def mtgPage():
                   allCards[index]['tapped'] = False
                buttons = getButtons (state,myTurn,hand)
                (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
-               print ( 'Done untapping all opponent cards' )
+               print ( 'Done untapping all opponent cards' )               
             elif move['moveType'] == 'quit':
                showStatus( 'You have won, opponent has quit' )
                time.sleep (3)
@@ -586,13 +586,18 @@ def mtgPage():
                   buttons = getButtons (state,False,hand)
                   (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)                      
                   targettedOpponentCard = None
-                  
+
+            elif action == 'targetPlayer': 
+               print ( 'Player is now targetted' )
+               target = player               
+              
             elif action == 'draw':  
                print ( 'Draw a card yo' )
                handIndexes = drawCard(handIndexes)                                      
                state = 2
                buttons = getButtons (state,myTurn,handIndexes)
                (buttonSprites,opponentCards,opponentSprites,hand,handSprites,inplay,inplaySprites) = showBoard(buttons)
+               
             elif action == 'untap':
                state = 1
                print ( 'Untap all cards yo' )

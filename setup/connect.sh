@@ -1,5 +1,8 @@
 #!/usr/bin/expect -f
 
+echo "Usage example: ./connect.sh 98:D3:31:20:53:D4"
+if [ -z "$1" ]; then echo "You must specify mac address of bt device"; exit 1; fi
+
 set prompt "#"
 set address [lindex $argv 0]
 
