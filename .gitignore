@@ -1,3 +1,4 @@
 #ignore config file
 mainConfig.txt
 __pycache__
+udp.log
