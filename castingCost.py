@@ -176,8 +176,54 @@ class castingCost:
       'images/mtg/creatures/weepingStatue.jpg':{'power':3, 'toughness':3,'toCast':['4']}, \
       'images/mtg/creatures/westleyMasterofEverything.jpg':{'power':4, 'toughness':5,'toCast':['green','blue','red']}, \
       'images/mtg/creatures/vladimirPutin.jpg':{'power':4,'toughness':4,'toCast':['3','green','green']}, \
-      'images/mtg/creatures/youngChild.jpeg':{'power':1, 'toughness':1,'toCast':['white']} \
+      'images/mtg/creatures/youngChild.jpeg':{'power':1, 'toughness':1,'toCast':['white']}, \
+      # Lands 
+      'images/mtg/lands/red.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
+      'images/mtg/lands/white.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
+      'images/mtg/lands/black.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
+      'images/mtg/lands/blue.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
+      'images/mtg/lands/green.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
    }
+   
+   def defaultRecord (self,filename):
+      info = {'host':False,'filename':filename,'power':0,'toughness':0, \
+              'toCast':0,'tapped':False,'location':'library','affects':''}
+      return info
+   
+   def oneRecord (self,filename): 
+      info = self.cost [filename]
+      data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
+               'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
+               'host':False}
+      return data 
+      
+   def toIndexes (self,list): 
+      try:
+         indexList = []
+         
+         for item in list:
+            info = list[item]
+            index = info['index']
+            indexList.append (index) 
+      except Exception as ex:
+         assert False, 'Trouble in toIndexes,problem: ' + str(ex)
+         
+      return indexList
+      
+   def toFilenames (self,list,infoList): 
+      filenames = []
+      try: 
+         for index in list:
+            info = infoList[index]
+            print ( 'Got info: ' + str(info ) ) 
+            filename = info['filename']
+            filenames.append (filename)
+      except Exception as ex:
+         assert False, 'toFilenames, indexes list: ' + str(list)
+         
+      return filenames
+      
+   
    def __init__(self):
       pass
       
@@ -232,11 +278,10 @@ class castingCost:
                        " to pay colorless: " + str(numColorless) )      
          else:
             print ( 'Did not have enough base colors to pay: ' + str(cost) )
-      if sufficient: 
-         print ( 'Yes most definately' )
+
       return sufficient                           
-      
-   def allCards(self):
+     
+   def allCards(self): # Used to select card for basis of deck
       cards = []
       indexes = []
       count = 0      
@@ -250,7 +295,7 @@ class castingCost:
          indexes.append (count)
          count = count + 1
       return (cards,indexes)
-            
+           
    def baseCost ( self, filename ):
       base = []
       casting = self.actualCost(filename)
@@ -287,49 +332,167 @@ class castingCost:
       return matches
       
    def buildDeck (self,filename): 
-      deck = []
+      deck = {}
       creatures = self.matchingCards (filename)
       colors = self.baseCost(filename)
       maxCreatures = 30
-      # continue until you have enough creatures
+      print ( 'len(creatures): ' + str(len(creatures)) )
       count = 0
       while len(deck) < maxCreatures: 
+         index = count % len(creatures)
+         creature = creatures [index]
+         aRecord = self.oneRecord (creature)
+         aRecord['index'] = index         
+         deck[count] = aRecord 
+         filename = str(aRecord['filename'])
+         if str.isnumeric (filename): 
+            assert False, 'buildDeck, aRecord bad filename value: ' + filename 
          # For each creature 
-         deck.append ( creatures[count] ) 
          count = count + 1
-         count = count % len(creatures)
             
       # Add Lands      
       maxLands = 20 
       while len (deck) < (maxCreatures + maxLands):
          for color in colors: 
-            deck.append ('images/mtg/lands/' + color + '.jpg') 
-            if len(deck) == (maxCreatures + maxLands): 
+            land = 'images/mtg/lands/' + color + '.jpg'
+            index = self.getIndex (land)
+            deck[count] = self.defaultRecord (land)
+            deck[count]['index'] = index
+            filename = str(deck[count]['filename'])
+            if str.isnumeric (filename): 
+               assert False, 'buildDeck, land, bad filename value: ' + filename             
+            
+            count = count + 1
+            if count == (maxCreatures + maxLands): 
                break
-
+               
       # Add instants/sorceries/artifacts               
-      print ( "Built a deck: " + str(deck) )      
-      return deck 
-
-   def getRandomIndex (self,list): 
-      num = int ( random.random() * len(list))
-      return num
-
-   def dealCard (self,list): 
-      card = []
-      index = self.getRandomIndex (list)
-      item = list[index]
-      card.append (item)
-      list.remove (item)    
-      return (card,list)       
+      filename = str(deck[0]['filename'])
+      if str.isnumeric (filename): 
+         assert False, 'buildDeck, deck[0][filename], bad filename value: ' + filename             
       
-   def dealHand (self,list): 
-      hand = []
-      for i in range(7):
-         (card,list) = self.dealCard (list)
-         hand = hand + card
-      return (hand,list)  
-
+      return deck
+      
+   def getIndex ( self, filename ): 
+      count = 0
+      found = False 
+      for card in self.cost: 
+         if card == filename: 
+            found = True
+            break
+         count = count + 1
+      print ( 'filename: ' + str(filename) )
+      assert found, 'getIndex could not find filename: ' + str(filename) 
+      return count
+      
+   def indexToFilename ( self, index ):
+      count = 0
+      filename = ''
+      for card in self.cost: 
+         if count == index:
+            filename = card
+            break
+         count = count + 1
+      assert filename != '', 'indexToFilename could not find index: ' + str(index) 
+      return filename
+   
+   def buildDecksMessage (self,allDecks): 
+      message = '['
+      for card in allDecks: 
+         info = allDecks[card]
+         index = info['index']
+         if message != '[': 
+            message = message + ','
+         message = message + str(index)
+      message = message + ']'
+      print ( 'buildDecksMessage created the message: [' + message + ']' )
+      return message
+      
+   def validateAllDecks (self,deck): 
+      assert len(deck) > 0, 'Err built an empty deck'      
+      
+      try: 
+         affects = deck[0]['affects']
+      except Exception as ex:
+         assert False, 'After building decks, allDecks[0][affects] does not exist yo'
          
-
+      filename = str(deck[0]['filename'])
+      if str.isnumeric(filename):
+         assert False, 'After building decks, allDecks 0 filename is bad: ' + filename
+      print ( 'allDecks[0] after buildDecks: ' + str(deck[0]))             
+   
       
+   def buildDecks (self,hostFilename,opponentFilename):
+      allDecks = {}
+      # Add host cards
+      deck = self.buildDeck (hostFilename)
+      count = 0
+      for card in deck: 
+        info = deck[card]
+        filename = info['filename']
+        allDecks[count] = {'summoned':False, 'index':info['index'], 'filename':filename, \
+                           'affects':'', 'location':'library', 'tapped':False, 'host':True } 
+        count = count + 1
+
+      # Add opponent Cards        
+      deck = self.buildDeck (opponentFilename)
+      for card in deck:
+        info = deck[card]
+        filename = info['filename']
+        allDecks[count] = {'summoned':False, 'index':info['index'], 'filename':filename, \
+                           'location':'library', 'tapped':False, 'host':False, 'affects':'' } 
+        count = count + 1
+      
+      self.validateAllDecks (allDecks) 
+      return allDecks
+      
+   def getRandomItem (self,list):
+      item = None
+      assert len(list) > 0, 'Cannot get random item, list is empty' 
+      print ( 'getRandomItem, list has (' + str(len(list)) + ' elements' )
+      num = int ( random.random() * len(list))
+      item = list[num]
+      print (str(list[0])) 
+      print ( 'Got randomitem: ' + str(item) )
+      assert item != None, 'getRandomItem returning None'
+      return item
+
+   def extractLocation (self, list, host, location):
+      indexes = [] 
+      data = {} 
+      count = 0
+      print ( 'extractLocation, len(list): ' + str(len(list)) + ', location: ' + location )
+      for card in list: 
+         info = list[card] # card == count.  TODO: confirm
+         if info['location'] != location: 
+            pass # print ( 'extractLocation, (info[location] != location): ([' +  info['location'] + ']!= [' + location + '])')
+         elif info['host'] != host:
+            pass # print ( 'info[host] !=' + str(host)) 
+         else:
+            index = info['index']
+            indexes.append (index) # list of indexes 
+            data[count] = info            
+            count = count + 1
+      print ( 'extractLocation len(indexes): ' + str(len(indexes)) + ', len(data): ' + str(len(data)) ) 
+      return indexes,data
+      
+   # allDecks[index]['location'] = 'inhand'      
+   def dealCard (self,list,host): 
+      info = None
+      assert len(list) > 0, "dealCard list is empty" 
+      indexes,infoList = self.extractLocation (list, host, 'library')
+      assert len(infoList) > 0, 'Why is library list empty? Big list:' + str(list) 
+      info = self.getRandomItem (infoList)
+      card = info['index']
+      list[card]['location'] = 'inhand'
+      print ( 'dealCard got card: ' + str (info) )
+      return info
+      
+   def dealHand (self,list,host):
+      infoList = []
+      assert len(list) > 0, 'Cannot deal a hand from an empty list'
+      for i in range(7):
+         info = self.dealCard (list,host)
+         infoList.append ( info['index'] ) 
+      print ( 'I was dealt this hand: ' + str(infoList)) 
+      return infoList

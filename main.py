@@ -8,6 +8,13 @@ import time
 import glob
 import random
 import sys
+import datetime
+import cardDeck
+import mtgScreens
+import inputOutput
+import utilityScreens
+
+from pygame.locals import *
 
 if (sys.version_info.major < 3) or ((sys.version_info.major <= 3) and (sys.version_info.minor < 7)): 
    print ( "You must run this program with python 3.7 or greater" ) 
@@ -53,8 +60,8 @@ HINTCOLOR = BROWN
 
 tcpSocket = None
 tcpConnection = None
-client = None
 
+allDecks = {}
 games = [] 
 gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG', 'Diplomacy', 'PanzerLeader']
 iAmHost = False
@@ -66,14 +73,12 @@ configFilename = 'mainConfig.txt'
 rightClick = False
 move = None
 udpCounter = 0
+pollReady = False
 
 # Sleep so that the desktop display can initialize itself
 #time.sleep(15) 
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
-statusMessage = ""
-lastStatusMessage = ''
-lastUdpCount = -1
 
 # Read configuration data
 try: 
@@ -94,6 +99,19 @@ except Exception as ex:
    print ( "Exception: " + str(ex) )
    iAmHost = None
 print ("iAmHost: " + str(iAmHost) + " games:" + str(games)) 
+
+print ("pygame.init")
+pygame.init()
+print ("get the clock")
+MAINCLOCK = pygame.time.Clock()
+
+DISPLAYSURF = pygame.display.set_mode((DISPLAYWIDTH, DISPLAYHEIGHT),HWSURFACE|DOUBLEBUF|RESIZABLE)
+utilScreen = utilityScreens.utilityScreens (DISPLAYSURF)
+myIO = inputOutput.inputOutput(utilScreen)
+FONT = pygame.font.Font('freesansbold.ttf', 16)
+BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+#pygame.display.toggle_fullscreen()      
+pygame.display.set_caption('Flippy')
 
 '''
    Utilities
@@ -185,182 +203,6 @@ def myPrint (message):
    if message != '':
       print ( message ) 
       nextPrintTime = time.time() + 1 
-   
-UDPTIMEOUT = 0.1 # Maximum time it takes for other unit to respond
-udpTimeout = time.time() + UDPTIMEOUT
-waitingCount = 0
-def getKeyOrUdp():
-  global client 
-  global joining 
-  global move
-  global cast
-  global rightClick
-  global lastUdpCount
-  global udpMessages
-  global acks
-  global udpTimeout
-  global UDPTIMEOUT
-  global lastMessage
-  global messageStartTime
-  global waitingCount
-  
-  shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
-                '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
-  key = None
-  upperCase = False
-  typeInput = ''
-  data = ''
-  addr = ''
-  
-  # Note: If timeout is too close to time.time() 
-  #       udp could be lost
-  timeEvent = time.time() + 1
-  
-  while data == '':
-    if time.time() > udpTimeout:  
-       if len(udpMessages) > len (acks): # Some messages have not been acked.
-          print ( 'udpTimeout [len(udpMessages),len(acks)]: [' + \
-               str(len(udpMessages)) + ',' +  str(len(acks)) + \
-               '] elapsedTime: ' + str(time.time() - messageStartTime))    
-          message = udpMessages [len(acks)]
-          client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
-          waitingCount = waitingCount + 1
-          udpTimeout = time.time() + (UDPTIMEOUT * waitingCount)
-          print ( 'Sending: ' + message + ' waitingCount: ' + str(waitingCount))
-          if waitingCount >= 100:
-             print ( 'Wondering if other player is actually there still?' )
-       else:
-          waitingCount = 0       
-          udpTimeout = time.time() + UDPTIMEOUT
-                
-    rightClick = False
-    
-    ev = pygame.event.get()
-    for event in ev:
-       if event.type == pygame.KEYDOWN:
-          #print( "Got a keydown with value: " + str(event.key) )
-          if (event.key == 303) or (event.key == 304): #shift
-             upperCase = True
-          # chr(273), 'w', chr(274), 's',  chr(275), 'd', chr (276), 'a']             
-          elif (event.key == 273):
-             data = 'w'
-             typeInput = 'key'
-          elif (event.key == 274): 
-             data = 's'
-             typeInput = 'key'
-          elif (event.key == 275):
-             data = 'd'
-             typeInput = 'key'
-          elif (event.key == 276):
-             data = 'a'
-             typeInput = 'key'             
-          else:
-             key = chr(event.key)
-             if upperCase: 
-                if key in shiftKeys.keys():
-                   key = shiftKeys[key]
-                else:                     
-                   key = key.upper()
-             
-             typeInput = 'key'
-             data=key
-       elif event.type == pygame.KEYUP:
-          data = ' '
-          typeInput = pygame.KEYUP
-          addr = 'key'
-       elif event.type == pygame.QUIT:
-          data = 'quit'
-          typeInput = pygame.QUIT
-          addr = 'key'
-       elif event.type == pygame.MOUSEBUTTONUP:
-          data = pygame.mouse.get_pos()
-          typeInput = pygame.MOUSEBUTTONUP
-          addr = 'mouse'
-       elif event.type == pygame.MOUSEBUTTONDOWN:
-          #print ( 'Detected a mouse down yo' )
-          data = pygame.mouse.get_pos()
-          typeInput = pygame.MOUSEBUTTONDOWN
-          addr = 'mouse'
-          rightClick = (event.button == 3)
-          if rightClick:
-             print ("right click detected")
-       elif event.type == pygame.MOUSEMOTION:
-          data = pygame.mouse.get_pos()
-          typeInput = pygame.MOUSEMOTION
-          addr = 'mouse'
-       #   
-       #else:
-       #   print ( 'Got a event: ' + str(event.type)) 
-             
-    if data == '':
-       if tcpConnection != None: 
-          i,o,e = select.select ([tcpConnection], [], [], 0.0001)
-       elif tcpSocket != None:
-          i,o,e = select.select ([tcpSocket], [], [], 0.0001)
-       else: #udp
-          i,o,e = select.select ([client], [], [], 0.0001)
-          
-       for s in i:
-          if s == client:
-             data, addr = client.recvfrom (1024)
-             data = data.decode();
-             addr = str(addr[0])
-             if (addr == '192.168.4.1') and (myIpAddress == '127.0.1.1'): 
-                #myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
-                data = ''
-             elif (addr == myIpAddress):
-                # myPrint ( "[" + myIpAddress + "]: Ignoring udp message [" + data + "] from me" )
-                data = ''
-             else:  
-                ind = data.find ( ':' )
-                if data != '':
-                   if data[0:3] == 'ack': 
-                      ackCount = data[4:] 
-                      ackCount = int(ackCount)
-                      if ackCount == len(acks): 
-                         acks.append (data)
-                         print ( 'ackcount: [' + str(ackCount) + ']')
-                      else:
-                         print ( 'old ack: ' + data )
-                      data = '' # Do not send this forward
-                   else:                       
-                      udpCount = int(data[0:ind])
-                      message = 'ack:' + str(udpCount) 
-                      print ( 'acking...[' + message + '] lastMessage: [' + lastMessage + ']')
-                      client.sendto(str.encode(message), ('192.168.4.255', UDPPORT))
-                      if data != lastMessage: 
-                         print ( '[lastMessage,data]: [' + lastMessage + ',' + data + ']' )
-                         myPrint ( '[' + myIpAddress + ']:Got a good message from addr: ' + addr + ' data: [' + data + ']')
-                         lastMessage = data
-                         data = data[(ind+1):]                   
-                         ind = data.find ( 'exec:')
-                         if ind > -1: # joining=, games=, move= 
-                            command = data[ind+5:]
-                            exec (command, globals())
-                         typeInput = 'udp'                        
-                      else:
-                         print ( 'Not executing this message: [' + data + '] because it is identical to the last message' )                      
-                
-          elif s == tcpConnection: 
-             data, addr = tcpConnection.recvfrom (1024)
-             data = data.decode();
-             #print ("Received tcp data:" + data)
-             addr = str(addr[0])
-             typeInput = 'tcp'
-          elif s == tcpSocket:
-             data, addr = tcpSocket.recvfrom (1024)
-             data = data.decode();
-             #print ("Received tcp data:" + data)
-             typeInput = 'tcp'
-             addr = str(addr[0])
-             
-    if (data == '') and (time.time() > timeEvent): 
-       typeInput = 'time'
-       data = ' '
-       addr = 'clock'  
-       
-  # print ( 'returning typeInput: ' + str(typeInput))   
-  return (typeInput,data,addr)
   
 def showCh (ch,x,y):
   surface = FONT.render(str(ch), True, TEXTCOLOR, TEXTBGCOLOR2)
@@ -389,11 +231,10 @@ def showLine ( line, x,y ):
      x = x + chOffset (ch)
   
 def getInput (x,y):
-  global client
   line = ''
   quit = False
   while not quit:
-     (typeInput,data,addr) = getKeyOrUdp()
+     typeInput,data,addr = myIO.getKeyOrUdp()
      if typeInput == 'key': 
         if data == chr(13):           
            quit = True
@@ -599,25 +440,6 @@ udpCount = 0
 udpMessages = [] 
 acks = [] 
 messageStartTime = time.time()         
-         
-def udpBroadcast (message):
-    global client
-    global udpMessages
-    global UDPPORT
-    global messageStartTime
-    
-    try: 
-       if client == None:
-          print ("client udp network not set yet" )
-       else:
-          message = str(len(udpMessages)) + ':' + message
-          print ('udpBroadcast: [' + message + ']')
-          udpMessages.append (message) 
-          messageStartTime = time.time()
-                   
-    except Exception as ex:
-       print ( "Could not send: [" + message + "] because: " + str(ex))
-       
        
 def readLines (filename, match):
     found = False
@@ -703,7 +525,32 @@ def extractImage (sheetFilename,x1,y1,x2,y2,finalWidth,finalHeight):
    image = image.convert_alpha()
    image.blit(sheet, (0, 0), (x1,y1,x2,y2))                 
    image = pygame.transform.scale(image, (finalWidth, finalHeight)) 
-   return image                   
+   return image  
+   
+def commLogWrite (message): 
+   commLog.write ( str.encode (message) )    
+   
+def dealOpponentHand (cardList):
+   global commLog
+   commLogWrite ( 'dealOpponentHand ' + str(cardList) + ' cards \n' )
+   for index in cardList:
+      allDecks[index]['location'] = 'inhand'
+      commLogWrite ( 'allDecks[index]: ' + str(allDecks[index])) 
+
+# Used by the opponent, unpack the message and create a list all cards from both decks
+def buildDecksFromList ( message ):
+   global allDecks
+   allDecks = {}
+   c = castingCost.castingCost()
+   count = 0
+   for index in message:
+      cardFilename = c.indexToFilename (index)
+      allDecks[count] = {'index':count,'filename':cardFilename, 'location':'library', 'tapped':False, 'host':(count<50)} 
+      count = count + 1
+
+   print ( str (allDecks) )   
+   assert len(allDecks) == 100, 'buildDecksFromList, got partial deck size: ' + str(len(allDecks))         
+   
 '''
    Pages
 '''   
@@ -723,7 +570,6 @@ def hostPage (showOnly=False):
     (surface, rect) = createLabel ('SSID:', 250, 55)  
     DISPLAYSURF.blit(surface, rect)
     pygame.display.update()
-    #(typeInput,ssid,addr) = getInput(300,55)
           
     quit = False
     while not quit: 
@@ -742,7 +588,7 @@ def hostPage (showOnly=False):
        sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
           games = gameList     
-          mainPage (True)
+          mainPage ()
           quit = True
 
 # Show the list the SSIDS and join an ssid when it is selected
@@ -782,12 +628,12 @@ def joinPage(showOnly=False):
           updateWpaSupplicant (ssids[sprite], 'ABCD1234')            
           os.system ( 'reboot') # reboot the pi4
           joinSSID (ssids[sprite])
-          mainPage (True)
+          mainPage ()
           
        sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1:           
           print ("Selected command: " + str(sprite))
-          mainPage (True)
+          mainPage ()
           quit = True
      
         
@@ -800,13 +646,13 @@ def gamePage(showOnly=False):
     showTimeout = 0
     count = 0
     while not quit and not showOnly:  
-       (eventType,data,addr) = getKeyOrUdp() # This should set games
+       eventType,data,addr = myIO.getKeyOrUdp() # This should set games
        
        if time.time() > showTimeout: 
           count = count + 1
           DISPLAYSURF.fill((BLACK))
           labels = showList(games)
-          showTimeout = time.time() + 5 
+          showTimeout = time.time() + 1 
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
           else:
@@ -825,15 +671,15 @@ def gamePage(showOnly=False):
           game = game.replace ( ' ', '' )
           exec (game + 'Page()' ) # Show the game page 
           quit = True
-          mainPage (True)
+          mainPage ()
                  
        sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
           print ("Selected command: " + str(sprite))
-          mainPage (True)
+          mainPage ()
           quit = True
           
-def mainPage(showOnly = False):   
+def mainPage():   
     pygame.display.set_caption('Host Join or Play')        
     locations = [ (400,400), (300,100), (100,100), (500,100)] 
     height = DISPLAYHEIGHT - 50
@@ -843,7 +689,7 @@ def mainPage(showOnly = False):
     pygame.display.update()
 
     quit = False
-    while not quit and not showOnly:
+    while not quit:
        (eventType, data, addr) = getInput (100,100)      
        sprite = getSpriteClick (eventType, data, sprites )
        if sprite != -1:
@@ -852,77 +698,14 @@ def mainPage(showOnly = False):
              break
           elif sprite == 1: 
              hostPage()
-             mainPage(True) 
+             mainPage() 
           elif sprite == 2:
              joinPage()
-             mainPage(True)
+             mainPage()
           elif sprite == 3:
              gamePage()
-             mainPage(True)
-                                 
-print ("pygame.init")
-pygame.init()
-print ("get the clock")
-MAINCLOCK = pygame.time.Clock()
-
-#sf30 = SF30.SF30()
-#while not sf30.joystick_detected:
-#   time.sleep (1.0)
-#   print ("Waiting for joystick " )
-#print ("Joystick detected" )
-
-DISPLAYSURF = pygame.display.set_mode((DISPLAYWIDTH, DISPLAYHEIGHT))
-FONT = pygame.font.Font('freesansbold.ttf', 16)
-BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
-#pygame.display.toggle_fullscreen()      
-pygame.display.set_caption('Flippy')
-
-# Setup the UDP client socket
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP    
-client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-client.bind(("", UDPPORT)) 
-client.setblocking(0) # turn off blocking  
+             mainPage()
 
 mainPage()
-if tcpConnection != None:
-   tcpConnection.close()
    
-'''  
-def getKey():
-  key = None
-  upperCase = False
-  while key == None:
-    ev = pygame.event.get()
-    for event in ev:  
-       if event.type == pygame.KEYDOWN:
-          if (event.key == 303) or (event.key == 304): #shift
-             upperCase = True
-          else:
-             key = event.key 
-             break
-  # print ("Got a key: " + str(key))
-  key = chr(key)
-  if upperCase:
-     key = str(key).upper()
-  return key
-  
-def readLine(x,y):
-  line = ''
-  ch = ' '
-  lastCh = ch
-  while ch != chr(13):
-     ch = getKey()
-     if ch != chr(13):
-        if ch == chr(8):
-           print ( "Got an 8")
-           x = x - chOffset (lastCh) 
-           showCh (' ', x, y)
-           line[:len(line)-1] 
-        else:
-           line = line + ch
-           showCh (ch, x, y)
-           x = x + chOffset(ch)
-     print ('ch:' + str(ch))
-  print ( "readLine: " + line)
-  return line  
-'''   
+ 
