@@ -9,10 +9,10 @@ import glob
 import random
 import sys
 import datetime
-import cardDeck
 import mtgScreens
 import inputOutput
 import utilityScreens
+import cardDatabase
 
 from pygame.locals import *
 
@@ -23,7 +23,6 @@ print (str(sys.version_info))
 
 # Include game files
 import chat
-import castingCost
 import checkers
 import tictactoe
 import chess
@@ -62,7 +61,6 @@ tcpSocket = None
 tcpConnection = None
 
 allDecks = {}
-games = [] 
 gameList = ['Chat', 'Tic Tac Toe', 'Checkers', 'Chess', 'MTG', 'Diplomacy', 'PanzerLeader']
 iAmHost = False
 joining = ''
@@ -80,26 +78,6 @@ pollReady = False
 
 myIpAddress = socket.gethostbyname(socket.gethostname())
 
-# Read configuration data
-try: 
-   f = open ( configFilename, 'r')
-   line = f.readline().strip().lower()
-   f.close()
-   print ("Read line: " + line)
-   if line == 'host': 
-      print ( 'You are host' )
-      iAmHost = True
-      games = gameList    
-      
-   elif line == 'client':
-      games = []
-      print ( 'You are client')
-      iAmHost = False
-except Exception as ex:
-   print ( "Exception: " + str(ex) )
-   iAmHost = None
-print ("iAmHost: " + str(iAmHost) + " games:" + str(games)) 
-
 print ("pygame.init")
 pygame.init()
 print ("get the clock")
@@ -112,6 +90,30 @@ FONT = pygame.font.Font('freesansbold.ttf', 16)
 BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
 #pygame.display.toggle_fullscreen()      
 pygame.display.set_caption('Flippy')
+
+def readConfigData():
+   global iAmHost
+   global myIO
+   # Read configuration data
+   try: 
+      f = open ( configFilename, 'r')
+      line = f.readline().strip().lower()
+      f.close()
+      print ("Read line: " + line)
+      if line == 'host': 
+         print ( 'You are host' )
+         iAmHost = True
+         myIO.games = gameList
+         
+      elif line == 'client':
+         print ( 'You are client')
+         iAmHost = False
+         myIO.games = []
+   except Exception as ex:
+      assert False, 'error while reading config data, line:[' + line + '] exception: ' + str(ex) 
+      iAmHost = None
+
+
 
 '''
    Utilities
@@ -416,7 +418,7 @@ def scanForSsids ():
     return ssids
     
 def showList(ssids):
-    print ('showList' + str(ssids) )     
+    # print ('showList' + str(ssids) )     
     i = 0    
     y = 75 
     locations = []
@@ -529,28 +531,7 @@ def extractImage (sheetFilename,x1,y1,x2,y2,finalWidth,finalHeight):
    
 def commLogWrite (message): 
    commLog.write ( str.encode (message) )    
-   
-def dealOpponentHand (cardList):
-   global commLog
-   commLogWrite ( 'dealOpponentHand ' + str(cardList) + ' cards \n' )
-   for index in cardList:
-      allDecks[index]['location'] = 'inhand'
-      commLogWrite ( 'allDecks[index]: ' + str(allDecks[index])) 
-
-# Used by the opponent, unpack the message and create a list all cards from both decks
-def buildDecksFromList ( message ):
-   global allDecks
-   allDecks = {}
-   c = castingCost.castingCost()
-   count = 0
-   for index in message:
-      cardFilename = c.indexToFilename (index)
-      allDecks[count] = {'index':count,'filename':cardFilename, 'location':'library', 'tapped':False, 'host':(count<50)} 
-      count = count + 1
-
-   print ( str (allDecks) )   
-   assert len(allDecks) == 100, 'buildDecksFromList, got partial deck size: ' + str(len(allDecks))         
-   
+           
 '''
    Pages
 '''   
@@ -558,11 +539,13 @@ def hostPage (showOnly=False):
     global iAmHost 
     global games
     global gameList
+    global myIO
     pygame.display.set_caption('You are now host, click below to change SSID')        
     f = open ( configFilename, 'w')
     f.write ( 'host\n' )
     f.close()
     iAmHost = True
+    myIO.games = gameList    
     DISPLAYSURF.fill((BLACK)) 
     (images,sprites) = showImages (['images/ok.jpg'], [(400,400)] )      
     (surface, rect) = createLabel ('Enter the name of your host ssid', 50, 20)   
@@ -586,8 +569,7 @@ def hostPage (showOnly=False):
              quit = True
           
        sprite = getSpriteClick (eventType, data, sprites ) 
-       if sprite != -1: # Quit is the only other option           
-          games = gameList     
+       if sprite != -1: # Quit is the only other option             
           mainPage ()
           quit = True
 
@@ -595,8 +577,7 @@ def hostPage (showOnly=False):
 # Note: reboot may be necessary    
 def joinPage(showOnly=False):       
     global iAmHost
-    global games
-    games = []
+    global myIO
     f = open ( configFilename, 'w')
     f.write ( 'client\n' )
     f.close()
@@ -605,6 +586,7 @@ def joinPage(showOnly=False):
     f.write ( 'client\n' )
     f.close()
     iAmHost = False
+    myIO.games = []
     DISPLAYSURF.fill((BLACK))
     (images,sprites) = showImages (['images/quit.jpg', 'images/join.jpg'], [(400,400), (200,200)] )       
     (ssidSurf, ssidRect) = createLabel ('Press Join to show SSIDs', 50, 20)    
@@ -641,23 +623,30 @@ def joinPage(showOnly=False):
 def gamePage(showOnly=False):
     global games   
     global iAmHost
+    global myIO
 
     quit = False
     showTimeout = 0
     count = 0
+    print ( 'gamePage, myIO.games: ' + str(myIO.games) + ' iAmHost: ' + str(iAmHost)) 
     while not quit and not showOnly:  
-       eventType,data,addr = myIO.getKeyOrUdp() # This should set games
+       eventType,data,addr = myIO.getKeyOrUdp() # This call sets myIO.games
        
+       # Update the list of games once a second
        if time.time() > showTimeout: 
           count = count + 1
           DISPLAYSURF.fill((BLACK))
-          labels = showList(games)
+          labels = showList(myIO.games)
+          if len(myIO.games) > 0: 
+             pygame.display.set_caption('Please select a game')
+          else:
+             pygame.display.set_caption('Waiting for opponent to choose game to host')          
           showTimeout = time.time() + 1 
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
           else:
-             if games == []: 
-                showLabel ('Waiting on host to select game', 50, 20 )
+             if myIO.games == []: 
+                showLabel ('Waiting on host to choose a game', 50, 20 )
              else:
                 showLabel ('Select a game to join', 50, 20)    
           (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
@@ -665,10 +654,13 @@ def gamePage(showOnly=False):
    
        # Check if a game is clicked on       
        sprite = getSpriteClick (eventType, data, labels ) 
-       if sprite != -1:          
-          print ("Selected game: " + str(sprite)) 
-          game = games[sprite].lower()
-          game = game.replace ( ' ', '' )
+       if sprite != -1:
+          game = myIO.games[sprite]
+          if iAmHost: 
+             myIO.games = [ game ] 
+             myIO.udpBroadcast ( 'exec:self.games=' + str(myIO.games))       
+          print ("Selected game: " + str(sprite))
+          game = game.replace ( ' ', '' ).lower()
           exec (game + 'Page()' ) # Show the game page 
           quit = True
           mainPage ()
@@ -679,7 +671,7 @@ def gamePage(showOnly=False):
           mainPage ()
           quit = True
           
-def mainPage():   
+def mainPage(showOnly = True):   
     pygame.display.set_caption('Host Join or Play')        
     locations = [ (400,400), (300,100), (100,100), (500,100)] 
     height = DISPLAYHEIGHT - 50
@@ -689,7 +681,7 @@ def mainPage():
     pygame.display.update()
 
     quit = False
-    while not quit:
+    while not quit and not showOnly:
        (eventType, data, addr) = getInput (100,100)      
        sprite = getSpriteClick (eventType, data, sprites )
        if sprite != -1:
@@ -706,6 +698,7 @@ def mainPage():
              gamePage()
              mainPage()
 
-mainPage()
+readConfigData()
+mainPage(False)
    
  

@@ -1,4 +1,3 @@
-import cardDeck
 import pygame
 import inputOutput 
 from pygame.locals import *

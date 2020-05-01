@@ -84,8 +84,8 @@ cat > /etc/hostapd/hostapd.conf <<EOF
 interface=wlan0
 driver=nl80211
 ssid=piPair
-hw_mode=b
-channel=10
+hw_mode=g
+channel=6
 wmm_enabled=0
 macaddr_acl=0
 auth_algs=1

@@ -8,7 +8,7 @@ from pygame.locals import *
 class inputOutput:      
    UDPTIMEOUT = 0.5 # Maximum time it takes for other unit to respond
    udpTimeout = time.time() + UDPTIMEOUT
-   lastMessage = ""    
+   lastMessage = "First, null message"    
    udpCount = 0
    udpMessages = [] 
    acks = [] 
@@ -18,12 +18,13 @@ class inputOutput:
    UDPPORT = 3333   
    tcpSocket = None
    tcpConnection = None
-   move = None
-   games = []
-   opponentDeck = [] 
-   dealtHand = []
+
    
    def __init__(self,utilScreen):
+      self.move = None
+      self.games = []
+      self.opponentDeck = [] 
+      self.dealtHand = []   
    
       # Setup the UDP client socket
       self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP    
@@ -34,24 +35,28 @@ class inputOutput:
       self.utilScreen = utilScreen
       
    def __del__(self):
-      self.commLog.close()
-      if self.tcpConnection != None:
-         self.tcpConnection.close()      
+      try: 
+         self.commLog.close()
+         if self.tcpConnection != None:
+            self.tcpConnection.close()     
+      except Exception as ex: 
+         print ( 'Trouble in inputOutput.__del__ because: ' + str(ex) )       
          
    def waitFor (self, caption, pollEvent):             
       sprites = self.utilScreen.basicScreen ( caption,['quit'] )
       
-      pollEvent = 'ready=' + pollEvent
+      pollEvent = 'self.ready=(' + pollEvent + ')'
       print ( 'waitFor pollEvent: [' + pollEvent + ']' )
-      ready = False
-      while not ready:
-         exec (pollEvent) 
+      self.ready = False
+      while not self.ready:
+         exec (pollEvent, locals()) 
+         # print ( 'Executing: ' + pollEvent ) 
          eventType,data,addr = self.getKeyOrUdp()    
          if eventType == pygame.MOUSEBUTTONDOWN:          
             sprite = self.utilScreen.getSpriteClick (data,sprites) 
             if sprite != -1: 
                break         
-      
+                       
    def commLogWrite (self,message): 
       self.commLog.write ( str.encode (message) )    
 
@@ -178,12 +183,11 @@ class inputOutput:
                 data = data.decode();
                 addr = str(addr[0])
                 if (addr == '192.168.4.1') and (self.myIpAddress == '127.0.1.1'): 
-                   #myPrint ( 'Ignore udp message: [' + data + '] from me 127.0.01' )
                    data = ''
                 elif (addr == self.myIpAddress):
-                   # myPrint ( "[" + myIpAddress + "]: Ignoring udp message [" + data + "] from me" )
                    data = ''
                 else:  
+                   print ( '[addr,myIpAddress]: [' + addr + ',' + self.myIpAddress + ']' )
                    ind = data.find ( ':' )
                    if data != '':
                       if data[0:3] == 'ack': # I received an ACK of a previous send
@@ -191,24 +195,26 @@ class inputOutput:
                          ackCount = int(ackCount)
                          if ackCount == len(self.acks): 
                             self.acks.append (data)
-                         self.commLogWrite ( str(datetime.datetime.now().time()) + ' ' + data + '\n')
+                         self.commLogWrite ( str(datetime.datetime.now().time()) + ' Got an ' + data + '\n')
                          data = '' # Do not send this forward
                       else:                       
                          udpCount = int(data[0:ind])
                          message = 'ack:' + str(udpCount) 
-                         print ( 'acking...[' + message + '] lastMessage: [' + self.lastMessage + ']')
-                         self.sendTo (message) 
                          if data != self.lastMessage: 
                             print ( '[lastMessage,data]: [' + self.lastMessage + ',' + data + ']' )
-                            myPrint ( '[' + self.myIpAddress + ']: ' + addr + ' data: [' + data + ']')
-                            self.commLogWrite ( str(datetime.datetime.now().time()) + ':rcv:' + data + '\n')
+                            self.commLogWrite ( str(datetime.datetime.now().time()) + ':rcv:' + data + ' from: ' + addr + '\n')
                             
+                         print ( 'acking...[' + message + '] lastMessage: [' + self.lastMessage + ']')                         
+                         self.sendTo (message) 
+                         if data != self.lastMessage:                             
                             self.lastMessage = data
                             data = data[(ind+1):]                   
                             ind = data.find ( 'exec:')
                             if ind > -1: # joining=, self.games=, self.move=, self.opponentDeck
                                command = data[ind+5:]
-                               exec (command, globals())
+                               exec (command, locals())
+                               print ( 'Executing command: ' + command ) 
+                                  
                             typeInput = 'udp'                        
                          else:
                             print ( 'Not executing this message: [' + data + '] because it is identical to the last message' )                      

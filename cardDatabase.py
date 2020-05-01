@@ -326,7 +326,37 @@ class cardDatabase:
       listCards = [] 
       for key in self.data: 
          listCards.append (key) 
-      return listCards 
+      return listCards
+        
+   def buildDeck (self,filename): 
+      print ( 'cardDatabase, Building a deck list based on ' + filename )
+      indexList = [] 
+      creatures = self.matchingCards (filename)
+      colors = self.baseCost(filename)
+      print ( 'colors: ' + str(colors) ) 
+      print ( 'matching creatures: ' + str(creatures )) 
+      maxCreatures = 30
+      count = 0
+      while len(indexList) < maxCreatures: 
+         index = count % len(creatures)
+         filename = creatures[index]         
+         indexList.append (self.filenameToIndex (filename))
+         count = count + 1
+            
+      # Add Lands      
+      maxLands = 20 
+      while len (indexList) < (maxCreatures + maxLands):
+         for color in colors: 
+            land = 'images/mtg/lands/' + color + '.jpg'
+            index = self.filenameToIndex(land)
+            indexList.append (index)
+            count = count + 1
+            if count == (maxCreatures + maxLands): 
+               break
+            
+      # TODO: Add instants/sorceries/artifacts               
+      return indexList
+      
             
 if __name__ == '__main__':
     try:
@@ -342,6 +372,9 @@ if __name__ == '__main__':
                                           'images/mtg/creatures/android18.png', \
                                           'images/mtg/creatures/barackObama.jpg'] )
        print ( str (indexes ) ) 
+       indexes = db.buildDeck (filename)
+       
+       print ( 'Built the deck: ' + str(indexes ) )
     except Exception as ex:
        print ( "Got exception: " + str(ex)) 
     finally:
