@@ -2,7 +2,7 @@ import cardDatabase
 import gameDeck
 import pygame
 import inputOutput
-import time 
+import time
 from pygame.locals import *
 
 class mtgScreens: 
@@ -22,6 +22,7 @@ class mtgScreens:
    state = 0
    hasPlayedLand = False
    buttonSprites = None
+   myHealth = 20
    
    def __init__(self,myInput,host,DISPLAYSURF): 
       # Instance variables 
@@ -374,8 +375,7 @@ class mtgScreens:
             if action != '':
                print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
                if action == 'tap':
-                  print ( 'Tapping card inplay [' + str(card) + ']' )
-                  print ( 'myDeck.gameDeck[' + str(index) + '[tapped] = True' )
+                  print ( 'myDeck.gameDeck[' + str(index) + '][tapped] = True' )
                   self.myDeck.gameDeck[index]['tapped'] = True
                   ind = selectedCard.find ( '/lands/' )
                   if ind > -1:
@@ -385,7 +385,7 @@ class mtgScreens:
                      self.manaPool.append (landType)
                      print ( 'manaPool is now: ' + str(self.manaPool ))
                   self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'tap\',' + \
-                                              '\'index\':' + str(card) + '}')
+                                              '\'index\':' + str(index) + '}')
                      
                elif action == 'attack': 
                   self.showStatus ( 'Attacking with ' + selectedCard)
@@ -422,21 +422,18 @@ class mtgScreens:
                index = move['index']
                self.opponentDeck.gameDeck[index]['tapped'] = True
             elif move['moveType'] == 'block':
-               blocker = move['blocker']
-               attacker = move['attacker']
-               blockerIndex = self.opponentIndexes[blocker]
-               attackerIndex = eslf.inplayIndexes[attacker]
+               blockerIndex = move['blocker']
+               attackerIndex = move['attacker']
                blockerFilename = self.opponentDeck.gameDeck[blockerIndex]['filename']
                attackerFilename = self.myDeck.gameDeck[attackerIndex]['filename']
                print ( blockerFilename + ' is blocking: ' + attackerFilename ) 
             elif move['moveType'] == 'attack':
                opponentIndex = int(move['index'])
                print ( 'Tapping opponent card [' + str(opponentIndex) + ']')                  
-               ind = self.opponentIndexes[opponentIndex]
-               self.opponentDeck.gameDeck[ind]['tapped'] = True
-               attackFilename = self.opponentDeck.gameDeck[ind]['filename']
-               attackPower = self.opponentDeck.gameDeck[ind]['power']
-               attackToughness = self.opponentDeck.gameDeck[ind]['toughness']
+               self.opponentDeck.gameDeck[opponentIndex]['tapped'] = True
+               attackFilename = self.opponentDeck.gameDeck[opponentIndex]['filename']
+               attackPower = self.opponentDeck.gameDeck[opponentIndex]['power']
+               attackToughness = self.opponentDeck.gameDeck[opponentIndex]['toughness']
                self.showStatus ( ' You are getting attacked by: ' + attackFilename )
                blocked = False
                count = 0
@@ -449,19 +446,17 @@ class mtgScreens:
                      toughness = self.myDeck.gameDeck[index]['toughness']
                      caption = 'You are getting attacked by a ' + str(attackPower) + '/' + str(attackToughness) + ' ' + filename
                      pygame.display.set_caption(caption)              
-                     action = getSingleCardAction ( filename, 'You are being attacked by a ' + \
-                                                    str(attackPower) + '/' + str(attackToughness), ['ok','block'])  
+                     action = self.getSingleCardAction ( filename, 'You are being attacked by a ' + \
+                                                         str(attackPower) + '/' + str(attackToughness), ['ok','block'])  
                      if action != '':
                         print ( 'Perform action: [' + action + '] on card: ' + filename)                                
                         if action == 'block': 
                            blocked = True 
                            self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'block\',' + \
-                                          '\'blocker\':' + str(count) + ',' + \
-                                          '\'attacker\':' + str(opponentIndex) + '}' )                               
+                                                       '\'blocker\':' + str(index) + ',' + \
+                                                       '\'attacker\':' + str(opponentIndex) + '}' )                               
                            print ( 'Creature is blocked ' )
                            break
-                        else:
-                           pass
                      
                   count = count + 1
                   
@@ -470,15 +465,15 @@ class mtgScreens:
                   print ( 'Assign damage ' + str(attackPower) + ' to creature: ' + filename )
                   if attackPower >= toughness: 
                      print ( filename + ' has died in battle' )
-                     inplay.pop (count)
+                     self.myDeck.gameDeck[index]['location']='discard'
                   if power >= attackToughness:
                      print ( 'You killed ' + attackFilename )
                      self.opponentDeck.gameDeck[opponentIndex]['location']='discard'                     
                      
                else: # Assign damage               
-                  myHealth = myHealth - self.opponentDeck.gameDeck[ind]['power']                  
-                  self.showStatus ( ' New health: ' + str(myHealth))
-                  if myHealth <= 0: 
+                  self.myHealth = self.myHealth - self.opponentDeck.gameDeck[opponentIndex]['power']                  
+                  self.showStatus ( ' New health: ' + str(self.myHealth))
+                  if self.myHealth <= 0: 
                      pass # self.showStatus ( 'You have lost yo' )
                   
             elif move['moveType'] == 'untap':
@@ -655,7 +650,7 @@ class mtgScreens:
       
       self.showBoard()
       target = ''
-      while not self.quit and (myHealth > 0):
+      while not self.quit and (self.myHealth > 0):
          self.eventType,data,addr = self.myInput.getKeyOrUdp()     
          self.handleButtonPush(data)
          self.handleMyCardsInHand(data)          

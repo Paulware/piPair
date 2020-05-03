@@ -25,17 +25,19 @@ class inputOutput:
       self.games = []
       self.opponentDeck = [] 
       self.dealtHand = []   
-   
+
       # Setup the UDP client socket
       self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP    
       self.client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
       self.client.bind(("", self.UDPPORT)) 
       self.client.setblocking(0) # turn off blocking 
       self.commLog = open ( file='udp.log', mode='wb', buffering=0 )
+             
       self.utilScreen = utilScreen
       
    def __del__(self):
-      try: 
+      try:         
          self.commLog.close()
          if self.tcpConnection != None:
             self.tcpConnection.close()     
@@ -201,7 +203,7 @@ class inputOutput:
                          udpCount = int(data[0:ind])
                          message = 'ack:' + str(udpCount) 
                          if data != self.lastMessage: 
-                            print ( '[lastMessage,data]: [' + self.lastMessage + ',' + data + ']' )
+                            # print ( '[lastMessage,data]: [' + self.lastMessage + ',' + data + ']' )
                             self.commLogWrite ( str(datetime.datetime.now().time()) + ':rcv:' + data + ' from: ' + addr + '\n')
                             
                          print ( 'acking...[' + message + '] lastMessage: [' + self.lastMessage + ']')                         
@@ -233,6 +235,10 @@ class inputOutput:
                 addr = str(addr[0])
                 
        if (data == '') and (time.time() > timeEvent): 
+          addr = socket.gethostbyname(socket.gethostname())
+          if (self.myIpAddress != addr ): 
+             self.commLogWrite ( str(datetime.datetime.now().time()) + ':change ip address to: ' + addr + '\n') 
+             self.myIpAddress = addr       
           typeInput = 'time'
           data = ' '
           addr = 'clock'  
@@ -241,13 +247,36 @@ class inputOutput:
      return typeInput,data,addr
     
 if __name__ == '__main__':
+    host = True
+    import sys
+    if len(sys.argv) > 1:
+       param1 = sys.argv[1]
+       print ( 'got param1: ' + param1 + ']' )
+       if param1 == 'False':
+          host = False
+    else:    
+       print ( 'No param1' )
+       
+    print ('host: ' + str(host) ) 
+       
     try:
        pygame.init()
-       myInput = inputOutput() 
-       typeInput, data, addr = myInput.getKeyOrUdp() 
-       print ( '[typeInput,data,addr]: [' + typeInput + ',' + data + ',' + addr + ']' )
+       DISPLAYWIDTH = 800
+       DISPLAYHEIGHT = 600
+       DISPLAYSURF = pygame.display.set_mode((DISPLAYWIDTH, DISPLAYHEIGHT),HWSURFACE|DOUBLEBUF|RESIZABLE)       
+       import utilityScreens
+       utilityScreens = utilityScreens.utilityScreens (DISPLAYSURF)
+       myIO = inputOutput(utilityScreens)
+       
+       if host:
+          indexes = [0,1,2,3]          
+          myIO.udpBroadcast ( 'exec:self.dealtHand=' + str(indexes) )  
+          typeInput, data, addr = myIO.getKeyOrUdp() 
+          print ( '[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + addr + ']' )
+       else:
+          myIO.waitFor ('Wait for opponent to deal their hand', 'self.dealtHand != []' ) 
        
     except Exception as ex:
        print ( "Got exception: " + str(ex)) 
     finally:
-       print ( 'finally ' )
+       print ( 'finally complete' )
