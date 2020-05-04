@@ -94,6 +94,10 @@ pygame.display.set_caption('Flippy')
 def readConfigData():
    global iAmHost
    global myIO
+   if not os.path.exists (configFilename):
+      f = open (configFilename, 'w' )
+      f.write ( 'client\n' )
+      f.close()
    # Read configuration data
    try: 
       f = open ( configFilename, 'r')

@@ -20,7 +20,7 @@ class gameDeck:
       info = self.db.data[filename]
       data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
                'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
-               'haste':info['haste']}
+               'haste':info['haste'], 'summoned':False}
 
       return data                  
 
