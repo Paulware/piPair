@@ -26,15 +26,18 @@ class inputOutput:
       self.opponentDeck = [] 
       self.dealtHand = []   
 
-      # Setup the UDP client socket
-      self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP    
-      self.client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
-      self.client.bind(("", self.UDPPORT)) 
-      self.client.setblocking(0) # turn off blocking 
+      self.initClient ()
       self.commLog = open ( file='udp.log', mode='wb', buffering=0 )
              
       self.utilScreen = utilScreen
+      
+   def initClient (self):
+      # Setup the UDP client socket
+      self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP    
+      self.client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+      self.client.bind(("", self.UDPPORT)) 
+      self.client.setblocking(0) # turn off blocking 
+   
       
    def __del__(self):
       try:         
@@ -238,7 +241,11 @@ class inputOutput:
           addr = socket.gethostbyname(socket.gethostname())
           if (self.myIpAddress != addr ): 
              self.commLogWrite ( str(datetime.datetime.now().time()) + ':change ip address to: ' + addr + '\n') 
-             self.myIpAddress = addr       
+             self.myIpAddress = addr     
+             self.client.close()
+             self.initClient()
+             self.acks = []
+             
           typeInput = 'time'
           data = ' '
           addr = 'clock'  

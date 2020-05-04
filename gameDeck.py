@@ -19,7 +19,8 @@ class gameDeck:
       filename = self.db.indexToFilename(index)
       info = self.db.data[filename]
       data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
-               'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':''}
+               'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
+               'haste':info['haste']}
 
       return data                  
 

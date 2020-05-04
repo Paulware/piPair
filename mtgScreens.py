@@ -38,6 +38,10 @@ class mtgScreens:
       self.hostTurn = True # Host moves first
       print ( 'hostTurn initialized to : ' + str(self.hostTurn) ) 
       
+   def setCaption (self,caption):
+      caption = 'Health: ' + str(self.myHealth) + ' ' + caption 
+      pygame.display.set_caption(caption)    
+      
    def showCh (self,ch,x,y):
      FONT = pygame.font.Font('freesansbold.ttf', 16)
      surface = FONT.render(str(ch), True, self.TEXTCOLOR, self.TEXTBGCOLOR2)
@@ -141,7 +145,7 @@ class mtgScreens:
    # This procedure returns a list of images and the sprite boundaries 
    # tappedList should be None if NA
    def showCards (self,filenameList,tappedList,startLocation,width):
-      pygame.display.set_caption('Click a card, then press select to build a deck around the selected card')  
+      self.setCaption('Click a card, then press select to build a deck around the selected card')  
  
       x = startLocation [0]
       y = startLocation [1]
@@ -180,31 +184,45 @@ class mtgScreens:
          x = x + 110
       return (filenames,locations)
       
-   def getSpriteClick (self, pos, sprites):    
+   def getSpriteClick (self, addr, pos, sprites):    
       found = -1
-      assert sprites != None, 'getSprite Click, sprites = None' 
-         
-      try:
-         assert not (type(sprites) is tuple), str(sprites) + '\nERR getSpriteClick (sprites), sprites is a tuple, expected a list' 
-         assert isinstance(sprites, list), 'ERR getSpriteClick has been sent a non-list:' + str(sprites) 
-         if sprites != None:
-            if self.eventType == pygame.MOUSEBUTTONDOWN: 
-               count = 0
-               for sprite in sprites: 
-                  if sprite.collidepoint(pos):
-                     found = count
-                     break
-                  count = count + 1
-      except Exception as ex:
-         print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprite Err, sprites: ' + str(sprites)) 
-         assert False, 'getSpriteClick failure'
+      if addr == 'mouse': 
+         if sprites != []: 
+            if pos == '': 
+               print ( 'getSpriteClick, pos == null string' )
+            elif pos == None:
+               print ( 'getSpriteClick, pos == None' )
+               
+            if True:
+               if sprites != []:             
+                  print ( 'getSpriteClick (' + str(pos) + ',' + str(sprites[0]) + ')' ) 
+               else:
+                  print ( 'sprites == []' ) 
+               assert sprites != None, 'getSprite Click, sprites = None' 
+               assert not (type(sprites) is tuple), str(sprites) + '\nERR getSpriteClick (sprites), sprites is a tuple, expected a list' 
+               assert isinstance(sprites, list), 'ERR getSpriteClick has been sent a non-list:' + str(sprites) 
+               print ( 'here is getSpriteClick pos: ' + str(pos) ) 
+               assert type(pos) is tuple, 'ERR getSpriteClick pos should be in (x,y) form instead got: ' + str(type(pos))  
+                  
+               try:
+                  if sprites != None:
+                     if self.eventType == pygame.MOUSEBUTTONDOWN: 
+                        count = 0
+                        for sprite in sprites: 
+                           if sprite.collidepoint(pos):
+                              found = count
+                              break
+                           count = count + 1
+               except Exception as ex:
+                  print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprite Err, sprites: ' + str(sprites)) 
+                  assert False, 'getSpriteClick failure'
 
       return found 
       
    # Get action from a single card 
    def getSingleCardAction (self,card,caption,actions):
       print ( 'getSingleCardAction (' + card + ',' + caption + ',' + str(actions) + ')' )   
-      pygame.display.set_caption(caption)   
+      self.setCaption(caption)   
       self.DISPLAYSURF.fill((self.WHITE))
       
       image  = pygame.image.load (card).convert_alpha()
@@ -222,8 +240,9 @@ class mtgScreens:
       action = ''
       quit = False
       while not quit and (action == ''):
-         self.eventType,data,addr = self.myInput.getKeyOrUdp()                  
-         sprite = self.getSpriteClick (data, sprites ) 
+         self.eventType,data,addr = self.myInput.getKeyOrUdp() 
+         print ( 'getSingleCardAction call getSpriteClick' )        
+         sprite = self.getSpriteClick (addr, data, sprites ) 
          if sprite != -1: 
             action = actions[sprite]
       
@@ -242,8 +261,8 @@ class mtgScreens:
             
       while True:  
          self.eventType,data,addr = self.myInput.getKeyOrUdp()
-                                                          
-         card = self.getSpriteClick (data, sprites ) 
+         print ( 'selectMainCard calls getSpriteClick' )  
+         card = self.getSpriteClick (addr, data, sprites ) 
          if card != -1:
             print ( 'card: ' + str (card) ) 
             filename = self.dbDeck.cardList()[card]
@@ -276,7 +295,8 @@ class mtgScreens:
             sprites = self.showImages (['images/ok.jpg'], [(400,50)] ) 
           
          assert isinstance(cards,list), 'Cards is not a list why? in showCreated deck'
-         card = self.getSpriteClick (data, cards) 
+         print ( 'showCreatedDeck, getSpriteClick' )
+         card = self.getSpriteClick (addr, data, cards) 
          if card != -1: # show the card
             actions = ['ok'] 
             print ( 'Got a card: ' + str(card) + ' len(myDeck) : ' + str(len(self.myDeck.gameDeck)) )            
@@ -286,7 +306,8 @@ class mtgScreens:
 
          # Check for a click on the icons
          assert isinstance(sprites,list), 'sprites is not a list why? in showCreated deck'
-         sprite = self.getSpriteClick (data, sprites ) 
+         print ( 'showCreatedDeck, getSpriteClick' )
+         sprite = self.getSpriteClick (addr, data, sprites ) 
          if sprite != -1: # Quit is the only other option           
             if sprite == 0:            
                print ( 'Got ok click' )
@@ -296,9 +317,10 @@ class mtgScreens:
    def getButtons (self): 
       hand = self.myDeck.extractLocation ('inhand')   
       if self.myTurn:
-         pygame.display.set_caption('Click on card to perform action')         
+         caption = 'Click on card to perform action'
       else:
-         pygame.display.set_caption('Waiting for opponent to move')
+         caption = 'Waiting for opponent to move'
+      self.setCaption (caption)
       
       if self.myTurn:
          if self.state == 0: 
@@ -307,7 +329,7 @@ class mtgScreens:
             self.buttons = ['draw', 'quit']
          elif self.state == 2:
             if len(hand) > 7:
-               pygame.display.set_caption ( 'You need to discard a card' )
+               self.setCaption ( 'You need to discard a card' )
                self.buttons = ['targetPlayer','quit']
             else:
                self.buttons =  ['targetPlayer','turnDone','quit']
@@ -349,53 +371,57 @@ class mtgScreens:
       pygame.display.update() 
             
    # Handle mouse clicks on my cards in play       
-   def handleMyCardsInPlay (self,data):   
-      try: 
-         card = self.getSpriteClick (data, self.inplaySprites )         
-         if card != -1: # show the card in play
-            # Show card and get action 
-            self.inplayIndexes = self.myDeck.extractLocation ('inplay') # Necessary?
-            
-            index = self.inplayIndexes[card]
-            print ( 'card: ' + str(card) + ' index: ' + str(index) + ' inplayIndexes: ' + str(self.inplayIndexes) ) 
-            selectedCard = self.myDeck.gameDeck[index]['filename']
-            print ( 'selectedCard: ' + selectedCard ) 
-            tapped = self.myDeck.gameDeck[index]['tapped']
-            justSummoned = self.myDeck.gameDeck[index]['summoned']
-            actions = ['ok']
-            if self.myTurn: 
-               if not tapped and not justSummoned:
-                  actions.append ( 'tap' )
-               print ( 'Get summoned property from myDeck.gameDeck[' + str(index) + ']' )               
-               if not tapped and not justSummoned: 
-                  if selectedCard.find ('/creatures/') > -1: 
-                     actions.append ( 'attack' )
+   def handleMyCardsInPlay (self,addr,data):   
+      if addr == 'mouse': 
+         print ( 'handleMyCardsInPlay (' + str(data) + '), inplaySprites:' + str(self.inplaySprites)  )
+         try: 
+            print ( 'handleMyCardsInPlay, getSpriteClick' )
+            card = self.getSpriteClick (addr, data, self.inplaySprites )         
+            if card != -1: # show the card in play
+               # Show card and get action 
+               self.inplayIndexes = self.myDeck.extractLocation ('inplay') # Necessary?
+               print ( 'inplayIndexes: ' + str(self.inplayIndexes), ' card: ' + str(card) ) 
                
-            action = self.getSingleCardAction (selectedCard,'Select an action',actions)
-            if action != '':
-               print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
-               if action == 'tap':
-                  print ( 'myDeck.gameDeck[' + str(index) + '][tapped] = True' )
-                  self.myDeck.gameDeck[index]['tapped'] = True
-                  ind = selectedCard.find ( '/lands/' )
-                  if ind > -1:
-                     landType = selectedCard[ind+7:]
-                     ind = landType.index ( '.' )
-                     landType = landType[0:ind]
-                     self.manaPool.append (landType)
-                     print ( 'manaPool is now: ' + str(self.manaPool ))
-                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'tap\',' + \
-                                              '\'index\':' + str(index) + '}')
-                     
-               elif action == 'attack': 
-                  self.showStatus ( 'Attacking with ' + selectedCard)
-                  print ( 'Tapping my card with myDeck.gameDeck[' + str(index) + ']' )
-                  self.myDeck.gameDeck[index]['tapped'] = True
-                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'attack\',' + \
-                                 '\'index\':\'' + str(card) + '\'}')
-            self.showBoard()      
-      except Exception as ex:
-         assert False, 'Handle my cards in play err: ' + str(ex) 
+               index = self.inplayIndexes[card]
+               print ( 'card: ' + str(card) + ' index: ' + str(index) + ' inplayIndexes: ' + str(self.inplayIndexes) ) 
+               selectedCard = self.myDeck.gameDeck[index]['filename']
+               print ( 'selectedCard: ' + selectedCard ) 
+               tapped = self.myDeck.gameDeck[index]['tapped']
+               justSummoned = self.myDeck.gameDeck[index]['summoned']
+               actions = ['ok']
+               if self.myTurn: 
+                  if not tapped and not justSummoned:
+                     actions.append ( 'tap' )
+                  print ( 'Get summoned property from myDeck.gameDeck[' + str(index) + ']' )               
+                  if not tapped and not justSummoned: 
+                     if selectedCard.find ('/creatures/') > -1: 
+                        actions.append ( 'attack' )
+                  
+               action = self.getSingleCardAction (selectedCard,'Select an action',actions)
+               if action != '':
+                  print ( 'Perform action: [' + action + '] on card: ' + selectedCard )
+                  if action == 'tap':
+                     print ( 'myDeck.gameDeck[' + str(index) + '][tapped] = True' )
+                     self.myDeck.gameDeck[index]['tapped'] = True
+                     ind = selectedCard.find ( '/lands/' )
+                     if ind > -1:
+                        landType = selectedCard[ind+7:]
+                        ind = landType.index ( '.' )
+                        landType = landType[0:ind]
+                        self.manaPool.append (landType)
+                        print ( 'manaPool is now: ' + str(self.manaPool ))
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'tap\',' + \
+                                                 '\'index\':' + str(index) + '}')
+                        
+                  elif action == 'attack': 
+                     self.showStatus ( 'Attacking with ' + selectedCard)
+                     print ( 'Tapping my card with myDeck.gameDeck[' + str(index) + ']' )
+                     self.myDeck.gameDeck[index]['tapped'] = True
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'attack\',' + \
+                                                 '\'index\':\'' + str(index) + '\'}')
+               self.showBoard()      
+         except Exception as ex:
+            assert False, 'Handle my cards in play err: ' + str(ex) 
     
    # Handle an opponent move 
    def handleOpponentMove (self):
@@ -421,6 +447,12 @@ class mtgScreens:
             elif move['moveType'] == 'tap':
                index = move['index']
                self.opponentDeck.gameDeck[index]['tapped'] = True
+            elif move['moveType'] == 'discard': 
+               index = move['index']
+               self.opponentDeck.gameDeck[index]['location'] = 'discard'
+            elif move['moveType'] == 'killed':
+               index = move['index']
+               self.myDeck.gameDeck[index]['location'] = 'discard'
             elif move['moveType'] == 'block':
                blockerIndex = move['blocker']
                attackerIndex = move['attacker']
@@ -429,11 +461,14 @@ class mtgScreens:
                print ( blockerFilename + ' is blocking: ' + attackerFilename ) 
             elif move['moveType'] == 'attack':
                opponentIndex = int(move['index'])
+               attackPower = self.opponentDeck.gameDeck[opponentIndex]['power']
+               attackToughness = self.opponentDeck.gameDeck[opponentIndex]['toughness']
+               caption = 'You are getting attacked by a ' + str(attackPower) + '/' + str(attackToughness)
+               self.setCaption(caption)              
                print ( 'Tapping opponent card [' + str(opponentIndex) + ']')                  
                self.opponentDeck.gameDeck[opponentIndex]['tapped'] = True
                attackFilename = self.opponentDeck.gameDeck[opponentIndex]['filename']
-               attackPower = self.opponentDeck.gameDeck[opponentIndex]['power']
-               attackToughness = self.opponentDeck.gameDeck[opponentIndex]['toughness']
+
                self.showStatus ( ' You are getting attacked by: ' + attackFilename )
                blocked = False
                count = 0
@@ -444,8 +479,6 @@ class mtgScreens:
                   if not tapped and (filename.find ( '/creatures/' ) > -1):                         
                      power = self.myDeck.gameDeck[index]['power']
                      toughness = self.myDeck.gameDeck[index]['toughness']
-                     caption = 'You are getting attacked by a ' + str(attackPower) + '/' + str(attackToughness) + ' ' + filename
-                     pygame.display.set_caption(caption)              
                      action = self.getSingleCardAction ( filename, 'You are being attacked by a ' + \
                                                          str(attackPower) + '/' + str(attackToughness), ['ok','block'])  
                      if action != '':
@@ -466,9 +499,12 @@ class mtgScreens:
                   if attackPower >= toughness: 
                      print ( filename + ' has died in battle' )
                      self.myDeck.gameDeck[index]['location']='discard'
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'index\':' + str(index) + ',\'moveType\':\'discard\'}') 
+                      
                   if power >= attackToughness:
                      print ( 'You killed ' + attackFilename )
                      self.opponentDeck.gameDeck[opponentIndex]['location']='discard'                     
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'index\':' + str(opponentIndex) + ',\'moveType\':\'killed\'}') 
                      
                else: # Assign damage               
                   self.myHealth = self.myHealth - self.opponentDeck.gameDeck[opponentIndex]['power']                  
@@ -494,126 +530,135 @@ class mtgScreens:
          assert False, 'handleOpponentMove : ' + str(ex) 
     
    # Handle mouse clicks on the cards in the my hand      
-   def handleMyCardsInHand (self,data):
-      try: 
-         card = self.getSpriteClick (data, self.handSprites)         
-         if card != -1:
-            self.handIndexes = self.myDeck.extractLocation ('inhand') # Necessary?
-            index = self.handIndexes[card]
-            info = self.myDeck.gameDeck[index]
-            selectedCard = info['filename']
-            # Show card and get action
-            actions = ['ok']
-            if self.myTurn: 
-               actions.append ( 'discard')
-               if selectedCard.find ( '/lands/' ) == -1: # This is not a land 
-                  if self.myDeck.db.sufficientManaToCast ( self.manaPool, selectedCard ): 
-                     actions.append ( 'cast' )
-               else:
-                  if not self.hasPlayedLand: 
-                     actions.append ( 'cast' )
-            action = self.getSingleCardAction ( selectedCard, 'Select an action', actions)  
-            if action != '':
-               index = self.handIndexes[card]            
-               print ( 'Perform action: [' + action + '] on card: ' + selectedCard )     
-               if action == 'discard': 
-                  self.myDeck.gameDeck[index]['location'] = 'discard'
-                     
-               elif action == 'cast':                  
-                  self.myDeck.gameDeck[index]['location']='inplay'
-                  if selectedCard.find ( '/lands/' ) > -1: # This is a land 
-                     self.hasPlayedLand = True
-                  elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
-                     self.myDeck.gameDeck[index]['summoned'] = True
-                  self.myInput.udpBroadcast ( 'exec:self.move={\'index\':' + str(index) + ',\'moveType\':\'cast\'}') 
-                  # executeAffect (index, 'inplay')                              
-                                 
-            self.showBoard()   
-            
-      except Exception as ex:
-         assert False, 'ERR in handleMyCardsInHand : ' + str(ex) 
+   def handleMyCardsInHand (self,addr, data):
+      if addr == 'mouse': 
+         try: 
+            print ( 'handleMyCardsInHand, getSpriteClick' )
+            card = self.getSpriteClick (addr, data, self.handSprites)         
+            if card != -1:
+               self.handIndexes = self.myDeck.extractLocation ('inhand') # Necessary?
+               index = self.handIndexes[card]
+               info = self.myDeck.gameDeck[index]
+               selectedCard = info['filename']
+               # Show card and get action
+               actions = ['ok']
+               if self.myTurn: 
+                  actions.append ( 'discard')
+                  if selectedCard.find ( '/lands/' ) == -1: # This is not a land 
+                     if self.myDeck.db.sufficientManaToCast ( self.manaPool, selectedCard ): 
+                        actions.append ( 'cast' )
+                  else:
+                     if not self.hasPlayedLand: 
+                        actions.append ( 'cast' )
+               action = self.getSingleCardAction ( selectedCard, 'Select an action', actions)  
+               if action != '':
+                  index = self.handIndexes[card]            
+                  print ( 'Perform action: [' + action + '] on card: ' + selectedCard )     
+                  if action == 'discard': 
+                     self.myDeck.gameDeck[index]['location'] = 'discard'
+                        
+                  elif action == 'cast':                  
+                     self.myDeck.gameDeck[index]['location']='inplay'
+                     if selectedCard.find ( '/lands/' ) > -1: # This is a land 
+                        self.hasPlayedLand = True
+                     elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
+                        self.myDeck.gameDeck[index]['summoned'] = True
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'index\':' + str(index) + ',\'moveType\':\'cast\'}') 
+                     # executeAffect (index, 'inplay')                              
+                                    
+               self.showBoard()   
+               
+         except Exception as ex:
+            assert False, 'ERR in handleMyCardsInHand : ' + str(ex) 
 
    # Handle mouse click on opponent cards in play 
-   def handleOpponentCard (self,pos):  
-      try: 
-         # Handle the opponent cards ( you can target them )             
-         card = self.getSpriteClick (pos, self.opponentSprites)         
-         if card != -1: # show the card in play
-            # Show card and get action 
-            index = self.opponentIndexes[card]
-            print ( 'card: ' + str(card) + ' index: ' + str(index) + \
-                    ' opponentIndexes: ' + str(self.opponentIndexes) ) 
-            selectedCard = self.opponentDeck.gameDeck[index]['filename']
-            print ( 'selectedCard: ' + selectedCard ) 
-            actions = ['ok','target']
-               
-            action = self.getSingleCardAction (selectedCard,'Select an action',actions)
-            if action != '':
-               print ( 'Perform action: [' + action + '] on opponent card: ' + selectedCard )
-               
-               if action == 'target':
-                  self.targettedOpponentCard = card
-                  print ( 'You have targeted this card for a spell or effect: ' + selectedCard + \
-                          '[' + str(self.targettedOpponentCard) + ']' )
-                          
-               self.showBoard()
-         
-      except Exception as ex: 
-         assert False, "Error in handleOpponentCard: " + str(ex)       
+   def handleOpponentCard (self,addr,pos):  
+      if addr == 'mouse': 
+         try: 
+            # Handle the opponent cards ( you can target them )     
+            print ( 'handleOpponentCard, getSpriteClick' )         
+            card = self.getSpriteClick (addr, pos, self.opponentSprites)         
+            if card != -1: # show the card in play
+               # Show card and get action 
+               index = self.opponentIndexes[card]
+               print ( 'card: ' + str(card) + ' index: ' + str(index) + \
+                       ' opponentIndexes: ' + str(self.opponentIndexes) ) 
+               selectedCard = self.opponentDeck.gameDeck[index]['filename']
+               print ( 'selectedCard: ' + selectedCard ) 
+               actions = ['ok','target']
+                  
+               action = self.getSingleCardAction (selectedCard,'Select an action',actions)
+               if action != '':
+                  print ( 'Perform action: [' + action + '] on opponent card: ' + selectedCard )
+                  
+                  if action == 'target':
+                     self.targettedOpponentCard = card
+                     print ( 'You have targeted this card for a spell or effect: ' + selectedCard + \
+                             '[' + str(self.targettedOpponentCard) + ']' )
+                             
+                  self.showBoard()
+            
+         except Exception as ex: 
+            assert False, "Error in handleOpponentCard: " + str(ex) + " opponentSprites: " + str(self.opponentSprites)       
          
    # Handle mouse click on the buttons       
-   def handleButtonPush(self,mousePosition): 
-      try: 
-         # Handle button press
-         # print ( 'Check for click on icons' )
-         sprite = self.getSpriteClick (mousePosition, self.buttonSprites) 
-         if sprite > -1:
-            action = self.buttons[sprite]
-            print ( 'Got a button action of: [' + action + ']' )
-            if action == 'quit':
-               self.showStatus ( 'You have elected to quit'  )      
-               self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'quit\'}') 
-               
-               self.quit = True
-            elif action == 'turnDone':
-               self.handIndexes = self.myDeck.extractLocation ('inhand') # necessary?
-            
-               if len(self.handIndexes) > 7: 
-                  self.showStatus ( 'You must discard a card (maximum hand size == 7)' )
-               else:
-                  print ( 'Other players turn' )
-                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'turnDone\'}') 
-                  self.hostTurn = not self.hostTurn
-                  print ( 'hostTurn is now set to : ' + str(self.hostTurn)) 
-                  self.showStatus ( 'Waiting on other player to finish their turn' )
-                  targettedOpponentCard = None
-                  self.state = 0
-                  self.myTurn = False                      
-                  
-            elif action == 'targetPlayer': 
-               print ( 'Player is now targetted' )
-               affectTarget = 'player'               
-              
-            elif action == 'draw':  
-               print ( 'Draw a card yo' )
-               self.myDeck.drawCard()
-               self.handIndexes = self.myDeck.extractLocation ('inhand')                             
-               self.state = 2
-               
-            elif action == 'untap':
-               self.state = 1
-               self.inplayIndexes = self.myDeck.extractLocation ('inplay') # Necessary?
-               for index in self.inplayIndexes: 
-                  self.myDeck.gameDeck[index]['tapped'] = False
-                  self.manaPool = []    
-               for card in self.myDeck.gameDeck: 
-                  self.myDeck.gameDeck[card]['summoned'] = False
-               self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'untap\'}')
+   def handleButtonPush(self, addr, mousePosition): 
+      if addr == 'mouse': 
+         try: 
+            # Handle button press
+            # print ( 'Check for click on icons' )
+            if not (type(mousePosition) is tuple):
+               print ( 'mousePosition is not correct: ' + str(mousePosition) )
             else:
-               assert False, 'handleButtonPush, Action not handled: ' + action             
-            self.showBoard()
-      except Exception as ex:
-         assert False, 'Error in handleButtonPush: ' + str(ex) 
+               print ( 'handleButtonPush (' + str(mousePosition) + ')' )         
+            sprite = self.getSpriteClick (addr,mousePosition, self.buttonSprites) 
+            if sprite > -1:
+               action = self.buttons[sprite]
+               print ( 'Got a button action of: [' + action + ']' )
+               if action == 'quit':
+                  self.showStatus ( 'You have elected to quit'  )      
+                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'quit\'}') 
+                  
+                  self.quit = True
+               elif action == 'turnDone':
+                  self.handIndexes = self.myDeck.extractLocation ('inhand') # necessary?
+               
+                  if len(self.handIndexes) > 7: 
+                     self.showStatus ( 'You must discard a card (maximum hand size == 7)' )
+                  else:
+                     print ( 'Other players turn' )
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'turnDone\'}') 
+                     self.hostTurn = not self.hostTurn
+                     print ( 'hostTurn is now set to : ' + str(self.hostTurn)) 
+                     self.showStatus ( 'Waiting on other player to finish their turn' )
+                     targettedOpponentCard = None
+                     self.state = 0
+                     self.myTurn = False                      
+                     
+               elif action == 'targetPlayer': 
+                  print ( 'Player is now targetted' )
+                  affectTarget = 'player'               
+                 
+               elif action == 'draw':  
+                  print ( 'Draw a card yo' )
+                  self.myDeck.drawCard()
+                  self.handIndexes = self.myDeck.extractLocation ('inhand')                             
+                  self.state = 2
+                  
+               elif action == 'untap':
+                  self.state = 1
+                  self.inplayIndexes = self.myDeck.extractLocation ('inplay') # Necessary?
+                  for index in self.inplayIndexes: 
+                     self.myDeck.gameDeck[index]['tapped'] = False
+                     self.manaPool = []    
+                  for card in self.myDeck.gameDeck: 
+                     self.myDeck.gameDeck[card]['summoned'] = False
+                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'untap\'}')
+               else:
+                  assert False, 'handleButtonPush, Action not handled: ' + action             
+               self.showBoard()
+         except Exception as ex:
+            assert False, 'Error in handleButtonPush: ' + str(ex) 
          
 
    def drawStatus (self,message):    
@@ -652,11 +697,14 @@ class mtgScreens:
       target = ''
       while not self.quit and (self.myHealth > 0):
          self.eventType,data,addr = self.myInput.getKeyOrUdp()     
-         self.handleButtonPush(data)
-         self.handleMyCardsInHand(data)          
-         self.handleMyCardsInPlay(data)
-         self.handleOpponentMove()             
-         self.handleOpponentCard(data)
+         #print ( '[addr,data]: [' + addr + ',' + str(data) + ']' )
+         self.handleButtonPush(addr,data)
+         self.handleMyCardsInHand(addr,data)          
+         self.handleMyCardsInPlay(addr,data)
+         self.handleOpponentCard(addr,data)
+         
+         if addr != 'mouse': 
+            self.handleOpponentMove()  
            
          if self.eventType == pygame.MOUSEBUTTONUP:
             self.showBoard()
