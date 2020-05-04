@@ -144,9 +144,7 @@ class mtgScreens:
  
    # This procedure returns a list of images and the sprite boundaries 
    # tappedList should be None if NA
-   def showCards (self,filenameList,tappedList,startLocation,width):
-      self.setCaption('Click a card, then press select to build a deck around the selected card')  
- 
+   def showCards (self,filenameList,tappedList,startLocation,width):      
       x = startLocation [0]
       y = startLocation [1]
       height = int (width * 1.4)      
@@ -188,34 +186,29 @@ class mtgScreens:
       found = -1
       if addr == 'mouse': 
          if sprites != []: 
-            if pos == '': 
-               print ( 'getSpriteClick, pos == null string' )
-            elif pos == None:
-               print ( 'getSpriteClick, pos == None' )
                
-            if True:
-               if sprites != []:             
-                  print ( 'getSpriteClick (' + str(pos) + ',' + str(sprites[0]) + ')' ) 
-               else:
-                  print ( 'sprites == []' ) 
-               assert sprites != None, 'getSprite Click, sprites = None' 
-               assert not (type(sprites) is tuple), str(sprites) + '\nERR getSpriteClick (sprites), sprites is a tuple, expected a list' 
-               assert isinstance(sprites, list), 'ERR getSpriteClick has been sent a non-list:' + str(sprites) 
-               print ( 'here is getSpriteClick pos: ' + str(pos) ) 
-               assert type(pos) is tuple, 'ERR getSpriteClick pos should be in (x,y) form instead got: ' + str(type(pos))  
-                  
-               try:
-                  if sprites != None:
-                     if self.eventType == pygame.MOUSEBUTTONDOWN: 
-                        count = 0
-                        for sprite in sprites: 
-                           if sprite.collidepoint(pos):
-                              found = count
-                              break
-                           count = count + 1
-               except Exception as ex:
-                  print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprite Err, sprites: ' + str(sprites)) 
-                  assert False, 'getSpriteClick failure'
+            #if sprites != []:             
+            #   print ( 'getSpriteClick (' + str(pos) + ',' + str(sprites[0]) + ')' ) 
+            #else:
+            #   print ( 'sprites == []' ) 
+            assert sprites != None, 'getSprite Click, sprites = None' 
+            assert not (type(sprites) is tuple), str(sprites) + '\nERR getSpriteClick (sprites), sprites is a tuple, expected a list' 
+            assert isinstance(sprites, list), 'ERR getSpriteClick has been sent a non-list:' + str(sprites) 
+            # print ( 'here is getSpriteClick pos: ' + str(pos) ) 
+            assert type(pos) is tuple, 'ERR getSpriteClick pos should be in (x,y) form instead got: ' + str(type(pos))  
+               
+            try:
+               if sprites != None:
+                  if self.eventType == pygame.MOUSEBUTTONDOWN: 
+                     count = 0
+                     for sprite in sprites: 
+                        if sprite.collidepoint(pos):
+                           found = count
+                           break
+                        count = count + 1
+            except Exception as ex:
+               print ( 'Could not getSpriteClick because: ' + str(ex) + 'sprite Err, sprites: ' + str(sprites)) 
+               assert False, 'getSpriteClick failure'
 
       return found 
       
@@ -241,7 +234,6 @@ class mtgScreens:
       quit = False
       while not quit and (action == ''):
          self.eventType,data,addr = self.myInput.getKeyOrUdp() 
-         print ( 'getSingleCardAction call getSpriteClick' )        
          sprite = self.getSpriteClick (addr, data, sprites ) 
          if sprite != -1: 
             action = actions[sprite]
@@ -261,7 +253,6 @@ class mtgScreens:
             
       while True:  
          self.eventType,data,addr = self.myInput.getKeyOrUdp()
-         print ( 'selectMainCard calls getSpriteClick' )  
          card = self.getSpriteClick (addr, data, sprites ) 
          if card != -1:
             print ( 'card: ' + str (card) ) 
@@ -295,7 +286,6 @@ class mtgScreens:
             sprites = self.showImages (['images/ok.jpg'], [(400,50)] ) 
           
          assert isinstance(cards,list), 'Cards is not a list why? in showCreated deck'
-         print ( 'showCreatedDeck, getSpriteClick' )
          card = self.getSpriteClick (addr, data, cards) 
          if card != -1: # show the card
             actions = ['ok'] 
@@ -306,7 +296,6 @@ class mtgScreens:
 
          # Check for a click on the icons
          assert isinstance(sprites,list), 'sprites is not a list why? in showCreated deck'
-         print ( 'showCreatedDeck, getSpriteClick' )
          sprite = self.getSpriteClick (addr, data, sprites ) 
          if sprite != -1: # Quit is the only other option           
             if sprite == 0:            
@@ -333,6 +322,8 @@ class mtgScreens:
                self.buttons = ['targetPlayer','quit']
             else:
                self.buttons =  ['targetPlayer','turnDone','quit']
+         else: 
+            assert False, 'State not handled in getButtons: ' + str(self.state)
       else:
          self.buttons = ['quit']
    
@@ -373,9 +364,8 @@ class mtgScreens:
    # Handle mouse clicks on my cards in play       
    def handleMyCardsInPlay (self,addr,data):   
       if addr == 'mouse': 
-         print ( 'handleMyCardsInPlay (' + str(data) + '), inplaySprites:' + str(self.inplaySprites)  )
+         # print ( 'handleMyCardsInPlay (' + str(data) + '), inplaySprites:' + str(self.inplaySprites)  )
          try: 
-            print ( 'handleMyCardsInPlay, getSpriteClick' )
             card = self.getSpriteClick (addr, data, self.inplaySprites )         
             if card != -1: # show the card in play
                # Show card and get action 
@@ -533,7 +523,6 @@ class mtgScreens:
    def handleMyCardsInHand (self,addr, data):
       if addr == 'mouse': 
          try: 
-            print ( 'handleMyCardsInHand, getSpriteClick' )
             card = self.getSpriteClick (addr, data, self.handSprites)         
             if card != -1:
                self.handIndexes = self.myDeck.extractLocation ('inhand') # Necessary?
@@ -558,11 +547,17 @@ class mtgScreens:
                      self.myDeck.gameDeck[index]['location'] = 'discard'
                         
                   elif action == 'cast':                  
+                     print ( 'casting: ' + selectedCard )
+                     
                      self.myDeck.gameDeck[index]['location']='inplay'
                      if selectedCard.find ( '/lands/' ) > -1: # This is a land 
                         self.hasPlayedLand = True
+                        print ( 'Casting a land' + selectedCard) 
                      elif selectedCard.find ( '/creatures/' ) > -1: # This is a creature  
                         self.myDeck.gameDeck[index]['summoned'] = True
+                        print ( 'Casting a creature: ' + selectedCard )
+                     else:
+                        assert False, 'handleMyCardsInHand, casting an unknown type of card: ' + selectedCard
                      self.myInput.udpBroadcast ( 'exec:self.move={\'index\':' + str(index) + ',\'moveType\':\'cast\'}') 
                      # executeAffect (index, 'inplay')                              
                                     
@@ -576,7 +571,6 @@ class mtgScreens:
       if addr == 'mouse': 
          try: 
             # Handle the opponent cards ( you can target them )     
-            print ( 'handleOpponentCard, getSpriteClick' )         
             card = self.getSpriteClick (addr, pos, self.opponentSprites)         
             if card != -1: # show the card in play
                # Show card and get action 
@@ -606,11 +600,6 @@ class mtgScreens:
       if addr == 'mouse': 
          try: 
             # Handle button press
-            # print ( 'Check for click on icons' )
-            if not (type(mousePosition) is tuple):
-               print ( 'mousePosition is not correct: ' + str(mousePosition) )
-            else:
-               print ( 'handleButtonPush (' + str(mousePosition) + ')' )         
             sprite = self.getSpriteClick (addr,mousePosition, self.buttonSprites) 
             if sprite > -1:
                action = self.buttons[sprite]

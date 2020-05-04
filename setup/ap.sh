@@ -134,4 +134,4 @@ echo "wifi should now be associated, should not have to reboot"
 #sudo systemctl start hostapd
 
 ifconfig wlan0 up
-echo "after reboot your ssid (Walker, password:ABCD1234) should appear"
+echo "You may need to turn on wifi.  After reboot your ssid (piPair, password:ABCD1234) should appear"
