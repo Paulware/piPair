@@ -1,4 +1,7 @@
 # update_file filename "Find String" "Replace String" 
+echo "**********************************"
+echo "*          ssh.sh                *"
+echo "**********************************"
 update_file() {
   cat $1 | sed -e "s/$2/$3/" > /f
   mv /f $1

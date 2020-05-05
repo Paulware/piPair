@@ -3,6 +3,9 @@
 # see https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
 # for more information 
 #
+echo "*********************************"
+echo "*          ap.sh                *"
+echo "*********************************"
 
 if [ "$EUID" -ne 0 ] 
 	then echo "Must be root"

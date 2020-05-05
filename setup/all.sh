@@ -1,3 +1,6 @@
+echo "**********************************"
+echo "*          all.sh                *"
+echo "**********************************"
 cd /home/pi/piPair
 touch /home/pi/piPair/mainConfig.txt
 chmod 777 *.*

@@ -2,6 +2,9 @@ if [ "$EUID" -ne 0 ]
 	then echo "Must be root"
 	exit
 fi
+echo "**********************************"
+echo "*          runMain.sh            *"
+echo "**********************************"
 
 file_exists() {
    if [ -e $1 ]
