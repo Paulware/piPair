@@ -3,6 +3,8 @@ import inspect
 def tictactoePage ():
     global joining 
     global move
+    global myIO
+    
     taken = [[False, False, False],[False, False, False], [False, False, False]]
     
     drawingX = True
@@ -38,24 +40,24 @@ def tictactoePage ():
     
     if iAmHost: 
        # Set opponents list of games
-       udpBroadcast ( 'exec:games=[\'Tic Tac Toe\']')
+       myIO.udpBroadcast ( 'exec:games=[\'Tic Tac Toe\']')
        joining = ''
        playerJoined = False
        move = (0,0)
        myTurn = True
     else:
-       udpBroadcast ( 'exec:joining=\'Tic Tac Toe\'')    
+       myIO.udpBroadcast ( 'exec:joining=\'Tic Tac Toe\'')    
        joining = 'Tic Tac Toe' # Opponent should be waiting
        move = None
     
     quit = False  
     joinTimeout = 0    
     while not quit: 
-       (eventType,data,addr) = getKeyOrUdp()
+       (eventType,data,addr) = myIO.getKeyOrUdp()
        if joining != 'Tic Tac Toe':
           if time.time() > joinTimeout: 
              joinTimeout = time.time() + 1
-             udpBroadcast ( 'exec:games=[\'Tic Tac Toe\']')
+             myIO.udpBroadcast ( 'exec:games=[\'Tic Tac Toe\']')
        
        if eventType == pygame.MOUSEBUTTONUP:
           pos = data
@@ -77,11 +79,11 @@ def tictactoePage ():
                          drawO (x,y)
                       drawingX = not drawingX
                       move = None
-                      udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')
+                      myIO.udpBroadcast ( 'exec:move=(' + str(x) + ',' + str(y) + ')')
                 else:
                    print ( 'Waiting for player, joining: [' + joining + ']' )
                    showStatus ( 'Ignoring click, waiting for player to join')
-                   # udpBroadcast ( 'exec:joining=\'Tic Tac Toe\'')             
+                   # myIO.udpBroadcast ( 'exec:joining=\'Tic Tac Toe\'')             
        elif eventType == 'udp':
           if data.find ( 'move=') > -1: # Opponent has moved 
              if drawingX: 

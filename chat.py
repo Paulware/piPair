@@ -2,28 +2,27 @@ import inspect
 
 # Show the chat page
 def chatPage(showOnly=False):
-    global tcpSocket 
-    global tcpConnection 
+    global myIO
     
     DISPLAYSURF.fill((BLACK))
     showLabel ('Chat:', 250, 55)
-    (images,spites) = showImages (['images/quit.jpg'], [(400,400)] )
+    (images,sprites) = showImages (['images/quit.jpg'], [(400,400)] )
     
-    pygame.display.set_caption('Chatting: ')        
-    pygame.display.update()  
+    pygame.display.set_caption('Chatting: ')
+    pygame.display.update()
 
     quit = False
     y = 55
     if iAmHost:
-       udpBroadcast ( 'exec:games=[\'chat\']')
+       myIO.udpBroadcast ( 'exec:games=[\'chat\']')
      
     line = ''     
     while not quit and not showOnly:   
-       (eventType,data,addr) = getKeyOrUdp() # This should set games   
+       (eventType,data,addr) = myIO.getKeyOrUdp() # This should set games   
        if eventType == 'key':
           if data == chr(13): 
-             udpBroadcast (line)
-             print ( 'line: [' + line + ']' )
+             myIO.udpBroadcast (line)
+             # print ( 'line: [' + line + ']' )
              showLine ( 'Me:' + line, 300, y) 
              line = ''
              y = y + 20
@@ -53,7 +52,7 @@ def chatPage(showOnly=False):
              showLine (data, 300, y)               
              y = y + 20             
           
-       sprite = getSpriteClick (eventType, data, spites ) 
+       sprite = getSpriteClick (eventType, data, sprites ) 
        if sprite != -1: # Quit is the only other option           
           print ("Selected command: " + str(sprite))
           mainPage (True)

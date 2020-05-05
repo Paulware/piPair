@@ -241,10 +241,13 @@ class inputOutput:
           addr = socket.gethostbyname(socket.gethostname())
           if (self.myIpAddress != addr ): 
              self.commLogWrite ( str(datetime.datetime.now().time()) + ':change ip address to: ' + addr + '\n') 
+             assert False, 'My ip address has changed, please start over.' 
+             '''
              self.myIpAddress = addr     
              self.client.close()
              self.initClient()
              self.acks = []
+             '''
              
           typeInput = 'time'
           data = ' '

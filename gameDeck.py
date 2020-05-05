@@ -18,6 +18,7 @@ class gameDeck:
    def oneRecord (self,index): 
       filename = self.db.indexToFilename(index)
       info = self.db.data[filename]
+      # Add in fields that change during the game such as summoned or tapped
       data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
                'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
                'haste':info['haste'], 'summoned':False}

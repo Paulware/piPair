@@ -648,6 +648,7 @@ def gamePage(showOnly=False):
           showTimeout = time.time() + 1 
           if iAmHost: 
              showLabel ('Select a game to host', 50, 20)    
+             myIO.games = gameList             
           else:
              if myIO.games == []: 
                 showLabel ('Waiting on host to choose a game', 50, 20 )
