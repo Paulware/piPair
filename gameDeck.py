@@ -21,21 +21,21 @@ class gameDeck:
       # Add in fields that change during the game such as summoned or tapped
       data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
                'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
-               'haste':info['haste'], 'summoned':False}
+               'haste':info['haste'], 'summoned':False, 'blocking':False}
 
       return data                  
 
    # list of filenames only    
    def cardList(self): 
       list = []
-      if len(self.gameDeck) == 0: 
+      if len(self.gameDeck) == 0:
          print ("Err, cardDeck.cardList, gameDeck is []" )
-      else: 
+      else:
          for card in self.gameDeck:
             info = self.gameDeck[card]
             filename = info['filename']
             list.append (filename)
-      return list   
+      return list
       
    def showGameDeck (self): 
       message = '\n'

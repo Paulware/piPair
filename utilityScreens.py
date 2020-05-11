@@ -90,11 +90,11 @@ class utilityScreens:
             
    def basicScreen (self,caption,actions): 
       pygame.display.set_caption(caption)   
-      self.DISPLAYSURF.fill((self.WHITE))
-      actions = ['quit']      
+      self.DISPLAYSURF.fill((self.WHITE))      
       (filenames,locations) = self.actionsToIcons (actions)     
       sprites = self.showImages (filenames, locations )   
       pygame.display.update() 
-
-      return sprites      
+      print ( 'basicScreen returning sprites: ' + str(sprites ) ) 
+      return sprites 
+         
   
