@@ -136,5 +136,6 @@ echo "wifi should now be associated, should not have to reboot"
 #sudo systemctl enable hostapd
 #sudo systemctl start hostapd
 
+rfkill unblock 0
 ifconfig wlan0 up
 echo "You may need to turn on wifi.  After reboot your ssid (piPair, password:ABCD1234) should appear"
