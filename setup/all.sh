@@ -8,6 +8,7 @@ cp /boot/runPython.sh /home/pi/Desktop/runPython.sh
 chmod 777 /home/pi/Desktop/runPython.sh
 apt-get update
 apt-get install bluetooth bluez blueman -y
+apt-get install arduino -y
 timedatectl set-timezone America/Chicago
 cd /boot
 ./ssh.sh
