@@ -18,10 +18,9 @@ class inputOutput:
    UDPPORT = 3333   
    tcpSocket = None
    tcpConnection = None
+   moves = []
 
-   
    def __init__(self,utilScreen):
-      self.move = None
       self.games = []
       self.opponentDeck = [] 
       self.dealtHand = []   
@@ -81,7 +80,13 @@ class inputOutput:
          self.client.sendto(str.encode(message), ('192.168.4.255', self.UDPPORT))
       except Exception as ex: 
          self.commLogWrite ( str(ex) + '\n') 
-             
+     
+   def popMove (self):
+      value = None
+      if len(self.moves) > 0: 
+         value = self.moves.pop (0)
+      return value
+      
    def getKeyOrUdp(self):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', ';':':',  \
                    '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
@@ -218,6 +223,10 @@ class inputOutput:
                             if ind > -1: # joining=, self.games=, self.move=, self.opponentDeck
                                command = data[ind+5:]
                                exec (command, locals())
+                               
+                               if command.find ('self.move') > -1: 
+                                  self.moves.append (self.move)
+
                                print ( 'Executing command: ' + command ) 
                                   
                             typeInput = 'udp'                        

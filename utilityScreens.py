@@ -37,24 +37,25 @@ class utilityScreens:
             print ( '\n***ERR\nCould not load: ' + filename + ' because: ' + str(ex) + '\n')      
       return images    
       
-   def placeImagesOnSurface (self,images,locations):    
+   def placeImagesOnSurface (self,images,locations,offset = 0):    
       # Sprites contain rectangular information
       sprites = []
       try:
          i = 0
          for image in images: 
+             # locations[i][0] = locations[i][0] + offset
              sprites.append (self.DISPLAYSURF.blit (image, locations[i]) )
              i = i + 1
          pygame.display.update()        
       except Exception as ex:
-         print ( 'main.showImages, could not place sprite on surface because: ' + str(ex))
+         print ( 'utilityScreen.placeImagesOnSurface, could not place sprite on surface because: ' + str(ex))
       return sprites      
       
-   def showImages (self,filenames,locations):
+   def showImages (self,filenames,locations,offset =0):
       images = self.loadImages (filenames)
 
       # Sprites contain rectangular information
-      sprites = self.placeImagesOnSurface (images,locations)
+      sprites = self.placeImagesOnSurface (images,locations,offset)
       return sprites
       
    def getSpriteClick (self, pos, sprites):    
@@ -83,18 +84,31 @@ class utilityScreens:
       x = 50 
       y = 10
       for action in actions:
-         filenames.append ( 'images/' + action + '.jpg' )
+         filenames.append ( 'images/' + action.lower() + '.jpg' )
          locations.append ( (x,y) ) 
          x = x + 110
       return (filenames,locations)
             
-   def basicScreen (self,caption,actions): 
+   def basicScreen (self,caption,actions,offset=0): 
       pygame.display.set_caption(caption)   
       self.DISPLAYSURF.fill((self.WHITE))      
       (filenames,locations) = self.actionsToIcons (actions)     
-      sprites = self.showImages (filenames, locations )   
+      sprites = self.showImages (filenames, locations,offset )   
       pygame.display.update() 
       print ( 'basicScreen returning sprites: ' + str(sprites ) ) 
       return sprites 
+      
+   def confirmScreen (self,caption,myInput): 
+     sprites = self.basicScreen (caption, ['Confirm', 'Cancel'],300)
+     confirmed = False
+
+     while True:
+        self.eventType,data,addr = myInput.getKeyOrUdp()
+        option = self.getSpriteClick (data, sprites )      
+
+        if option != -1:
+           confirmed = (option == 0)
+           break # Ok button was pressed       
+           
          
   

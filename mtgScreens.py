@@ -403,9 +403,11 @@ class mtgScreens:
                print ( 'selectedCard: ' + selectedCard ) 
                tapped = self.myDeck.gameDeck[index]['tapped']
                justSummoned = self.myDeck.gameDeck[index]['summoned']
+               haste = self.myDeck.gameDeck[index]['haste']
                actions = ['ok']
                if self.myTurn: 
-                  if not tapped and not justSummoned:
+                  canAttack = not tapped and (not justSummoned or haste)
+                  if canAttack:
                      actions.append ( 'tap' )
                   print ( 'Get summoned property from myDeck.gameDeck[' + str(index) + ']' )               
                   if not tapped and not justSummoned: 
@@ -441,7 +443,7 @@ class mtgScreens:
    # Handle an opponent move 
    def handleOpponentMove (self):
       try:    
-         move = self.myInput.move
+         move = self.myInput.popMove() 
          # Check for opponent move, handle opponent move 
          # print ( 'handle opponent udp movement' )         
          if move != None:
@@ -513,6 +515,7 @@ class mtgScreens:
                   filename = self.myDeck.gameDeck[index]['filename']
                   blocking = self.myDeck.gameDeck[index]['blocking']
                   if not tapped and (filename.find ( '/creatures/' ) > -1) and not blocking:
+                     print ( 'filename creature in play?: ' + filename )
                      power = self.myDeck.gameDeck[index]['power']
                      toughness = self.myDeck.gameDeck[index]['toughness']
                      action = self.getSingleCardAction ( filename, 'You are being attacked by a ' + \
@@ -539,7 +542,7 @@ class mtgScreens:
                      self.myDeck.gameDeck[index]['location']='discard'
                       
                   if power >= attackToughness:
-                     self.captionOk ( attacker + ' killed ' + blocker )
+                     self.captionOk ( blocker + ' killed ' + attacker )
                      self.opponentDeck.gameDeck[opponentIndex]['location']='discard'
                      
                else: # Assign damage               
@@ -562,7 +565,6 @@ class mtgScreens:
             else:
                assert False, 'handleOpponentMove, move not handled: ' + str(move) 
             self.showBoard()
-            self.myInput.move = None # Consume the data
                                
       except Exception as ex:
          assert False, 'handleOpponentMove : ' + str(ex) 
@@ -653,10 +655,11 @@ class mtgScreens:
                action = self.buttons[sprite]
                print ( 'Got a button action of: [' + action + ']' )
                if action == 'quit':
-                  self.showStatus ( 'You have elected to quit'  )      
-                  self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'quit\'}') 
-                  
-                  self.quit = True
+                  if self.utilScreens.confirmScreen ('Would you like to quit the game?', self.myInput):                
+                     self.showStatus ( 'You have elected to quit'  )      
+                     self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'quit\'}') 
+                     
+                     self.quit = True
                elif action == 'turnDone':
                   self.handIndexes = self.myDeck.extractLocation ('inhand') # necessary?
                
