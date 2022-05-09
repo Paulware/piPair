@@ -385,7 +385,22 @@ class mtgScreens:
          print ('Done showing Status: ' + self.statusMessage)
             
       pygame.display.update() 
-            
+          
+   def canBlock (self, attackerIndex, blockerIndex):
+      canBlockCreature = False
+      flyingAttack = self.opponentDeck.gameDeck[attackerIndex]['toughness']
+      flyingBlock = self.myDeck.gameDeck[blockerIndex]['filename']
+      attackToughness = self.opponentDeck.gameDeck[attackerIndex]['toughness']
+      tapped = self.myDeck.gameDeck[blockerIndex]['tapped']
+      filename = self.myDeck.gameDeck[blockerIndex]['filename']
+      blocking = self.myDeck.gameDeck[blockerIndex]['blocking'] # Can only block 1 creature 
+      
+      if not tapped and (filename.find ( '/creatures/' ) > -1) and not blocking:
+         if (flyingAttack and flyingBlock) or (not flyingAttack): 
+            canBlockCreature = True       
+      
+      return canBlockCreature 
+      
    # Handle mouse clicks on my cards in play       
    def handleMyCardsInPlay (self,addr,data):   
       if addr == 'mouse': 
@@ -499,8 +514,9 @@ class mtgScreens:
             elif moveType == 'attack':
                opponentIndex = int(move['index'])
                attackPower = self.opponentDeck.gameDeck[opponentIndex]['power']
+               attackerFilename = self.myDeck.gameDeck[attackerIndex]['filename']               
                attackToughness = self.opponentDeck.gameDeck[opponentIndex]['toughness']
-               caption = 'You are getting attacked by a ' + str(attackPower) + '/' + str(attackToughness)
+               caption = 'You are getting attacked by ' + attackerFilename + ' a ' + str(attackPower) + '/' + str(attackToughness)
                self.setCaption(caption)              
                print ( 'Tapping opponent card [' + str(opponentIndex) + ']')                  
                self.opponentDeck.gameDeck[opponentIndex]['tapped'] = True
@@ -513,24 +529,21 @@ class mtgScreens:
                for index in self.inplayIndexes:
                   tapped = self.myDeck.gameDeck[index]['tapped']
                   filename = self.myDeck.gameDeck[index]['filename']
-                  blocking = self.myDeck.gameDeck[index]['blocking']
-                  if not tapped and (filename.find ( '/creatures/' ) > -1) and not blocking:
+                  if canBlock (opponentIndex, index): 
                      print ( 'filename creature in play?: ' + filename )
                      power = self.myDeck.gameDeck[index]['power']
                      toughness = self.myDeck.gameDeck[index]['toughness']
                      action = self.getSingleCardAction ( filename, 'You are being attacked by a ' + \
                                                          str(attackPower) + '/' + str(attackToughness), ['ok','block'])  
-                     if action != '':
-                        print ( 'Perform action: [' + action + '] on card: ' + filename)                                
-                        if action == 'block': 
-                           blocker = self.simpleName (filename)
-                           blocked = True 
-                           self.myDeck.gameDeck[index]['blocking'] = True
-                           self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'block\',' + \
-                                                       '\'blocker\':' + str(index) + ',' + \
-                                                       '\'attacker\':' + str(opponentIndex) + '}' )                               
-                           print ( 'Creature is blocked ' )
-                           break
+                     if action == 'block': 
+                        blocker = self.simpleName (filename)
+                        blocked = True 
+                        self.myDeck.gameDeck[index]['blocking'] = True
+                        self.myInput.udpBroadcast ( 'exec:self.move={\'moveType\':\'block\',' + \
+                                                    '\'blocker\':' + str(index) + ',' + \
+                                                    '\'attacker\':' + str(opponentIndex) + '}' )                               
+                        print ( 'Creature is blocked ' )
+                        break # TODO: Allow more than one blocker 
                      
                   count = count + 1
                   
@@ -557,6 +570,7 @@ class mtgScreens:
                print ( 'Untap all opponent cards yo' )
                for index in self.opponentIndexes: 
                   self.opponentDeck.gameDeck[index]['tapped'] = False
+                  
                print ( 'Done untapping all opponent cards' )               
             elif move['moveType'] == 'quit':
                self.showStatus( 'You have won, opponent has quit' )
@@ -690,6 +704,7 @@ class mtgScreens:
                   self.inplayIndexes = self.myDeck.extractLocation ('inplay') # Necessary?
                   for index in self.inplayIndexes: 
                      self.myDeck.gameDeck[index]['tapped'] = False
+                     self.myDeck.gameDeck[index]['blocking'] = False 
                      self.manaPool = []    
                   for card in self.myDeck.gameDeck: 
                      self.myDeck.gameDeck[card]['summoned'] = False

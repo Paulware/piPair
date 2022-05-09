@@ -18,10 +18,18 @@ class gameDeck:
    def oneRecord (self,index): 
       filename = self.db.indexToFilename(index)
       info = self.db.data[filename]
+      
+      haste = False
+      if 'haste' in info.keys():
+         haste = info['haste']
+         
+      flying = False
+      if 'flying' in info.keys():
+         flying = info['flying']
       # Add in fields that change during the game such as summoned or tapped
       data = { 'filename':filename,'power':info['power'], 'toughness':info['toughness'], \
                'toCast':info['toCast'], 'tapped':False, 'location':'library', 'affects':'', \
-               'haste':info['haste'], 'summoned':False, 'blocking':False}
+               'haste':haste, 'flying':flying, 'summoned':False, 'blocking':False}
 
       return data                  
 
