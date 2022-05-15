@@ -96,17 +96,18 @@ class Solitaire ():
              myMove = True               
        print ( 'Go back to the main page...' )
     
-if __name__ == '__main__':
- 
+if __name__ == '__main__': 
    pygame.init()
    displaySurface = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck = Deck ('images/standardCardSprites.jpg', 13, 5, 53)   
-   
+   deck = Deck ('images/standardCardSprites.jpg', 13, 5, 55)   
+   deck.canDeal (52, False)
+   deck.canDeal (53, False)
+   deck.canDeal (54, False)
+   deck.coverIndex = 54
    hand = SubDeck (deck,7,80,120)
-   # hand.showSprites(100,100,50,100)   
    window = pygame.display.get_surface()
    
    while True: # len(deck.sprites) > 0:
@@ -118,7 +119,7 @@ if __name__ == '__main__':
          y = pos[1]
          index = hand.findSprite (x,y)
          if index != -1: 
-             optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel'], x, y)
+             optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Untap', 'Cancel','Hide', 'Show'], x, y)
              selection = optionBox.getSelection()
              print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
              if selection == 'Cancel': 
@@ -126,10 +127,15 @@ if __name__ == '__main__':
              elif selection == 'Discard':
                 hand.discard (index)
              elif selection == 'Tap':
-                print ( 'Call hand.tap (' + str(index) + ') ' )
-                hand.tap (index)                
+                hand.tap(index, True)                
+             elif selection == 'Untap':
+                hand.tap(index, False)
              elif selection == 'Use':
                 hand.discard (index)
                 hand.drawCard()
+             elif selection == 'Hide':
+                hand.hide(index)
+             elif selection == 'Show':
+                hand.unhide(index)                
 
              window.fill ((0,0,0))

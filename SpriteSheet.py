@@ -7,7 +7,7 @@ import pygame
 # attributes:
 #    data is a list, each element has an image, and an index attribute at this level
 #       subsequent levels will add attributes to each data element such as x,y,width,height,name
-class SpriteSheet:    
+class SpriteSheet:  
    def loadSpriteImages (self): 
       x = 0 
       y = 0 
@@ -20,6 +20,8 @@ class SpriteSheet:
          image.blit(self.image, (0, 0), rect)
          obj.image = image
          obj.index = i
+         obj.canDealCard = True
+         obj.tapped = False 
          data.append (obj)
          # Find the next x/y for the next sprite 
          h = h + 1
@@ -31,9 +33,11 @@ class SpriteSheet:
             x = x + self.spriteWidth
       print ( 'loaded ' + str(len(data)) + ' images' )
       return data
+      
+   def canDeal (self,index,value):
+      self.data[index].canDealCard = value   
 
-   def __init__(self, filename, numColumns, numRows, numImages):
-    
+   def __init__(self, filename, numColumns, numRows, numImages):    
       self.numImages = numImages
       if os.path.exists (filename): 
          print ( 'This file exists ' + filename )         
@@ -47,7 +51,9 @@ class SpriteSheet:
       self.spriteWidth  = int(width/numColumns)
       self.spriteHeight = int(height/numRows) 
       print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
-      self.data = self.loadSpriteImages ()        
+      self.data = self.loadSpriteImages ()         
+      
+   
    
 def showCard (sheet, index, displaySurface): 
   image = sheet.data[index].image

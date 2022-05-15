@@ -20,7 +20,8 @@ class Deck (SpriteSheet):
 
    def __init__ (self, filename, numColumns, numRows, numImages):
       SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages)
-
+      self.coverIndex = -1
+     
    def getRandomIndex (self,listLength):      
       index = -1
       if listLength > 0:
@@ -29,14 +30,22 @@ class Deck (SpriteSheet):
       return index
 
    def deal (self, numCards): 
-      hand = [] 
-      print ( 'Deal out ' + str(numCards) + ' cards from the deck' ) 
-      for i in range (numCards): 
-         obj = type ('Object', (object,), {})      
-         cardIndex = self.getRandomIndex (len(self.data)-1)
-         print ( 'Do I need to copy this card: ' + str(cardIndex) )
-         hand.append (self.data[cardIndex]) # TODO: Do I need a copy?
-         del self.data[cardIndex] # Remove the card from the original deck
+      hand = []
+      print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
+      for i in range (numCards):
+         obj = type ('Object', (object,), {})
+         while True:
+            cardIndex = self.getRandomIndex (len(self.data)-1)
+
+            if self.data[cardIndex].canDealCard:
+              # print ( 'Do I need to copy this card?: ' + str(cardIndex) )
+              obj = self.data[cardIndex]
+              obj.tapped = False
+              hand.append (obj) # TODO: Do I need a copy?
+              self.data[cardIndex].canDealCard = False
+              break
+            else:
+              print ( 'Cannot deal card: ' + str(cardIndex) + ' pick another' )
       return hand
    
 if __name__ == '__main__':
@@ -49,7 +58,7 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities.Utilities (displaySurface, BIGFONT)   
       
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52,)
+   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52)
    
    hand = deck.deal(2) 
    print ( 'Got hand: ' + str(hand)) 
