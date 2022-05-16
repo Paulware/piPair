@@ -10,6 +10,7 @@ class SubDeck ():
    def __init__ (self, deck, numCards, width, height):
       self.width = width
       self.height = height 
+      self.selected = -1
       if deck.coverIndex == -1: 
          print ( 'ERR cover image should be set')
          exit (0)
@@ -29,6 +30,7 @@ class SubDeck ():
          except Exception as ex:
             print ( 'Could not access cover image card: ' + str(deck.coverIndex) + ' because: ' + str(ex)) 
       print ('Total number of cards: ' + str(self.numImages)) 
+      self.topIndex = -1
    
    def shuffle (self): 
       print ( 'Shuffle the deck' )
@@ -59,56 +61,53 @@ class SubDeck ():
    def getImage (self,sprite):
       if sprite.hide: 
          image = pygame.transform.scale(self.coverImage, (self.width, self.height))                                     
-      elif sprite.tapped:          
-         image = pygame.transform.scale(sprite.image, (self.width, self.height)) 
-         image = self.rotate (image,90) 
       else: 
-         image = pygame.transform.scale(sprite.image, (self.width, self.height))                                     
+         image = pygame.transform.scale(sprite.image, (self.width, self.height)) 
+         
+      if sprite.tapped:          
+         image = self.rotate (image,90) 
       return image 
       
     # Show the sprites at specified start position and update the location of each   
-   def showSprites (self, startX, startY, displaySurface, offsetX=0, offsetY=0): 
+   def showSprites (self, startX, startY, displaySurface, xMultiplier=1.0, yMultiplier=0.0): 
       x = startX
       y = startY 
       print ('showSprites, self.data: ' + str(self.data)) 
-      
+
+      index = 0      
       for sprite in self.data:
          image = self.getImage (sprite)
-         displaySurface.blit (image, (x,y)) 
-         # Update location so it can be found later
-         sprite.x = x
-         sprite.y = y
-         
-         x = x + image.get_width ()
-         y = y + offsetY
+         if sprite.drag: 
+            pos = pygame.mouse.get_pos()        
+            displaySurface.blit (image,pos)
+            sprite.x = pos[0]
+            sprite.y = pos[1]            
+         else:
+            displaySurface.blit (image, (x,y)) 
+            # Update location so it can be found later
+            sprite.x = x
+            sprite.y = y
+
+         xOffset = xMultiplier * image.get_width()
+         yOffset = yMultiplier * image.get_height()         
+         x = x + xOffset
+         y = y + yOffset
+         self.topIndex = index
+         index = index + 1
          
       print ( 'showSprites, self.data after adding data ' + str(self.data))
       pygame.display.update()
-      
-   def showStack (self, x, y, displaySurface): 
-      for sprite in self.data:  
-         image = self.getImage (sprite)
-         displaySurface.blit (image, (x,y)) 
-         # Update location so it can be found later
-         sprite.x = x
-         sprite.y = y
-         sprite.width = image.get_width()
-         sprite.height = image.get_height() 
-         
-      pygame.display.update()
-      
       
    def findSprite (self,x,y):
       index = 0 
       found = -1
       print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
       for sprite in self.data: 
-         print ( '[x,y,sprite0,sprite1]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
+         print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
          if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
              (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))): 
             print ( 'Found sprite at index: ' + str(index))
             found = index 
-            break
          index = index + 1
       return found 
       
@@ -125,6 +124,19 @@ class SubDeck ():
       
    def hide (self,index):
       self.data[index].hide = True 
+      
+   def drag (self,index, value):
+      self.data[index].drag = value
+      self.selected = index 
+      
+   def hideAll (self):
+      for card in self.data:
+         card.hide = True 
+         
+   def dropAll (self):
+      print ( 'Dropping all cards')
+      for card in self.data:
+         card.drag = False 
       
    def unhide (self,index):
       self.data[index].hide = False 

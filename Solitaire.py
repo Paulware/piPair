@@ -17,11 +17,129 @@ class Solitaire ():
        self.utilities   = utilities       
        print ( 'Initialization Uno' )
        self.iAmHost     = True        
+       self.deck = Deck ('images/standardCardSprites.jpg', 13, 5, 55)   
+       self.deck.canDeal (52, False)
+       self.deck.canDeal (53, False)
+       self.deck.canDeal (54, False)
+       self.deck.coverIndex = 54
+       
+       hand1 = SubDeck (self.deck,7,80,120)
+       hand1.hideAll () 
+       hand1.x = 100
+       hand2 = SubDeck (self.deck,6,80,120)
+       hand2.hideAll () 
+       hand2.x = 200 
+       self.hands = [hand1,hand2] 
     
     def gameOver (self): 
        over = False
-       return over
+       return over   
     
+    def dropSelection (self,x,y): 
+       found = None
+       # Find which hand has the selected card 
+       selectedHand = None 
+       count = 0 
+       for hand in self.hands:
+          if hand.selected != -1: 
+             selectedHand = hand 
+             print ( 'The hand that has the selected card is hand: ' + str(count)) 
+             break
+          count = count + 1   
+          
+       if selectedHand == None: 
+          print ( 'Could not find a hand that has the selected card' )
+       else:          
+          # Find which hand is getting dropped on 
+          found = None
+          count = 0 
+          for hand in self.hands:
+             if hand != selectedHand: 
+                index = hand.findSprite (x,y)
+                if index != -1:              
+                   hand.data[hand.selected].drag = False 
+                   print ( 'The hand that is getting dropped on is hand: ' + str(count) + ' index: ' + str(index))  
+                   hand.selected = -1
+                   found = hand
+                   break
+                else:
+                   print ( 'Could not find a sprite at [' + str(x) + ',' + str(y) + ']' ) 
+                count = count + 1
+                
+          if found == None: 
+             print ( 'Could not find a hand that was getting dropped on')
+          else:
+             print ( 'Found a hand getting dropped on' )       
+       return found
+                                   
+    def runMain (self): 
+       window = pygame.display.get_surface()
+       quit = False 
+       
+       drawTime = time.time() + 0.1
+       dragging = None
+       while not quit:
+          x = 100 
+          if time.time() > drawTime: 
+             window.fill ((0,0,0))
+             if dragging == None: 
+                for hand in self.hands: 
+                   hand.showSprites (hand.x,100,displaySurface,0.0,0.25) # Show and set their x/y locations
+             else:
+                for hand in self.hands: 
+                   hand.showSprites (hand.x,100,displaySurface,0.0,0.25) # Show and set their x/y locations
+                print ( 'Dragging should be an image' )
+                (x,y) = pygame.mouse.get_pos()
+                
+                displaySurface.blit (dragging, (x,y))             
+                pygame.display.update()                
+             drawTime = time.time() + 0.10
+             
+          (typeInput,data,addr) = utilities.read(blocking=False)
+          if utilities.isMouseClick (typeInput): 
+             if dragging != None: 
+                dragging = None
+                (x,y) = pygame.mouse.get_pos()
+
+                h = self.dropSelection(x,y) 
+                if h != None:
+                   print ( 'Got a hand dropped on ') 
+                else:
+                   print ( 'Could not find anything dropped on')
+                exit(1)                      
+             else:
+                pos = pygame.mouse.get_pos()
+                x = pos[0]
+                y = pos[1]
+                print ( 'dragging == None')
+                for hand in self.hands: 
+                   index = hand.findSprite (x,y)                          
+                   if index != -1:        
+                      optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Untap', 'Cancel','Hide', 'Show', 'Drag', 'Drop'], x, y)
+                      selection = optionBox.getSelection()
+                      print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+                      if selection == 'Cancel': 
+                         quit = True 
+                      elif selection == 'Discard':
+                         hand.discard (index)
+                      elif selection == 'Tap':
+                         hand.tap(index, True)                
+                      elif selection == 'Untap':
+                         hand.tap(index, False)
+                      elif selection == 'Use':
+                         hand.discard (index)
+                         hand.drawCard()
+                      elif selection == 'Hide':
+                         hand.hide(index)
+                      elif selection == 'Show':
+                         hand.unhide(index)                
+                      elif selection == 'Drag':
+                         hand.drag (index, True) 
+                         dragging = hand.data[index].image 
+                         print ( 'need to redraw and remove options dragging is an image')
+                      elif selection == 'Drop':
+                         hand.drag (index, False) 
+   
     def main (self):
        self.DISPLAYSURF.fill((BLACK))
        pygame.display.set_caption('Play Uno')        
@@ -101,41 +219,6 @@ if __name__ == '__main__':
    displaySurface = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
-   
-   deck = Deck ('images/standardCardSprites.jpg', 13, 5, 55)   
-   deck.canDeal (52, False)
-   deck.canDeal (53, False)
-   deck.canDeal (54, False)
-   deck.coverIndex = 54
-   hand = SubDeck (deck,7,80,120)
-   window = pygame.display.get_surface()
-   
-   while True: # len(deck.sprites) > 0:
-      hand.showSprites(100,100,displaySurface) # Show and set their x/y locations
-      (typeInput,data,addr) = utilities.read()
-      if utilities.isMouseClick (typeInput): 
-         pos = pygame.mouse.get_pos()
-         x = pos[0]
-         y = pos[1]
-         index = hand.findSprite (x,y)
-         if index != -1: 
-             optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Untap', 'Cancel','Hide', 'Show'], x, y)
-             selection = optionBox.getSelection()
-             print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-             if selection == 'Cancel': 
-                break
-             elif selection == 'Discard':
-                hand.discard (index)
-             elif selection == 'Tap':
-                hand.tap(index, True)                
-             elif selection == 'Untap':
-                hand.tap(index, False)
-             elif selection == 'Use':
-                hand.discard (index)
-                hand.drawCard()
-             elif selection == 'Hide':
-                hand.hide(index)
-             elif selection == 'Show':
-                hand.unhide(index)                
+   solitaire = Solitaire (displaySurface,utilities,None)
 
-             window.fill ((0,0,0))
+   solitaire.runMain() 

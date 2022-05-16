@@ -126,7 +126,7 @@ class Utilities ():
                found = True 
       print ( 'Done waiting for click' )    
       
-   def getKeyOrUdp(self):
+   def getKeyOrUdp(self, blocking=True):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', \
                    '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
      key = None
@@ -164,7 +164,8 @@ class Utilities ():
              pass 
              # print ( 'No handled: ' + str(event.type)) 
  
-          
+       if not blocking: 
+          break        
      return (typeInput,data,addr)
 
    def updateWpaSupplicant (self, ssid, password):
@@ -238,8 +239,8 @@ class Utilities ():
         self.showCh (ch, x, y)
         x = x + self.chOffset (ch)
         
-   def read (self): 
-     (typeInput,data,addr) = self.getKeyOrUdp()
+   def read (self, blocking=True): 
+     (typeInput,data,addr) = self.getKeyOrUdp(blocking)
      return (typeInput,data,addr)
         
    def getInput (self, x,y):

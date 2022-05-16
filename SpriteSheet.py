@@ -22,6 +22,8 @@ class SpriteSheet:
          obj.index = i
          obj.canDealCard = True
          obj.tapped = False 
+         obj.hide = False
+         obj.drag = False 
          data.append (obj)
          # Find the next x/y for the next sprite 
          h = h + 1
