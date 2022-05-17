@@ -35,7 +35,7 @@ class Deck (SpriteSheet):
       for i in range (numCards):
          obj = type ('Object', (object,), {})
          while True:
-            cardIndex = self.getRandomIndex (len(self.data)-1)
+            cardIndex = self.getRandomIndex (len(self.data))
 
             if self.data[cardIndex].canDealCard:
               # print ( 'Do I need to copy this card?: ' + str(cardIndex) )

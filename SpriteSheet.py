@@ -48,12 +48,16 @@ class SpriteSheet:
       self.filename = filename 
       self.numColumns = numColumns
       self.numRows = numRows
-      self.image = pygame.image.load (filename).convert()
-      (width,height) = self.image.get_size()
-      self.spriteWidth  = int(width/numColumns)
-      self.spriteHeight = int(height/numRows) 
-      print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
-      self.data = self.loadSpriteImages ()         
+      if os.path.exists (filename): 
+         self.image = pygame.image.load (filename).convert()
+         (width,height) = self.image.get_size()
+         self.spriteWidth  = int(width/numColumns)
+         self.spriteHeight = int(height/numRows) 
+         print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
+         self.data = self.loadSpriteImages ()        
+      else:
+         print( 'This filename does not exist: ' + filename)
+         exit(1)         
       
    
    

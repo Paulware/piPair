@@ -242,6 +242,48 @@ class Utilities ():
    def read (self, blocking=True): 
      (typeInput,data,addr) = self.getKeyOrUdp(blocking)
      return (typeInput,data,addr)
+     
+   # event.type == 1025 for button down 
+   # event.type == 1026 for button up   
+   # event.button == 1 for left button 
+   # event.button == 3 for right button 
+   def readOne (self):
+      events = []       
+      ev = pygame.event.get()
+      data = ''
+      for event in ev:       
+         print (str(event)) 
+         typeInput = ''
+         try: 
+            if event.type == 1024: # Mouse Motion                
+               typeInput = 'move'
+               data = event.pos
+            else:
+               if hasattr(event, 'button'): 
+                  if event.button == 1: 
+                     print ( 'drag' )
+                     if event.type == 1025: # button down 
+                        typeInput = 'drag'
+                        data = event.pos 
+                     elif event.type == 1026: # button up 
+                        print ( 'drop event' )
+                        typeInput = 'drop'              
+                        data = event.pos 
+                                    
+                  elif event.button == 3: 
+                     if event.type == 1025: # button down 
+                        print ( 'Change ' + str(event.type) + ' to drag' )
+                        typeInput = 'select'
+                        data = event.pos 
+                     elif event.type == 1026: # button up 
+                        print ( 'Ignore right button up' )
+         except Exception as ex:
+            print ( 'readOne has exception : ' + str(ex)) 
+         if typeInput != '': 
+            events.append ( (typeInput, data, 'mouse' ) )
+      #if len(events) > 0: 
+      #   print ( 'events: ' + str(events) ) 
+      return events
         
    def getInput (self, x,y):
      line = ''

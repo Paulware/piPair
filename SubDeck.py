@@ -7,12 +7,15 @@ import pygame
 '''
 class SubDeck (): 
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deck, numCards, width, height):
+   def __init__ (self, deck, numCards, width, height, startXY, displaySurface ):
       self.width = width
       self.height = height 
       self.selected = -1
+      self.startX = startXY [0]
+      self.startY = startXY [1]
+      self.displaySurface = displaySurface
       if deck.coverIndex == -1: 
-         print ( 'ERR cover image should be set')
+         print ( 'SubDeck ERR cover image should be set')
          exit (0)
       else:
          self.deck = deck
@@ -31,15 +34,12 @@ class SubDeck ():
             print ( 'Could not access cover image card: ' + str(deck.coverIndex) + ' because: ' + str(ex)) 
       print ('Total number of cards: ' + str(self.numImages)) 
       self.topIndex = -1
-   
-   def shuffle (self): 
-      print ( 'Shuffle the deck' )
-
+   '''
    def changeImage (self, filename): 
       image = pygame.image.load (filename).convert()
       for d in self.data:
          d.image = image
-         
+   '''      
    def rotate (self, image, angle): 
       # calculate the axis aligned bounding box of the rotated image
       w, h       = image.get_size()
@@ -69,9 +69,9 @@ class SubDeck ():
       return image 
       
     # Show the sprites at specified start position and update the location of each   
-   def showSprites (self, startX, startY, displaySurface, xMultiplier=1.0, yMultiplier=0.0): 
-      x = startX
-      y = startY 
+   def showSprites (self, xMultiplier=1.0, yMultiplier=0.0): 
+      x = self.startX
+      y = self.startY       
       print ('showSprites, self.data: ' + str(self.data)) 
 
       index = 0      
@@ -79,11 +79,11 @@ class SubDeck ():
          image = self.getImage (sprite)
          if sprite.drag: 
             pos = pygame.mouse.get_pos()        
-            displaySurface.blit (image,pos)
+            self.displaySurface.blit (image,pos)
             sprite.x = pos[0]
             sprite.y = pos[1]            
          else:
-            displaySurface.blit (image, (x,y)) 
+            self.displaySurface.blit (image, (x,y)) 
             # Update location so it can be found later
             sprite.x = x
             sprite.y = y
@@ -155,11 +155,11 @@ if __name__ == '__main__':
    deck.canDeal (52, False)
    deck.coverIndex = 52  
    
-   hand = SubDeck (deck,7,80,120)  
+   hand = SubDeck (deck,7,80,120 (100,100), displaySurface)  
    window = pygame.display.get_surface()
    
    while True: # len(deck.sprites) > 0:
-      hand.showSprites(100,100,displaySurface) # Show and set their x/y locations
+      hand.showSprites() # Show and set their x/y locations
       (typeInput,data,addr) = utilities.read()
       if utilities.isMouseClick (typeInput): 
          pos = pygame.mouse.get_pos()
