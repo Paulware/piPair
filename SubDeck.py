@@ -40,6 +40,11 @@ class SubDeck ():
       for d in self.data:
          d.image = image
    '''      
+   
+   def append (self, element): 
+      element.deleted = False 
+      self.data.append (element)
+      
    def rotate (self, image, angle): 
       # calculate the axis aligned bounding box of the rotated image
       w, h       = image.get_size()
@@ -72,31 +77,32 @@ class SubDeck ():
    def showSprites (self, xMultiplier=1.0, yMultiplier=0.0): 
       x = self.startX
       y = self.startY       
-      print ('showSprites, self.data: ' + str(self.data)) 
+      #print ('showSprites, self.data: ' + str(self.data)) 
 
       index = 0      
       for sprite in self.data:
          image = self.getImage (sprite)
+         xOffset = xMultiplier * image.get_width()
+         yOffset = yMultiplier * image.get_height()         
          if sprite.drag: 
             pos = pygame.mouse.get_pos()        
             self.displaySurface.blit (image,pos)
             sprite.x = pos[0]
-            sprite.y = pos[1]            
+            sprite.y = pos[1]
+         elif sprite.deleted: 
+            pass # print ( 'This sprite is deleted: ' + str(sprite.index) )           
          else:
             self.displaySurface.blit (image, (x,y)) 
             # Update location so it can be found later
             sprite.x = x
             sprite.y = y
-
-         xOffset = xMultiplier * image.get_width()
-         yOffset = yMultiplier * image.get_height()         
-         x = x + xOffset
-         y = y + yOffset
-         self.topIndex = index
+            x = x + xOffset  
+            y = y + yOffset            
+            self.topIndex = index
          index = index + 1
          
-      print ( 'showSprites, self.data after adding data ' + str(self.data))
-      pygame.display.update()
+      # print ( 'showSprites, self.data after adding data ' + str(self.data))
+      # pygame.display.update()
       
    def findSprite (self,x,y):
       index = 0 
@@ -111,8 +117,8 @@ class SubDeck ():
          index = index + 1
       return found 
       
-   def discard (self,index): 
-      self.data.pop (index) 
+   #def discard (self,index): 
+   #   self.data.pop (index) 
   
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
@@ -173,11 +179,13 @@ if __name__ == '__main__':
              if selection == 'Cancel': 
                 break
              elif selection == 'Discard':
-                hand.discard (index) 
+                hand.data[index].deleted = True 
+                # hand.discard (index) 
              elif selection == 'Tap':                
                 hand.tap (index, True )
              elif selection == 'Use':
-                hand.discard (index)
+                # hand.discard (index)
+                hand.data[index].deleted = True 
                 hand.drawCard()
              elif selection == 'Hide':
                 hand.hide(index)

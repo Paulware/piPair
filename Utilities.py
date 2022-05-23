@@ -19,7 +19,8 @@ class Utilities ():
        self.BRIGHTBLUE = (  0,  50, 255)
        self.BROWN      = (174,  94,   0)
        self.RED        = (255,   0,   0) 
-       self.comm       = None       
+       self.comm       = None    
+       self.lastType   = 0        
       
    def showSsids(self,ssids):
        BLACK      = (0,   0,   0)
@@ -250,14 +251,16 @@ class Utilities ():
    def readOne (self):
       events = []       
       ev = pygame.event.get()
-      data = ''
+      data = '' 
       for event in ev:       
-         print (str(event)) 
          typeInput = ''
          try: 
             if event.type == 1024: # Mouse Motion                
                typeInput = 'move'
                data = event.pos
+               if self.lastType != 1024: 
+                  print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
+                  self.lastType = 1024
             else:
                if hasattr(event, 'button'): 
                   if event.button == 1: 
@@ -265,16 +268,23 @@ class Utilities ():
                      if event.type == 1025: # button down 
                         typeInput = 'drag'
                         data = event.pos 
+                        if self.lastType != 1025: 
+                           print ('drag: ' + str(event)) 
+                           self.lastType = 1025
                      elif event.type == 1026: # button up 
                         print ( 'drop event' )
                         typeInput = 'drop'              
-                        data = event.pos 
-                                    
+                        data = event.pos                                    
+                        if self.lastType != 1026: 
+                           print ('drop: ' + str(event)) 
+                           self.lastType = 1026
                   elif event.button == 3: 
                      if event.type == 1025: # button down 
-                        print ( 'Change ' + str(event.type) + ' to drag' )
                         typeInput = 'select'
                         data = event.pos 
+                        if self.lastType != 1025: 
+                           print ('select ' + str(event)) 
+                           self.lastType = 1025
                      elif event.type == 1026: # button up 
                         print ( 'Ignore right button up' )
          except Exception as ex:

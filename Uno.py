@@ -124,9 +124,11 @@ if __name__ == '__main__':
              if selection == 'Cancel': 
                 break
              elif selection == 'Discard':
-                hand.discard (index) 
+                hand.data[index].deleted = True 
+                # hand.discard (index) 
              elif selection == 'Use':
-                hand.discard (index)
+                # hand.discard (index)
+                hand.data[index].deleted = True 
                 hand.drawCard()
 
              window.fill ((0,0,0))

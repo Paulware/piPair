@@ -24,6 +24,8 @@ if __name__ == '__main__':
    from Deck import Deck
    from Utilities import Utilities
    from OptionBox import OptionBox
+   import time
+
  
    pygame.init()
    displaySurface = pygame.display.set_mode((1200, 800))
@@ -35,34 +37,50 @@ if __name__ == '__main__':
    parts1 = SubDeck (parts,2,80,120, (100,100), displaySurface)  
    parts2 = SubDeck (parts,3,80,120, (200,100), displaySurface)  
    decks = SubDecks([parts1,parts2])
-   
+
+   showTime = 0
+   def updateDisplay(dragging,pos):
+      global showTime
+      if time.time() > showTime:
+         window.fill ((0,0,0))            
+         decks.showSprites()           
+
+         if dragging != None: 
+            displaySurface.blit (dragging.image, pos)             
+         
+         showTime = time.time() + 0.05
+         pygame.display.update()
+         
    window = pygame.display.get_surface()
    quit = False 
    dragging = None    
+   
+   showTime = 0
+   mousePos = (0,0)
    while not quit:
-      decks.showSprites()
-
+      updateDisplay(dragging,mousePos)
       events = utilities.readOne()
       for event in events: 
          (typeInput, data, addr ) = event
-         print ( 'typeInput: ' + str(typeInput))
+         # print ( 'typeInput: ' + str(typeInput))
+         if typeInput == 'move': 
+            mousePos = data
          if dragging != None: 
-            if typeInput == 'move':
-               window.fill ((0,0,0))            
-               decks.showSprites()
-               displaySurface.blit (dragging, data)             
-               pygame.display.update() 
-            elif typeInput == 'drop':
+            if typeInput == 'drop':
+               (deck,index) = decks.findSprite (data) # Where are we dropping                
+               print ( 'Got drop index: ' + str(index))  
+               print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
+               deck.append(dragging)                
                dragging = None
+               # exit(1)
          else:          
             if typeInput == 'drag': 
                (deck,index) = decks.findSprite (data)
-               print ( 'Got drag index: ' + str(index)) 
-               dragging = deck.data[index].image 
-            elif typeInput == 'drop': 
-               (deck,index) = decks.findSprite (data) # Where are we dropping 
-               print ( 'Got drop index: ' + str(index)) 
-               exit(1)
+               mousePos = data
+               if index > -1: 
+                  print ( 'Got drag index: ' + str(index)) 
+                  deck.data[index].deleted = True
+                  dragging = deck.data[index]
             elif typeInput == 'select':
                (deck,index) = decks.findSprite (data)
                if deck != None: 
@@ -83,5 +101,3 @@ if __name__ == '__main__':
                       deck.hide(index)
                    elif selection == 'Show':
                       deck.unhide(index)
-
-                   window.fill ((0,0,0))

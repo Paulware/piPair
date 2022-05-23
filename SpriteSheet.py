@@ -24,6 +24,7 @@ class SpriteSheet:
          obj.tapped = False 
          obj.hide = False
          obj.drag = False 
+         obj.deleted = False 
          data.append (obj)
          # Find the next x/y for the next sprite 
          h = h + 1
@@ -37,7 +38,10 @@ class SpriteSheet:
       return data
       
    def canDeal (self,index,value):
-      self.data[index].canDealCard = value   
+      self.data[index].canDealCard = value 
+
+   def remove (self,index): 
+      self.data[index].deleted = True    
 
    def __init__(self, filename, numColumns, numRows, numImages):    
       self.numImages = numImages

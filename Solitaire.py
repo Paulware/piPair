@@ -121,13 +121,15 @@ class Solitaire ():
                       if selection == 'Cancel': 
                          quit = True 
                       elif selection == 'Discard':
-                         hand.discard (index)
+                         hand.data[index].deleted = True 
+                         # hand.discard (index)
                       elif selection == 'Tap':
                          hand.tap(index, True)                
                       elif selection == 'Untap':
                          hand.tap(index, False)
                       elif selection == 'Use':
-                         hand.discard (index)
+                         # hand.discard (index)
+                         hand.data[index].deleted = True 
                          hand.drawCard()
                       elif selection == 'Hide':
                          hand.hide(index)
