@@ -139,6 +139,9 @@ class SubDeck ():
       for card in self.data:
          card.hide = True 
          
+   def remove (self,index): 
+      self.data.pop (index)
+         
    def dropAll (self):
       print ( 'Dropping all cards')
       for card in self.data:

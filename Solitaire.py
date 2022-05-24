@@ -6,6 +6,7 @@ from Deck import Deck
 from Utilities import Utilities
 from OptionBox import OptionBox
 from SubDeck import SubDeck
+from SubDecks import SubDecks
  
 BLACK = (  0,  0,  0)
 RED   = (255,  0,  0)
@@ -23,13 +24,13 @@ class Solitaire ():
        self.deck.canDeal (54, False)
        self.deck.coverIndex = 54
        
-       hand1 = SubDeck (self.deck,7,80,120)
+       hand1 = SubDeck (self.deck,7,80,120,(100,100), DISPLAYSURF)
        hand1.hideAll () 
        hand1.x = 100
-       hand2 = SubDeck (self.deck,6,80,120)
+       hand2 = SubDeck (self.deck,6,80,120, (200,100), DISPLAYSURF)
        hand2.hideAll () 
        hand2.x = 200 
-       self.hands = [hand1,hand2] 
+       self.decks = SubDecks ([hand1,hand2]) 
     
     def gameOver (self): 
        over = False
@@ -76,71 +77,56 @@ class Solitaire ():
        window = pygame.display.get_surface()
        quit = False 
        
-       drawTime = time.time() + 0.1
+       mousePos = (0,0)
        dragging = None
        while not quit:
-          x = 100 
-          if time.time() > drawTime: 
-             window.fill ((0,0,0))
-             if dragging == None: 
-                for hand in self.hands: 
-                   hand.showSprites (hand.x,100,displaySurface,0.0,0.25) # Show and set their x/y locations
-             else:
-                for hand in self.hands: 
-                   hand.showSprites (hand.x,100,displaySurface,0.0,0.25) # Show and set their x/y locations
-                print ( 'Dragging should be an image' )
-                (x,y) = pygame.mouse.get_pos()
-                
-                displaySurface.blit (dragging, (x,y))             
-                pygame.display.update()                
-             drawTime = time.time() + 0.10
+          self.decks.updateDisplay (dragging, mousePos, 0.0, 0.25) 
              
-          (typeInput,data,addr) = utilities.read(blocking=False)
-          if utilities.isMouseClick (typeInput): 
+          events = utilities.readOne()
+          for event in events:
+             (typeInput,data,addr) = event 
+             if typeInput == 'move':
+                mousePos = data
              if dragging != None: 
-                dragging = None
-                (x,y) = pygame.mouse.get_pos()
-
-                h = self.dropSelection(x,y) 
-                if h != None:
-                   print ( 'Got a hand dropped on ') 
-                else:
-                   print ( 'Could not find anything dropped on')
-                exit(1)                      
-             else:
-                pos = pygame.mouse.get_pos()
-                x = pos[0]
-                y = pos[1]
-                print ( 'dragging == None')
-                for hand in self.hands: 
-                   index = hand.findSprite (x,y)                          
-                   if index != -1:        
-                      optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Untap', 'Cancel','Hide', 'Show', 'Drag', 'Drop'], x, y)
-                      selection = optionBox.getSelection()
-                      print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-                      if selection == 'Cancel': 
-                         quit = True 
-                      elif selection == 'Discard':
-                         hand.data[index].deleted = True 
-                         # hand.discard (index)
-                      elif selection == 'Tap':
-                         hand.tap(index, True)                
-                      elif selection == 'Untap':
-                         hand.tap(index, False)
-                      elif selection == 'Use':
-                         # hand.discard (index)
-                         hand.data[index].deleted = True 
-                         hand.drawCard()
-                      elif selection == 'Hide':
-                         hand.hide(index)
-                      elif selection == 'Show':
-                         hand.unhide(index)                
-                      elif selection == 'Drag':
-                         hand.drag (index, True) 
-                         dragging = hand.data[index].image 
-                         print ( 'need to redraw and remove options dragging is an image')
-                      elif selection == 'Drop':
-                         hand.drag (index, False) 
+                if typeInput == 'drop':
+                   (deck,index) = self.decks.findSprite (data) # Where are we dropping               
+                   if deck is None: 
+                      print ( 'Deck is none' ) 
+                   else:                   
+                      print ( 'Got drop index: ' + str(index))  
+                      print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
+                      deck.append(dragging)                 
+                      dragging = None
+             else:          
+                if typeInput == 'drag': 
+                   if dragging is None: 
+                      (deck,index) = self.decks.findSprite (data)
+                      mousePos = data
+                      if index > -1: 
+                         print ( 'Got drag index: ' + str(index)) 
+                         deck.data[index].deleted = True
+                         dragging = deck.data[index]
+                         deck.remove (index)                   
+                elif typeInput == 'select':
+                   (deck,index) = self.decks.findSprite (data)
+                   if deck != None: 
+                       optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], data[0], data[1])
+                       selection = optionBox.getSelection()
+                       print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+                       if selection == 'Cancel': 
+                          quit = True 
+                          break
+                       elif selection == 'Discard':
+                          deck.discard (index) 
+                       elif selection == 'Tap':                
+                          deck.tap (index, True )
+                       elif selection == 'Use':
+                          deck.discard (index)
+                          deck.drawCard()
+                       elif selection == 'Hide':
+                          deck.hide(index)
+                       elif selection == 'Show':
+                          deck.unhide(index)
    
     def main (self):
        self.DISPLAYSURF.fill((BLACK))

@@ -1,8 +1,12 @@
 from SubDeck import SubDeck 
+import pygame
+import time
 class SubDecks():
    def __init__(self, decks):
       self.decks = decks 
       self.selected = None
+      self.displaySurface = pygame.display.get_surface()
+      self.showTime = 0
       
    def findSprite (self, pos):
       index = -1
@@ -14,10 +18,20 @@ class SubDecks():
             break
       return (found,index)
       
-   def showSprites (self): 
-      for deck in self.decks: 
-         deck.showSprites(xMultiplier=0.0, yMultiplier=1.0)
+   def showSprites (self,xMultiplier=0.0,yMultiplier=1.0):
+      for deck in self.decks:
+         deck.showSprites(xMultiplier, yMultiplier)
+                
+   def updateDisplay(self, dragging, pos, xMultiplier=0.0, yMultiplier=1.0):
+      if time.time() > self.showTime:
+         self.displaySurface.fill ((0,0,0))
+         self.showSprites(xMultiplier,yMultiplier)
+
+         if dragging != None:
+            self.displaySurface.blit (dragging.image, pos)
          
+         self.showTime = time.time() + 0.05
+         pygame.display.update()
 
 if __name__ == '__main__':
    import pygame
@@ -37,50 +51,39 @@ if __name__ == '__main__':
    parts1 = SubDeck (parts,2,80,120, (100,100), displaySurface)  
    parts2 = SubDeck (parts,3,80,120, (200,100), displaySurface)  
    decks = SubDecks([parts1,parts2])
-
-   showTime = 0
-   def updateDisplay(dragging,pos):
-      global showTime
-      if time.time() > showTime:
-         window.fill ((0,0,0))            
-         decks.showSprites()           
-
-         if dragging != None: 
-            displaySurface.blit (dragging.image, pos)             
-         
-         showTime = time.time() + 0.05
-         pygame.display.update()
          
    window = pygame.display.get_surface()
    quit = False 
    dragging = None    
    
-   showTime = 0
    mousePos = (0,0)
    while not quit:
-      updateDisplay(dragging,mousePos)
+      decks.updateDisplay(dragging,mousePos)
       events = utilities.readOne()
       for event in events: 
          (typeInput, data, addr ) = event
-         # print ( 'typeInput: ' + str(typeInput))
          if typeInput == 'move': 
             mousePos = data
          if dragging != None: 
             if typeInput == 'drop':
-               (deck,index) = decks.findSprite (data) # Where are we dropping                
-               print ( 'Got drop index: ' + str(index))  
-               print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
-               deck.append(dragging)                
-               dragging = None
-               # exit(1)
+               (deck,index) = decks.findSprite (data) # Where are we dropping               
+               if deck is None: 
+                  print ( 'Deck is none' ) 
+               else:                   
+                  print ( 'Got drop index: ' + str(index))  
+                  print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
+                  deck.append(dragging)                 
+                  dragging = None
          else:          
             if typeInput == 'drag': 
-               (deck,index) = decks.findSprite (data)
-               mousePos = data
-               if index > -1: 
-                  print ( 'Got drag index: ' + str(index)) 
-                  deck.data[index].deleted = True
-                  dragging = deck.data[index]
+               if dragging is None: 
+                  (deck,index) = decks.findSprite (data)
+                  mousePos = data
+                  if index > -1: 
+                     print ( 'Got drag index: ' + str(index)) 
+                     deck.data[index].deleted = True
+                     dragging = deck.data[index]
+                     deck.remove (index)                   
             elif typeInput == 'select':
                (deck,index) = decks.findSprite (data)
                if deck != None: 
