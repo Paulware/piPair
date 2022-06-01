@@ -8,28 +8,40 @@ class SubDecks():
       self.displaySurface = pygame.display.get_surface()
       self.showTime = 0
       
+   def addDeck (self,deck):
+      self.decks.append (deck)   
+      
+   def addElement (self,deckIndex,element): 
+      self.decks[deckIndex].append(element)
+      
    def findSprite (self, pos):
       index = -1
       found = None
       for deck in self.decks:
+         # print ( 'SubDecks.findSprite, deck.topIndex(): ' + str(deck.topIndex() ) ) 
          index = deck.findSprite (pos[0], pos[1])
          if index != -1:
             found = deck
             break
+            
+      if found is None:
+         print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
+      else:
+         print ( 'Found a match with this deck and position: ' + str(pos) + ' : ' + str(index)) 
       return (found,index)
       
-   def showSprites (self,xMultiplier=0.0,yMultiplier=1.0):
+   def showSprites (self):
       for deck in self.decks:
-         deck.showSprites(xMultiplier, yMultiplier)
+         deck.showSprites()
                 
-   def updateDisplay(self, dragging, pos, xMultiplier=0.0, yMultiplier=1.0):
+   def updateDisplay(self, dragDeck, pos):
       if time.time() > self.showTime:
          self.displaySurface.fill ((0,0,0))
-         self.showSprites(xMultiplier,yMultiplier)
-
-         if dragging != None:
-            self.displaySurface.blit (dragging.image, pos)
-         
+         self.showSprites()
+         if dragDeck != None: 
+            dragDeck.startX = pos[0]
+            dragDeck.startY = pos[1]
+            dragDeck.showSprites()
          self.showTime = time.time() + 0.05
          pygame.display.update()
 
@@ -46,11 +58,11 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
      
-   parts = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53) 
+   parts = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 50) 
    parts.coverIndex = 52 
    parts1 = SubDeck (parts,2,80,120, (100,100), displaySurface)  
    parts2 = SubDeck (parts,3,80,120, (200,100), displaySurface)  
-   decks = SubDecks([parts1,parts2])
+   decks  = SubDecks([parts1,parts2])
          
    window = pygame.display.get_surface()
    quit = False 
@@ -71,7 +83,7 @@ if __name__ == '__main__':
                   print ( 'Deck is none' ) 
                else:                   
                   print ( 'Got drop index: ' + str(index))  
-                  print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
+                  print ( 'Add card: ' + str(dragging.sheetIndex) + ' to deck: ' )  
                   deck.append(dragging)                 
                   dragging = None
          else:          

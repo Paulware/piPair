@@ -10,103 +10,214 @@ from SubDecks import SubDecks
  
 BLACK = (  0,  0,  0)
 RED   = (255,  0,  0)
-# Show the Uno Pages
+# TODO: Make a subdeck out of the drag group
 class Solitaire (): 
     def __init__ (self, DISPLAYSURF, utilities, comm ):
        self.comm = comm
        self.DISPLAYSURF = DISPLAYSURF
        self.utilities   = utilities       
-       print ( 'Initialization Uno' )
+       print ( 'Initialization Solitaire' )
        self.iAmHost     = True        
-       self.deck = Deck ('images/standardCardSprites.jpg', 13, 5, 55)   
-       self.deck.canDeal (52, False)
-       self.deck.canDeal (53, False)
-       self.deck.canDeal (54, False)
-       self.deck.coverIndex = 54
+       self.deck = Deck ('images/standardCardSprites.jpg', 13, 5, 52, 54) 
+       if self.deck.coverImage is None: 
+          print ( 'Could not find coverImage for deck...' )
+          exit(1)          
+
+       x = 100        
+       decks=[]
+       columns = 9
+       for i in range(columns):
+          hand = SubDeck (self.deck,columns-i,80,120,(x,100), DISPLAYSURF,xMultiplier=0.0, yMultiplier=0.25)
+          hand.hideAll () 
+          hand.data [hand.length()-1].hide = False 
+          hand.x = x
+          x = x + 100 
+          self.info (hand.topSheetIndex())
+          decks.append (hand)
+          
+       hand = SubDeck (self.deck, len(self.deck.data), 80, 120, (900,400), DISPLAYSURF, xMultiplier=0.0, yMultiplier=0.0)
+       hand.hideAll()
+       decks.append (hand)       
+          
+       self.decks = SubDecks (decks) 
+       self.drawPile = hand 
+       hand.data [hand.length()-1].hide = False 
        
-       hand1 = SubDeck (self.deck,7,80,120,(100,100), DISPLAYSURF)
-       hand1.hideAll () 
-       hand1.x = 100
-       hand2 = SubDeck (self.deck,6,80,120, (200,100), DISPLAYSURF)
-       hand2.hideAll () 
-       hand2.x = 200 
-       self.decks = SubDecks ([hand1,hand2]) 
+    def emptyColumn(self):
+       found = -1 
+       count = 0 
+       for deck in self.decks.decks:
+          length = deck.length()
+          if length == 0:
+             found = count
+             break
+          else:
+             print ( 'Length of column: ' + str(count) + ' = ' + str(length ))  
+          count = count + 1
+             
+       if found == -1: 
+          print ( 'No empty column found' )
+       else:
+          print ( 'Found an empty column' )
+       return found 
+       
+    def cardName (self,index): 
+       faces = ['ZERO', 'Ace', 'Deuce', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King'] 
+       return faces[self.face(index)] + ' of ' + self.suit(index) 
     
+    def canDrop (self,topIndex, bottomIndex): 
+       ok = False 
+
+       topFace = self.face(topIndex)
+       bottomFace = self.face(bottomIndex)
+       if bottomFace == (topFace + 1):
+          if self.redBlack(topIndex) != self.redBlack(bottomIndex):
+             ok = True 
+             print ( 'canDrop is ok...' )
+          else:
+             print ( 'Cannot execute a normal drop because colors are the same' )
+       else:
+          print ( 'Cannot execute a normal drop because top face (' + str(bottomFace) + ') != (' + str(topFace) + ') + 1)' ) 
+       return ok
+    
+    def draw(self,dragDeck,mousePos):
+       self.decks.updateDisplay (dragDeck, mousePos)
+       pygame.display.update()
+       
+    def face (self,index):
+       value = (index % 13) + 1 
+       print ( 'face of index: ' + str(index) + ' : ' + str(value)) 
+       return value
+
     def gameOver (self): 
        over = False
-       return over   
-    
-    def dropSelection (self,x,y): 
-       found = None
-       # Find which hand has the selected card 
-       selectedHand = None 
-       count = 0 
-       for hand in self.hands:
-          if hand.selected != -1: 
-             selectedHand = hand 
-             print ( 'The hand that has the selected card is hand: ' + str(count)) 
-             break
-          count = count + 1   
-          
-       if selectedHand == None: 
-          print ( 'Could not find a hand that has the selected card' )
-       else:          
-          # Find which hand is getting dropped on 
-          found = None
-          count = 0 
-          for hand in self.hands:
-             if hand != selectedHand: 
-                index = hand.findSprite (x,y)
-                if index != -1:              
-                   hand.data[hand.selected].drag = False 
-                   print ( 'The hand that is getting dropped on is hand: ' + str(count) + ' index: ' + str(index))  
-                   hand.selected = -1
-                   found = hand
-                   break
-                else:
-                   print ( 'Could not find a sprite at [' + str(x) + ',' + str(y) + ']' ) 
-                count = count + 1
-                
-          if found == None: 
-             print ( 'Could not find a hand that was getting dropped on')
-          else:
-             print ( 'Found a hand getting dropped on' )       
-       return found
+       return over       
+       
+    def getGroup (self, deck, index ):
+       print ( 'Get group associated with deck and card index: ' + str(index)) 
+       print ( 'Make a deck associated with this index' )       
+       group = []        
+       startIndex = index
+       # Find where the group starts 
+       while True: 
+         if startIndex == 0: 
+            break
+         print ( 'startIndex: ' + str(startIndex)) 
+         if deck.data[startIndex].hide == False: 
+            startIndex = startIndex - 1 
+         else:
+            break            
+       # Copy the entire group             
+       while True: 
+         if not deck.data[startIndex].hide: 
+            group.append (startIndex)
+         startIndex = startIndex + 1
+         if startIndex == deck.length(): 
+            break         
+       print ( 'Got a group: ' + str(group))                  
+       return group
                                    
+    def info (self,sheetIndex):
+       print ( 'Info for card[' + str(sheetIndex) + ']: ' + self.suit(sheetIndex) + ',' + \
+               'color: ' + self.redBlack(sheetIndex) + ', face: ' + str(self.face(sheetIndex)) )       
+     
+    def redBlack (self,index):
+       s = self.suit (index)
+       color = 'red'
+       if (s == 'clubs') or (s == 'spades'): 
+          color = 'black'
+       return color
+       
     def runMain (self): 
        window = pygame.display.get_surface()
        quit = False 
        
        mousePos = (0,0)
-       dragging = None
+       dragDeck = None
+       sourceDeck = None
        while not quit:
-          self.decks.updateDisplay (dragging, mousePos, 0.0, 0.25) 
-             
+       
+          self.draw(dragDeck,mousePos)
           events = utilities.readOne()
           for event in events:
-             (typeInput,data,addr) = event 
+             (typeInput,data,addr) = event
              if typeInput == 'move':
                 mousePos = data
-             if dragging != None: 
+             if dragDeck != None:
                 if typeInput == 'drop':
-                   (deck,index) = self.decks.findSprite (data) # Where are we dropping               
-                   if deck is None: 
-                      print ( 'Deck is none' ) 
-                   else:                   
-                      print ( 'Got drop index: ' + str(index))  
-                      print ( 'Add card: ' + str(dragging.index) + ' to deck: ' )  
-                      deck.append(dragging)                 
-                      dragging = None
+                   face = self.face(dragDeck.bottomSheetIndex())
+                   print ( 'Bottom sheet face: ' + str(face))                    
+                   
+                   if face == 1:  
+                      print ( 'You can drop Ace anywhere' )
+                      self.decks.addDeck (dragDeck)
+                      sourceDeck.revealTopCard() 
+                   else:   
+                      emptyColumn = self.emptyColumn() 
+                      if (face==13) and (emptyColumn != -1): 
+                         print ( 'You can place the king in an empty column yo' )
+                         self.decks.addElement ( emptyColumn, dragDeck.data[0] ) 
+                         sourceDeck.revealTopCard()                         
+                      else:
+                         print ( '\n\n***DROP EVENT***\n\n' )
+                         (deck,index) = self.decks.findSprite (data) # Where are we dropping
+                         suitsMatch = False
+                         
+                         dragSheetIndex = dragDeck.topSheetIndex()
+                         dragSuit       = self.suit (dragSheetIndex)
+                         dragFace       = self.face (dragSheetIndex)
+                         
+                         print ( 'Drag card' )
+                         self.info (dragSheetIndex)
+                      
+                         if deck is None:
+                            print ( 'Could not find a deck being dropped on' )
+                            sourceDeck.appendDeck (dragDeck)
+                         else:
+                            dropSheetIndex = deck.data[index].sheetIndex
+                            dropSuit       = self.suit (dropSheetIndex)
+                            dropFace       = self.face (dropSheetIndex)
+                            print ( 'Drop card' )
+                            self.info (dropSheetIndex)                         
+                         
+                            print ( 'Got drop index: ' + str(index))
+                            # print ( 'Add card: ' + str(dragging.sheetIndex) + ' to deck ' )  
+                            print ( 'Destination deck has a top card of: ' + self.cardName ( deck.topSheetIndex()) )
+                            if self.canDrop (dragDeck.bottomSheetIndex(), deck.topSheetIndex()): 
+                               print ( 'Can drop ' + self.cardName (dragDeck.bottomSheetIndex()) + ' on ' + \
+                                       self.cardName (deck.topSheetIndex()) )
+                               deck.appendDeck(dragDeck) 
+                               sourceDeck.revealTopCard() 
+                            elif (dragSuit == dropSuit) and ((dragFace - dropFace ) == 1):
+                               print ( 'Drop card on final pile' ) 
+                               deck.appendDeck(dragDeck) 
+                               sourceDeck.revealTopCard()
+                            else:
+                               print ( 'Cannot drop ' + self.cardName (dragDeck.bottomSheetIndex()) + \
+                               ' on ' + self.cardName ( deck.topSheetIndex()) ) 
+                               print ( 'Return dragDeck to originating deck' ) 
+                               sourceDeck.appendDeck (dragDeck)
+                                               
+                   dragDeck = None
+                   sourceDeck = None
              else:          
                 if typeInput == 'drag': 
-                   if dragging is None: 
+                   if dragDeck is None: 
+                      print ( '\n\n***DRAG***\n\n' )
                       (deck,index) = self.decks.findSprite (data)
+                      
+                      sourceDeck = deck
                       mousePos = data
-                      if index > -1: 
-                         print ( 'Got drag index: ' + str(index)) 
-                         deck.data[index].deleted = True
-                         dragging = deck.data[index]
-                         deck.remove (index)                   
+                      print ( 'Got an index of: ' + str(index)) 
+                      if index > -1:
+                         print ( 'Got drag index: ' + str(index))
+                         group = self.getGroup (deck,index)
+                         print ( 'Create a sub deck' )
+                         dragDeck = SubDeck (width=80,height=120,displaySurface=self.DISPLAYSURF,xMultiplier=0.0, yMultiplier=0.25)
+                         for card in group: 
+                            dragDeck.addCard (deck,card)  
+                         dragDeck.listCards()                           
+                         deck.removeHidden (False)
                 elif typeInput == 'select':
                    (deck,index) = self.decks.findSprite (data)
                    if deck != None: 
@@ -128,6 +239,12 @@ class Solitaire ():
                        elif selection == 'Show':
                           deck.unhide(index)
    
+    def suit (self,index):
+       suits = ['clubs','diamonds','hearts','spades']
+       ind = int(index / 13) 
+       value = suits[ind]
+       return value
+       
     def main (self):
        self.DISPLAYSURF.fill((BLACK))
        pygame.display.set_caption('Play Uno')        

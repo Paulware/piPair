@@ -15,37 +15,35 @@ from SpriteSheet import SpriteSheet
       
    Original data is stored in the sheet.data element which is a list object
       This class will add not add any attributes to that sheet.data
+      
+   This class will also have a coverImage attribute which is the image on the back of the card
 '''
 class Deck (SpriteSheet): 
 
-   def __init__ (self, filename, numColumns, numRows, numImages):
-      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages)
-      self.coverIndex = -1
+   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex):
+      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
+      print ( 'Done in Deck.init' ) 
      
-   def getRandomIndex (self,listLength):      
+   def getRandomIndex (self,listLength):         
       index = -1
       if listLength > 0:
          index = int ( random.random() * listLength)
-      print ( 'Got a random index: ' + str(index))
+      # print ( 'Got a random index: ' + str(index))
       return index
 
    def deal (self, numCards): 
+      print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
       print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
       for i in range (numCards):
-         obj = type ('Object', (object,), {})
-         while True:
-            cardIndex = self.getRandomIndex (len(self.data))
-
-            if self.data[cardIndex].canDealCard:
-              # print ( 'Do I need to copy this card?: ' + str(cardIndex) )
-              obj = self.data[cardIndex]
-              obj.tapped = False
-              hand.append (obj) # TODO: Do I need a copy?
-              self.data[cardIndex].canDealCard = False
-              break
-            else:
-              print ( 'Cannot deal card: ' + str(cardIndex) + ' pick another' )
+         # obj = type ('Object', (object,), {})
+         index = self.getRandomIndex (len(self.data))
+         obj = self.data[index]
+         obj.tapped = False
+         print ( 'just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
+         hand.append (obj) # TODO: Do I need a copy?
+         self.data.pop (index)
+            
       return hand
    
 if __name__ == '__main__':
@@ -58,7 +56,7 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities.Utilities (displaySurface, BIGFONT)   
       
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52)
+   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)
    
    hand = deck.deal(2) 
    print ( 'Got hand: ' + str(hand)) 

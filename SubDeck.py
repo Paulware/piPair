@@ -7,43 +7,137 @@ import pygame
 '''
 class SubDeck (): 
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deck, numCards, width, height, startXY, displaySurface ):
+   def __init__ (self, deckBasis=None, numCards=0, width=0, height=0, startXY=(0,0), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
+      print ( 'SubDeck.init' )
       self.width = width
       self.height = height 
       self.selected = -1
+      print ( 'startXY: ' + str(startXY) ) 
       self.startX = startXY [0]
       self.startY = startXY [1]
       self.displaySurface = displaySurface
-      if deck.coverIndex == -1: 
-         print ( 'SubDeck ERR cover image should be set')
-         exit (0)
+      self.xMultiplier = xMultiplier
+      self.yMultiplier = yMultiplier
+      if deckBasis is None: 
+         self.coverImage = None
       else:
-         self.deck = deck
-         dealtCards = self.deck.deal (numCards)
-         self.data = dealtCards
-         for card in self.data: # Set the width/height of each image 
-            card.image = pygame.transform.scale(card.image, (width, height))                                     
-            card.angle = 0
-            card.hide  = False
-         self.numImages = len(self.data) 
-         try: 
-            print ( 'deck.data has : ' + str(len(deck.data)) + ' images ' )
-            coverImage = deck.data[deck.coverIndex].image
-            self.coverImage = pygame.transform.scale(coverImage, (width, height)) 
-         except Exception as ex:
-            print ( 'Could not access cover image card: ' + str(deck.coverIndex) + ' because: ' + str(ex)) 
+         self.coverImage = deckBasis.coverImage
+      if self.coverImage is None: 
+         print ( 'SubDeck has a None cover image' )
+      
+      print ( 'Deal cards' )
+      if deckBasis is None: 
+         self.data = [] 
+         self.numImages = 0
+      else:
+         self.deck = deckBasis
+         if not (self.deck is None): 
+            dealtCards = self.deck.deal (numCards)
+               
+            self.data = dealtCards
+            for card in self.data: # Set the width/height of each image 
+               card.image = pygame.transform.scale(card.image, (width, height))                                     
+               card.angle = 0
+               card.hide  = False
+               card.tapped = False 
+            self.numImages = len(self.data)
+         
       print ('Total number of cards: ' + str(self.numImages)) 
-      self.topIndex = -1
-   '''
-   def changeImage (self, filename): 
-      image = pygame.image.load (filename).convert()
-      for d in self.data:
-         d.image = image
-   '''      
-   
+      
+   def addCard (self,deck,index): 
+      print ( 'addCard from deck with index: ' + str(index) + ' and tapped value: ' + str(deck.data[index].tapped)) 
+      self.data.append (deck.data[index])
+      print ( 'addCard, self.data: ' + str(self.data)) 
+
    def append (self, element): 
-      element.deleted = False 
       self.data.append (element)
+      
+   def appendDeck (self, deck): 
+      for element in deck.data: 
+         self.append (element)
+      
+   def bottomSheetIndex(self):   
+      return self.data[0].sheetIndex
+                
+   def drawCard (self): 
+      cards = self.deck.deal (1)
+      self.data.append (cards[0]) 
+               
+   def discard (self,index): 
+      self.remove (index)
+   
+   def drag (self,index, value):
+      self.data[index].drag = value
+      self.selected = index 
+      
+   def dropAll (self):
+      print ( 'Dropping all cards')
+      for card in self.data:
+         card.drag = False 
+   
+   def findSprite (self,x,y):
+      index = 0 
+      found = -1
+      #print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
+      for sprite in self.data: 
+         #print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
+         if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
+             (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))): 
+            #print ( 'Found sprite at index: ' + str(index))
+            found = index 
+         index = index + 1
+      return found 
+      
+   def getImage (self,sprite):
+      if sprite.hide: 
+         image = pygame.transform.scale(self.coverImage, (self.width, self.height))                                     
+      else: 
+         image = pygame.transform.scale(sprite.image, (self.width, self.height)) 
+         
+      if sprite.tapped:          
+         image = self.rotate (image,90) 
+      return image 
+      
+   def hide (self,index):
+      self.data[index].hide = True 
+      
+   def hideAll (self):
+      for card in self.data:
+         card.hide = True 
+         
+   def length (self):
+      print ( 'Length of deck: ' + str(len(self.data)))       
+      return len(self.data)
+         
+   def listCards (self):
+      count = 0
+      for card in self.data: 
+         print ( 'self.data[' + str(count) + '].index: ' + str(card.sheetIndex))  
+         count = count + 1
+         
+   def remove (self,index): 
+      self.data.pop (index)
+      
+   def removeHidden (self, hide): 
+      found = True 
+      
+      while found: 
+         found = False 
+         index = 0
+         for card in self.data: 
+            if card.hide == hide:
+               self.remove (index)
+               found = True 
+               break
+            index = index + 1
+
+      print ( 'Removed all cards with .hide = ' + str(hide))                
+         
+   def revealTopCard (self):
+      length = len(self.data)
+      if length > 0: 
+         self.data[length-1].hide = False 
       
    def rotate (self, image, angle): 
       # calculate the axis aligned bounding box of the rotated image
@@ -63,18 +157,8 @@ class SubDeck ():
       rotated_image = pygame.transform.rotate(image, angle)      
       return rotated_image  
 
-   def getImage (self,sprite):
-      if sprite.hide: 
-         image = pygame.transform.scale(self.coverImage, (self.width, self.height))                                     
-      else: 
-         image = pygame.transform.scale(sprite.image, (self.width, self.height)) 
-         
-      if sprite.tapped:          
-         image = self.rotate (image,90) 
-      return image 
-      
-    # Show the sprites at specified start position and update the location of each   
-   def showSprites (self, xMultiplier=1.0, yMultiplier=0.0): 
+   # Show the sprites at specified start position and update the location of each   
+   def showSprites (self): 
       x = self.startX
       y = self.startY       
       #print ('showSprites, self.data: ' + str(self.data)) 
@@ -82,15 +166,13 @@ class SubDeck ():
       index = 0      
       for sprite in self.data:
          image = self.getImage (sprite)
-         xOffset = xMultiplier * image.get_width()
-         yOffset = yMultiplier * image.get_height()         
+         xOffset = self.xMultiplier * image.get_width()
+         yOffset = self.yMultiplier * image.get_height()         
          if sprite.drag: 
             pos = pygame.mouse.get_pos()        
             self.displaySurface.blit (image,pos)
             sprite.x = pos[0]
-            sprite.y = pos[1]
-         elif sprite.deleted: 
-            pass # print ( 'This sprite is deleted: ' + str(sprite.index) )           
+            sprite.y = pos[1]         
          else:
             self.displaySurface.blit (image, (x,y)) 
             # Update location so it can be found later
@@ -98,58 +180,19 @@ class SubDeck ():
             sprite.y = y
             x = x + xOffset  
             y = y + yOffset            
-            self.topIndex = index
          index = index + 1
-         
-      # print ( 'showSprites, self.data after adding data ' + str(self.data))
-      # pygame.display.update()
       
-   def findSprite (self,x,y):
-      index = 0 
-      found = -1
-      print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
-      for sprite in self.data: 
-         print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
-         if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
-             (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))): 
-            print ( 'Found sprite at index: ' + str(index))
-            found = index 
-         index = index + 1
-      return found 
-      
-   #def discard (self,index): 
-   #   self.data.pop (index) 
-  
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
       self.data[index].tapped = value
    
-   def drawCard (self): 
-      cards = self.deck.deal (1)
-      self.data.append (cards[0]) 
-      
-   def hide (self,index):
-      self.data[index].hide = True 
-      
-   def drag (self,index, value):
-      self.data[index].drag = value
-      self.selected = index 
-      
-   def hideAll (self):
-      for card in self.data:
-         card.hide = True 
-         
-   def remove (self,index): 
-      self.data.pop (index)
-         
-   def dropAll (self):
-      print ( 'Dropping all cards')
-      for card in self.data:
-         card.drag = False 
+   def topSheetIndex (self): 
+      print ( 'SubDeck.topIndex, return sheetIndex' )
+      return self.data[self.length()-1].sheetIndex
       
    def unhide (self,index):
       self.data[index].hide = False 
-                
+      
 if __name__ == '__main__':
    from Deck import Deck
    from Utilities import Utilities
@@ -160,15 +203,18 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53)
-   deck.canDeal (52, False)
-   deck.coverIndex = 52  
-   
-   hand = SubDeck (deck,7,80,120 (100,100), displaySurface)  
+   print ( 'Make deck' )
+   deckBasis = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53, 52)
+   print ( 'Deal' )
+   startXY = (100,100)
+   hand = SubDeck (deckBasis,7,80,120,startXY,displaySurface)  
+   print ( 'Done dealing ' )
    window = pygame.display.get_surface()
    
-   while True: # len(deck.sprites) > 0:
+   while True:
+      window.fill ((0,0,0))
       hand.showSprites() # Show and set their x/y locations
+      pygame.display.update()
       (typeInput,data,addr) = utilities.read()
       if utilities.isMouseClick (typeInput): 
          pos = pygame.mouse.get_pos()
@@ -182,17 +228,14 @@ if __name__ == '__main__':
              if selection == 'Cancel': 
                 break
              elif selection == 'Discard':
-                hand.data[index].deleted = True 
-                # hand.discard (index) 
+                hand.discard (index) 
              elif selection == 'Tap':                
                 hand.tap (index, True )
              elif selection == 'Use':
-                # hand.discard (index)
-                hand.data[index].deleted = True 
+                hand.discard (index)
                 hand.drawCard()
              elif selection == 'Hide':
                 hand.hide(index)
              elif selection == 'Show':
                 hand.unhide(index)
 
-             window.fill ((0,0,0))

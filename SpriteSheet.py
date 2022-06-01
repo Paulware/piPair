@@ -13,19 +13,26 @@ class SpriteSheet:
       y = 0 
       h = 0
       data = [] 
-      for i in range (self.numImages):
+      maxImages = self.numColumns * self.numRows
+      print ( 'maxImages: ' + str(maxImages) + ' coverIndex: ' + str(self.coverIndex)) 
+      for i in range (maxImages):
          obj = type ('Object', (object,), {})
          rect = pygame.Rect(( x,y,self.spriteWidth,self.spriteHeight))
          image = pygame.Surface(rect.size).convert()
          image.blit(self.image, (0, 0), rect)
          obj.image = image
-         obj.index = i
+         obj.sheetIndex = i
          obj.canDealCard = True
-         obj.tapped = False 
+         obj.tapped = False
          obj.hide = False
          obj.drag = False 
-         obj.deleted = False 
-         data.append (obj)
+         obj.deleted = False
+         if i < self.numImages:
+            data.append (obj)
+         if i == self.coverIndex:
+            print ( 'Setting self.coverImage' )
+            self.coverImage = image 
+            
          # Find the next x/y for the next sprite 
          h = h + 1
          if h == self.numColumns:
@@ -36,15 +43,39 @@ class SpriteSheet:
             x = x + self.spriteWidth
       print ( 'loaded ' + str(len(data)) + ' images' )
       return data
-      
-   def canDeal (self,index,value):
-      self.data[index].canDealCard = value 
+   
+   # Get the image of a specific index such as cover image 
+   def getIndexImage (self,index): 
+      image = None 
+      x = 0 
+      y = 0 
+      h = 0      
+      for i in range (self.numColumns * self.numRows):
+         if i == index: 
+            obj = type ('Object', (object,), {})
+            rect = pygame.Rect(( x,y,self.spriteWidth,self.spriteHeight))
+            image = pygame.Surface(rect.size).convert()
+         # Find the next x/y for the next sprite 
+         h = h + 1
+         if h == self.numColumns:
+            x = 0
+            y = y + self.spriteHeight
+            h = 0
+         else:
+            x = x + self.spriteWidth
+      if image is None:
+         print ( 'Could not find the image for index: ' + str(index) + ' in the spritesheet?' )
+         exit(1)
+         
+      return image       
+   
+   #def remove (self,index): 
+   #   self.data.pop (index)
 
-   def remove (self,index): 
-      self.data[index].deleted = True    
-
-   def __init__(self, filename, numColumns, numRows, numImages):    
+   def __init__(self, filename, numColumns, numRows, numImages, coverIndex):    
       self.numImages = numImages
+      self.coverIndex = coverIndex 
+      print ( 'coverIndex is: ' + str(coverIndex)) 
       if os.path.exists (filename): 
          print ( 'This file exists ' + filename )         
       else:
@@ -52,18 +83,16 @@ class SpriteSheet:
       self.filename = filename 
       self.numColumns = numColumns
       self.numRows = numRows
-      if os.path.exists (filename): 
+      if os.path.exists (filename):
          self.image = pygame.image.load (filename).convert()
          (width,height) = self.image.get_size()
          self.spriteWidth  = int(width/numColumns)
-         self.spriteHeight = int(height/numRows) 
+         self.spriteHeight = int(height/numRows)
          print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
-         self.data = self.loadSpriteImages ()        
+         self.data = self.loadSpriteImages ()
       else:
          print( 'This filename does not exist: ' + filename)
-         exit(1)         
-      
-   
+         exit(1)   
    
 def showCard (sheet, index, displaySurface): 
   image = sheet.data[index].image
