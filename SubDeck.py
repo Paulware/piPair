@@ -5,6 +5,8 @@ import pygame
    It will use Decks ability to deal and will add the attributes x,y,width,height to each element in the dealt hand.
    There is no descriptive name on each element, that will be added based on id in the particular game class.   
 '''
+# SubDeck cannot be inherited from Deck because it is really just a piece of Deck 
+# plus display capability
 class SubDeck (): 
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis=None, numCards=0, width=0, height=0, startXY=(0,0), \
@@ -59,7 +61,17 @@ class SubDeck ():
       
    def bottomSheetIndex(self):   
       return self.data[0].sheetIndex
-                
+      
+   # shift cards and place top card at the bottom of the deck    
+   def cycleTopCard (self):
+      print ( 'cycle top card, length of deck: ' + str(len(self.data)))
+      if len(self.data) > 1: 
+         topCard = self.data[len(self.data)-1]
+         for i in range (len(self.data)-1): 
+            # print ( 'self.data['  + str(i+1) + ' = self.data[' + str(i) + ']' )
+            self.data[len(self.data)-i-1] = self.data[len(self.data)-i-2]
+         self.data[0] = topCard
+                               
    def drawCard (self): 
       cards = self.deck.deal (1)
       self.data.append (cards[0]) 
@@ -105,7 +117,11 @@ class SubDeck ():
    def hideAll (self):
       for card in self.data:
          card.hide = True 
-         
+   
+   def showAll (self):
+      for card in self.data:
+         card.hide = False
+   
    def length (self):
       print ( 'Length of deck: ' + str(len(self.data)))       
       return len(self.data)

@@ -166,7 +166,8 @@ class Utilities ():
              # print ( 'No handled: ' + str(event.type)) 
  
        if not blocking: 
-          break        
+          break  
+     print ( '[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + str(addr) + ']' )           
      return (typeInput,data,addr)
 
    def updateWpaSupplicant (self, ssid, password):

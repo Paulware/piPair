@@ -16,7 +16,29 @@ class TicTacToe ():
        self.taken       = [['','',''],['','',''], ['','','']]    
        self.drawingX    = True
        self.iAmHost     = True        
-    
+       
+    def drawX (self,x,y):
+       print ( 'drawX (' + str(x) + ',' + str(y) + ')' )
+       self.taken [x][y] = 'x'
+       x = (x * 100) + 200
+       y = (y * 100) + 100 
+       print ( 'Draw X at [' + str(x) + ',' + str(y) + ']' )
+       pygame.draw.line(self.DISPLAYSURF, RED, (x, y), (x+100, y+100))
+       pygame.draw.line(self.DISPLAYSURF, RED, (x+100, y), (x, y+100))
+       sprites = self.utilities.showImages (['quit.jpg'], [(400,500)] )             
+       pygame.display.update()
+       print ( 'Done in drawX' )
+       
+    def drawO (self,x,y):
+       print ( 'drawO (' + str(x) + ',' + str(y) + ')' )
+       self.taken [x][y] = 'o'
+       x = (x * 100) + 250
+       y = (y * 100) + 150 
+       print ( 'Draw O at [' + str(x) + ',' + str(y) + ']' )
+       pygame.draw.circle(self.DISPLAYSURF, RED, (x, y), 50, 1)       
+       sprites = self.utilities.showImages (['quit.jpg'], [(400,500)] )      
+       pygame.display.update()
+        
     def gameOver (self,ch): 
        over = False
        # 0down, 1down, 2down, 0across, 1across, 2across, 1diagonal, 2diagonal
@@ -44,28 +66,6 @@ class TicTacToe ():
           if over:
              break
        return over
-    
-    def drawX (self,x,y):
-       print ( 'drawX (' + str(x) + ',' + str(y) + ')' )
-       self.taken [x][y] = 'x'
-       x = (x * 100) + 200
-       y = (y * 100) + 100 
-       print ( 'Draw X at [' + str(x) + ',' + str(y) + ']' )
-       pygame.draw.line(self.DISPLAYSURF, RED, (x, y), (x+100, y+100))
-       pygame.draw.line(self.DISPLAYSURF, RED, (x+100, y), (x, y+100))
-       sprites = self.utilities.showImages (['quit.jpg'], [(400,500)] )             
-       pygame.display.update()
-       print ( 'Done in drawX' )
-       
-    def drawO (self,x,y):
-       print ( 'drawO (' + str(x) + ',' + str(y) + ')' )
-       self.taken [x][y] = 'o'
-       x = (x * 100) + 250
-       y = (y * 100) + 150 
-       print ( 'Draw O at [' + str(x) + ',' + str(y) + ']' )
-       pygame.draw.circle(self.DISPLAYSURF, RED, (x, y), 50, 1)       
-       sprites = self.utilities.showImages (['quit.jpg'], [(400,500)] )      
-       pygame.display.update()
     
     def gameOverXY(self): 
        gOver = False 

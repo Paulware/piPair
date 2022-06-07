@@ -14,6 +14,25 @@ class SubDecks():
    def addElement (self,deckIndex,element): 
       self.decks[deckIndex].append(element)
       
+   def addElements (self,targetDeckIndex, deck):
+      for element in deck.data:
+         self.addElement (targetDeckIndex, element )      
+      
+   def emptyColumn(self):
+      found = -1 
+      count = 0 
+      for deck in self.decks:
+         if deck.emptyColumn (): 
+            found = count
+            break
+         count = count + 1
+            
+      if found == -1: 
+         print ( 'No empty column found in any deck' )
+      else:
+         print ( 'Found an empty column in deck: ' + str(count) )
+      return found       
+      
    def findSprite (self, pos):
       index = -1
       found = None

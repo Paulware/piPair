@@ -15,10 +15,11 @@ class Communications:
       self.broker = broker
       self.client.on_connect = self.on_connect
       self.client.on_message = self.on_message
-      self.connected = False 
-      # set the will message, when the Raspberry Pi is powered off, or the network is interrupted abnormally, it will send the will message to other clients
+      self.connected = False
       
-      self.client.will_set(topic, b'{"status": "Off", "name":"' + name.encode() + b'"}')
+      # set the will (last testament) message, when the Raspberry Pi is powered off, or the network is interrupted abnormally, it will send the will message to other clients      
+      message = '{\"id\":0, \"from\":\"' + self.name + '\",\"to\":\"*\", \"message\":\"Off\"}'
+      self.client.will_set(topic, message.encode())
       self.message = '' 
       self.target = ''
       self.buffer = ['','','','','','','','','','']
@@ -114,9 +115,11 @@ class Communications:
       return ack
    
    def publish (self,destination,message):
-      message = str(self.count) + ':' + self.name + ':' + destination + ':' + message 
+      message = '{\'id\':' + str(self.count) + ',\'from\':\'' + self.name + '\',\'to\':\'' + destination + \
+                '\',\'message\':\'' + message + '\'}'  
       print ( 'Publish [topic,payload]: [' + self.topic + ',' + message + ']' )
       self.client.publish(self.topic, payload=message, qos=0, retain=False)
+      
          
    def send ( self, message):
       while True: 
@@ -141,10 +144,8 @@ class Communications:
       while not self.connected: 
          time.sleep (0.1) 
 
-   def acknowledge ( self, destination, count ):    
-      message = count + ':' + self.name + ':' + destination + ':ACK' 
-      print ( 'Send acknowledgment: ' + message )
-      self.client.publish(self.topic, payload=message, qos=0, retain=False)          
+   def acknowledge ( self, destination, count ):   
+      self.publish (destination, 'ACK')   
 
    def disconnect (self): 
       print ( 'Disconnecting.' )         
@@ -154,60 +155,94 @@ class Communications:
       except Exception as ex:
          print ( 'Could not disconnect because: ' + str(ex)) 
       print ( 'Done in disconnect' )
+
+  
    # the callback function, it will be triggered when receiving messages
-   def on_message(self,client, userdata, msg):
+   def on_message(self, client, userdata, msg):
        message = msg.payload.decode()
-       data = message.split ( ':' )
-       ignore = False
-       if len(data) > 1:
-          if data[1] == self.name:
-             ignore = True 
-             
-       target = ''
-       if len(data) > 2: 
-          target = data[2]       
-   
-       if not ignore:    
-          # print(f"{msg.topic} {msg.payload}")
-          # print ( 'Got data: ' + str(data)) 
-          ignore = False
-          if target == self.name:
-             if message.find ( ':ACK' ) > -1: 
-                # print ( 'Found an ack...for me, check count' )
-                if data[0] == str(self.count): 
-                   # print ( 'Received an expected ack [' + str(self.count) + ']')
-                   self.ack = True 
-                   self.count = self.count + 1 
-                else:
-                   print ( 'Unexpected count: ' + data[0] + ' still waiting....' )
+       try: 
+          info = eval (message) 
+       except Exception as ex:
+          print ( 'Could not eval: [' + message + '] because ' + str(ex)) 
+          exit(1)
+       print ( 'message: ' + message + ' info: ' + str(info)) 
+       fromName = info['from']
+       toName   = info['to']
+       msg      = info['message']
+       
+       if (toName != self.name) and (toName != '*') :
+          print ( 'This message (' + msg + ') is for: ' + toName + ' not me (' + self.name + ')') 
+       else:
+          if msg == 'ACK': 
+             # print ( 'Found an ack...for me, check count' )
+             if info['id'] == self.count: 
+                # print ( 'Received an expected ack [' + str(self.count) + ']')
+                self.ack = True 
+                self.count = self.count + 1 
              else:
-                print ( 'RCVD: [' + data[3] + '] from ' + data[1] + ' I am ' + self.name + ' target: ' + target)
-                self.message = data[3]
-                # print ( 'This is for me, and not an ACK so ack it' )
-                self.acknowledge ( data[1], data[0] )
-                print ( 'Append ' + data[3] + ' to the message buffer ' ) 
-                self.push (data[3])
-          else: 
-             print ( 'This message is for: ' + target)
+                print ( 'Unexpected count: ' + str(info['id']) + ' still waiting....' )
+          else:
+             print ( 'RCVD ' + msg + ' from ' + fromName ) 
+             self.message = msg
+             # print ( 'This is for me, and not an ACK so ack it' )
+             self.acknowledge ( fromName, info['id'] )
+             print ( 'Append ' + msg + ' to the message buffer ' ) 
+             self.push (msg)
 
 if __name__ == "__main__":
-   if len(sys.argv) == 1:
-      print ( 'Usage: python3 Communications.py myId' )
+   import time
+   import pygame
+   pygame.init()
+   DISPLAYSURF = pygame.display.set_mode((10, 10)) # make a little screen so pygame will work
+      
+   userMessage = ''            
+   def keyboard (): 
+      global userMessage
+      value = ''
+      ev = pygame.event.get()
+      for event in ev:  
+         # print ( 'event.type: ' + str(event.type))
+         if event.type == pygame.KEYDOWN:
+            # print ( 'Got a keyddown' + str(event))
+            if (event.key >= 32): 
+               try: 
+                  userMessage = userMessage + chr(event.key)
+                  print ( chr (event.key ) ) 
+               except Exception as ex: 
+                  pass 
+            elif event.key == 8: 
+               if len(userMessage) > 0:
+                  userMessage = userMessage[0:len(userMessage) - 1]    
+                  print ( 'new userMessage: [' + userMessage + ']' )                            
+            elif event.key == 13:
+               print ( 'Got userMessage: [' + userMessage + ']' )
+               value = userMessage 
+               userMessage = '' 
+      return value
+      
+   if len(sys.argv) != 4:
+      print ( 'Usage: python3 Communications.py broker myName targetName' )
+      print ( 'For example to test rest of system: python3 Communications.py broker pi7 laptop' )
    else:
+      print ( 'To test, install mosquitto and then run mosquitto from the C:\Program Files\Mosquitto' )
       try: 
          topic = 'messages'
-         broker = '192.168.4.1' 
-         myName = sys.argv[1]
+         broker = sys.argv[1]
+         myName = sys.argv[2]
+         target = sys.argv[3]          
 
+         print ( 'I am ' + myName + ' talking to: ' + target ) 
          comm = Communications (topic,broker,myName);
          if comm.connectBroker(): 
-            print ( 'Enter target' )
-            target = input()
-            comm.setTarget (target) 
-            while True:   
-               print ( 'Enter message' )
-               message = input() 
-               comm.send(message )
+            comm.setTarget (target)            
+
+            while True:  
+               message = keyboard() 
+               if message != '':
+                  print ( 'handle message : [' + message + ']' )               
+                  #comm.send(message )
+                  if message == 'quit': 
+                     break
          else:
             print ( 'Could not initialize Communications')
             

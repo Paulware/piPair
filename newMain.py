@@ -39,7 +39,7 @@ pygame.display.set_caption('Flippy')
 utilities = Utilities (DISPLAYSURF, BIGFONT)
 pages = Pages(DISPLAYSURF, utilities, platform.system()=='Windows') 
 name = 'laptop' if (platform.system() == 'Windows') else 'pi7'
-comm = Communications ('messages', '192.168.4.1', name )
+comm = Communications ('messages', 'localhost', name ) # '192.168.4.1', name )
 comm.connectBroker()
 utilities.comm = comm
 pages.comm = comm

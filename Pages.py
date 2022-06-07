@@ -7,6 +7,8 @@ import select
 from TicTacToe import TicTacToe
 from Uno import Uno
 import platform
+from OptionBox import OptionBox
+from ChatPage import ChatPage
 
 '''
    Pages
@@ -143,6 +145,7 @@ class Pages():
      print ( "getInput: (typeInput,line,addr): (" + typeInput + ',' + line + ',' + addr + ')')
      return (typeInput,line,addr)         
                
+              
    # Show the chat page
    def chatPage(self,showOnly=False):
        BLACK = (0,0,0)
@@ -192,27 +195,35 @@ class Pages():
        self.utilities.showLabel ('Select a game to host (you move first)', 50, 20)    
        pygame.display.update()
        
-       quit = False
-       while not quit and not showOnly: 
-          ev = pygame.event.get()
-          for event in ev:
-            # Check if an ssid is clicked on
-            sprite = self.utilities.getSpriteClick (event, labels )
-      
-            if sprite != -1:
-               print ("Selected game: " + str(sprite))
-               if sprite == 0: 
-                  self.comm.send ( 'join tictactoe')
-                  ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
-                  ticTacToe.iAmHost = False
-                  ticTacToe.main()                   
-                  quit = True                   
-               elif sprite == 1:
-                  self.comm.send ( 'join uno')
-                  uno = Uno(self.displaySurface,self.utilities,self.comm)
-                  uno.iAmHost = False
-                  uno.main()                   
-                  quit = True                   
+       optionBox = OptionBox (['Chat', 'Tic', 'Un'], 100, 100)
+       selection = optionBox.getSelection()
+       print ( 'Got selection: ' + selection )
+
+       if selection == 'Chat': 
+          chat = ChatPage (self.displaySurface, self.utilities, self.comm)
+          chat.main()
+       else:       
+          quit = True 
+          while not quit and not showOnly: 
+             ev = pygame.event.get()
+             for event in ev:
+               # Check if an ssid is clicked on
+               sprite = self.utilities.getSpriteClick (event, labels )
+         
+               if sprite != -1:
+                  print ("Selected game: " + str(sprite))
+                  if sprite == 0: 
+                     self.comm.send ( 'join tictactoe')
+                     ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
+                     ticTacToe.iAmHost = False
+                     ticTacToe.main()                   
+                     quit = True                   
+                  elif sprite == 1:
+                     self.comm.send ( 'join uno')
+                     uno = Uno(self.displaySurface,self.utilities,self.comm)
+                     uno.iAmHost = False
+                     uno.main()                   
+                     quit = True                   
           '''
           if self.comm.isReady():
              print ( 'in joinGame, comm is ready' ) 
