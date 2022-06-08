@@ -113,7 +113,7 @@ class Pages():
      return (typeInput,data,addr)
        
        
-   def getInput (self, x,y):
+   def getChatInput (self, x,y):
      line = ''
      quit = False
      while not quit:
@@ -150,7 +150,7 @@ class Pages():
    def chatPage(self,showOnly=False):
        BLACK = (0,0,0)
        self.displaySurface.fill((BLACK))
-       self.utilities.showLabel ('Enter exit to quit', 50, 20)     
+       self.utilities.showLabel ('Enter exit to quit2', 50, 20)     
        self.utilities.showLabel ('Chat:', 250, 55)
        
        pygame.display.set_caption('Chatting with ' + self.comm.target)        
@@ -160,14 +160,16 @@ class Pages():
        y = 55
 
        while not quit and not showOnly:   
-          (typeInput,message,addr) = self.getInput (300,y)
+          (typeInput,message,addr) = self.getChatInput (300,y)
           if message.lower() == 'exit': 
              quit = True
              # utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
-          elif typeInput == 'key': 
+          elif typeInput == 'mqtt': 
              self.comm.send (message)
              y = y + 20  
-             
+          else:
+             if typeInput != '':
+                print ( 'Got a typeInput of [' + typeInput + ']' )             
              '''   
              elif typeInput == 'udp':
                 addr = str(addr[0])       
@@ -177,13 +179,13 @@ class Pages():
                 else:
                    showLine (addr + ':' + chat, 300, y)               
                    y = y + 20             
-             '''
+             
           
           elif typeInput == 'mqtt':
              print ( 'Chatpage got mqtt input: ' + message + ' from: ' + addr)
              self.utilities.showLine (addr + ':' + message, 300, y)
              y = y + 20
- 
+          '''  
    # Show the list the games and play a game when it is selected
    def joinGamePage(self,showOnly=False):       
        pygame.display.set_caption('Select a game')       

@@ -240,7 +240,7 @@ if __name__ == "__main__":
                message = keyboard() 
                if message != '':
                   print ( 'handle message : [' + message + ']' )               
-                  #comm.send(message )
+                  comm.send(message )
                   if message == 'quit': 
                      break
          else:

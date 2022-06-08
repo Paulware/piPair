@@ -17,7 +17,7 @@ class ChatPage ():
        print ( 'Show screen' )
        BLACK = (0,0,0)
        self.displaySurface.fill((BLACK))
-       self.utilities.showLabel ('Enter exit to quit', 50, 20)     
+       self.utilities.showLabel ('Enter exit to quit1', 50, 20)     
        self.utilities.showLabel ('Chat:', 250, 55)
        
        pygame.display.set_caption('Chatting with ' + self.comm.target)        
