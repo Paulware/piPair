@@ -138,6 +138,7 @@ class Utilities ():
      while data == '':
        if self.comm != None: 
           if not self.comm.empty(): 
+             print ( 'Communications is not empty' ) 
              data = self.comm.pop()
              typeInput = 'mqtt'
              print ( 'Utilities, comm.pop: ' + data) 
