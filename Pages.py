@@ -165,7 +165,8 @@ class Pages():
              quit = True
              # utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
           elif typeInput == 'mqtt': 
-             self.comm.send (message)
+             showLine (addr + ':' + message, 300, y)               
+             print ( 'Received mqtt input: [' + message + ']' )
              y = y + 20  
           else:
              if typeInput != '':
@@ -281,7 +282,8 @@ class Pages():
             if sprite != -1:          
                print ("Selected game: " + str(sprite)) 
                if sprite == 0: 
-                  self.chatPage()
+                  chatPage = ChatPage (self.displaySurface,self.utilities,self.comm)
+                  chatPage.main()
                elif sprite == 1:
                   ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
                   ticTacToe.main()                                    

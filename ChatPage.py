@@ -2,6 +2,7 @@ import inspect
 import pygame
 
 WHITE      = (255, 255, 255)
+BLACK      = ( 0,0,0 )
 
 class ChatPage (): 
     def __init__ (self, DISPLAYSURF, utilities, comm ):
@@ -10,48 +11,75 @@ class ChatPage ():
        self.displaySurface = DISPLAYSURF
        self.utilities   = utilities       
        print ( 'Initialization of Chat' )
-       self.iAmHost     = True        
-       
+       self.iAmHost     = True  
+       self.DISPLAYWIDTH  =800
+       self.DISPLAYHEIGHT = 600
+
+    def getChatInput (self, x,y):
+       line = ''
+       quit = False
+       while not quit:
+          (typeInput,data,addr) = self.utilities.getKeyOrUdp()
+          if typeInput == 'key': 
+             if data == chr(13):
+                quit = True
+             else:
+                if data == chr(8):
+                   print ( "backspace detected")
+                   if len(line) > 0:
+                      lastCh = line[len(line)-1]
+                      x = x - self.utilities.chOffset (lastCh) #Todo need to get lastCh from 
+                      self.utilities.showCh (' ', x, y)
+                      self.utilities.showCh (' ', x+4, y)
+                      self.utilities.showCh (' ', x+8, y)
+                      line = line[:len(line)-1] 
+                else:
+                   line = line + data
+                   ch = data
+                   self.utilities.showCh (ch, x, y)           
+                   x = x + self.utilities.chOffset(ch)
+          elif typeInput == 'mqtt':
+             line = data
+             quit = True
+             print ( 'got some mqtt data: ' + data)
+          print ( 'Nothing returned' )
+             
+       print ( "getInput: (typeInput,line,addr): (" + typeInput + ',' + line + ',' + addr + ')')
+       return (typeInput,line,addr)         
+                 
+
+    def showLine ( self, line, x,y ):
+       height = self.DISPLAYHEIGHT - 23
+       pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
+       pygame.display.update()
+       for ch in line:
+          self.showCh (ch, x, y)
+          x = x + self.chOffset (ch)
+                
     def main (self):
-       # Show screen 
-       print ( 'Show screen' )
        BLACK = (0,0,0)
        self.displaySurface.fill((BLACK))
-       self.utilities.showLabel ('Enter exit to quit1', 50, 20)     
+       self.utilities.showLabel ('Enter exit to quit2', 50, 20)     
        self.utilities.showLabel ('Chat:', 250, 55)
        
        pygame.display.set_caption('Chatting with ' + self.comm.target)        
        pygame.display.update()  
-     
-       
-       quit = False  
-       joinTimeout = 0    
-       print ( 'Start ChatPage while loop' )
-       myMove = True 
-       while not quit: 
-          (typeInput,message,addr) = self.utilities.getKeyOrUdp()  
 
+       quit = False
+       y = 55
+
+       while not quit and not showOnly:   
+          (typeInput,message,addr) = self.getChatInput (300,y)
           if message.lower() == 'exit': 
              quit = True
              # utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
-          elif typeInput == 'key': 
-             self.comm.send (message)
+          elif typeInput == 'mqtt': 
+             self.showLine (addr + ':' + message, 300, y)               
+             print ( 'Received mqtt input: [' + message + ']' )
              y = y + 20  
-             
-             '''   
-             elif typeInput == 'udp':
-                addr = str(addr[0])       
-                print ('Got udp ' + chat + ' from: ' + addr )
-                if addr == socket.gethostbyname(socket.gethostname()): 
-                   print ('Ignore this message because it is from myself')
-                else:
-                   showLine (addr + ':' + chat, 300, y)               
-                   y = y + 20             
-             '''
-          
-          elif typeInput == 'mqtt':
-             print ( 'Chatpage got mqtt input: ' + message + ' from: ' + addr)
-             self.utilities.showLine (addr + ':' + message, 300, y)
+          else:
+             if typeInput != '':
+                print ( 'Got a typeInput of [' + typeInput + ']' )  
               
        print ( 'Go back to the main page...' )
  

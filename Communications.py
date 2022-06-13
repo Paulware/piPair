@@ -193,7 +193,7 @@ if __name__ == "__main__":
    import time
    import pygame
    pygame.init()
-   DISPLAYSURF = pygame.display.set_mode((10, 10)) # make a little screen so pygame will work
+   DISPLAYSURF = pygame.display.set_mode((200, 70)) # make a little screen so pygame will work
       
    userMessage = ''            
    def keyboard (): 
@@ -221,8 +221,9 @@ if __name__ == "__main__":
       return value
       
    if len(sys.argv) != 4:
+      print ( 'Note mosquitto should be installed and running' )
       print ( 'Usage: python3 Communications.py broker myName targetName' )
-      print ( 'For example to test rest of system: python3 Communications.py broker pi7 laptop' )
+      print ( 'python3 Communications.py localhost pi7 laptop' )
    else:
       print ( 'To test, install mosquitto and then run mosquitto from the C:\Program Files\Mosquitto' )
       try: 

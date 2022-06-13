@@ -1,0 +1,2 @@
+cd mosquitto
+mosquitto.exe
