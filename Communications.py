@@ -1,4 +1,9 @@
-import paho.mqtt.client as mqtt
+try: 
+   import paho.mqtt.client as mqtt
+except Exception as ex:
+   print ( 'pip install paho-mqtt' )
+   exit(1)
+   
 import threading 
 import time
 import sys
@@ -45,14 +50,15 @@ class Communications:
                break
             else:
                print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
-               
-                     
+                                    
    def empty (self): 
       return (self.head == self.tail)
 
    def push (self,value): 
+      print ( 'self.buffer[' + str(self.head) + '] = ' + value )
       self.buffer[self.head] = value
       self.head = (self.head + 1) % 10
+      print ( 'self.head = ' + str(self.head) ) 
   
    def peek (self):
       print ( ' in peek, self.tail: ' + str(self.tail) )
@@ -114,8 +120,8 @@ class Communications:
             exit()         
       return ack
    
-   def publish (self,destination,message):
-      message = '{\'id\':' + str(self.count) + ',\'from\':\'' + self.name + '\',\'to\':\'' + destination + \
+   def publish (self,destination,message,id):
+      message = '{\'id\':' + str(id) + ',\'from\':\'' + self.name + '\',\'to\':\'' + destination + \
                 '\',\'message\':\'' + message + '\'}'  
       print ( 'Publish [topic,payload]: [' + self.topic + ',' + message + ']' )
       self.client.publish(self.topic, payload=message, qos=0, retain=False)
@@ -123,8 +129,9 @@ class Communications:
          
    def send ( self, message):
       while True: 
-         self.publish (self.target, message)
+         self.publish (self.target, message, self.count)         
          if self.waitAck (): 
+            self.count = self.count + 1 
             break
          else:
             print ( 'Re publish message: ' + message)
@@ -144,13 +151,13 @@ class Communications:
       while not self.connected: 
          time.sleep (0.1) 
 
-   def acknowledge ( self, destination, count ):   
-      self.publish (destination, 'ACK')   
+   def acknowledge ( self, destination):   
+      self.publish (destination, 'ACK', self.count)  # self.count is probably not correct here.  Don't care?   
 
    def disconnect (self): 
       print ( 'Disconnecting.' )         
       try: 
-         self.publish (self.target, 'disconnect yo')
+         self.publish (self.target, 'disconnect yo', self.count)
          self.client.disconnect();
       except Exception as ex:
          print ( 'Could not disconnect because: ' + str(ex)) 
@@ -175,50 +182,34 @@ class Communications:
        else:
           if msg == 'ACK': 
              # print ( 'Found an ack...for me, check count' )
-             if info['id'] == self.count: 
-                # print ( 'Received an expected ack [' + str(self.count) + ']')
-                self.ack = True 
-                self.count = self.count + 1 
-             else:
-                print ( 'Unexpected count: ' + str(info['id']) + ' still waiting....' )
+             #if info['id'] == self.count: 
+             #   # print ( 'Received an expected ack [' + str(self.count) + ']')
+             self.ack = True 
+             self.count = self.count + 1 
+             #else:
+             #   print ( 'Unexpected count: ' + str(info['id']) + ' still waiting....' )
           else:
              print ( 'RCVD ' + msg + ' from ' + fromName ) 
              self.message = msg
              # print ( 'This is for me, and not an ACK so ack it' )
-             self.acknowledge ( fromName, info['id'] )
+             self.acknowledge ( fromName)
              print ( 'Append ' + msg + ' to the message buffer ' ) 
              self.push (msg)
 
 if __name__ == "__main__":
    import time
-   import pygame
+   try: 
+      import pygame
+   except Exception as ex: 
+      print ( 'pip install pygame' )
+      exit(1)
+   from Utilities import Utilities
    pygame.init()
    DISPLAYSURF = pygame.display.set_mode((200, 70)) # make a little screen so pygame will work
-      
+   BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+   utilities = Utilities(DISPLAYSURF, BIGFONT)  
    userMessage = ''            
-   def keyboard (): 
-      global userMessage
-      value = ''
-      ev = pygame.event.get()
-      for event in ev:  
-         # print ( 'event.type: ' + str(event.type))
-         if event.type == pygame.KEYDOWN:
-            # print ( 'Got a keyddown' + str(event))
-            if (event.key >= 32): 
-               try: 
-                  userMessage = userMessage + chr(event.key)
-                  print ( chr (event.key ) ) 
-               except Exception as ex: 
-                  pass 
-            elif event.key == 8: 
-               if len(userMessage) > 0:
-                  userMessage = userMessage[0:len(userMessage) - 1]    
-                  print ( 'new userMessage: [' + userMessage + ']' )                            
-            elif event.key == 13:
-               print ( 'Got userMessage: [' + userMessage + ']' )
-               value = userMessage 
-               userMessage = '' 
-      return value
+
       
    if len(sys.argv) != 4:
       print ( 'Note mosquitto should be installed and running' )
@@ -238,12 +229,13 @@ if __name__ == "__main__":
             comm.setTarget (target)            
 
             while True:  
-               message = keyboard() 
-               if message != '':
-                  print ( 'handle message : [' + message + ']' )               
-                  comm.send(message )
-                  if message == 'quit': 
+               (event,data,addr) = utilities.getKeyOrMqtt()
+               if utilities.message != '': 
+                  print ( 'handle message : [' + utilities.message + ']' )               
+                  comm.send(utilities.message )
+                  if utilities.message == 'quit': 
                      break
+                  utilities.message = ''
          else:
             print ( 'Could not initialize Communications')
             

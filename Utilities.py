@@ -20,7 +20,9 @@ class Utilities ():
        self.BROWN      = (174,  94,   0)
        self.RED        = (255,   0,   0) 
        self.comm       = None    
-       self.lastType   = 0        
+       self.lastType   = 0   
+       self.message    = ''  
+       self.msg        = ''       
       
    def showSsids(self,ssids):
        BLACK      = (0,   0,   0)
@@ -127,7 +129,7 @@ class Utilities ():
                found = True 
       print ( 'Done waiting for click' )    
       
-   def getKeyOrUdp(self, blocking=True):
+   def getKeyOrMqtt(self, blocking=True):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', \
                    '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
      key = None
@@ -150,17 +152,29 @@ class Utilities ():
              if (event.key == 303) or (event.key == 304): #shift
                 upperCase = True
              else:
-                key = chr(event.key)
-                if upperCase: 
-                   if key in shiftKeys.keys():
-                      key = shiftKeys[key]
-                   else:                     
-                      key = key.upper()
-                
-                typeInput = pygame.KEYDOWN
-                data=key
+                try: 
+                   key = chr(event.key)
+                   if upperCase: 
+                      if key in shiftKeys.keys():
+                         key = shiftKeys[key]
+                      else:                     
+                         key = key.upper()
+                   print ( 'event.key: ' + str(event.key)) 
+                   if (event.key == 13): 
+                      self.message = self.msg
+                      self.msg = ''
+                   elif (event.key == 8): #Backspace
+                      if len(self.msg) > 0: 
+                         self.msg = self.msg [0:len(self.msg)-1]
+                         print ( 'New self.msg: [' + self.msg + ']' )
+                   else:
+                      self.msg = self.msg + key 
+                   typeInput = pygame.KEYDOWN
+                   data=key
+                except Exception as ex: 
+                   print ( 'getKeyOrMqtt, ignore this: ' + str(ex) ) 
           elif self.isMouseClick (event): 
-             typeInput = event
+             typeInput = pygame.MOUSEBUTTONUP
              data = pygame.mouse.get_pos()
           else: 
              pass 
@@ -168,7 +182,7 @@ class Utilities ():
  
        if not blocking: 
           break  
-     print ( '[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + str(addr) + ']' )           
+     print ( 'getKeyOrMqtt[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + str(addr) + ']' )           
      return (typeInput,data,addr)
 
    def updateWpaSupplicant (self, ssid, password):
@@ -243,7 +257,7 @@ class Utilities ():
         x = x + self.chOffset (ch)
         
    def read (self, blocking=True): 
-     (typeInput,data,addr) = self.getKeyOrUdp(blocking)
+     (typeInput,data,addr) = self.getKeyOrMqtt(blocking)
      return (typeInput,data,addr)
      
    # event.type == 1025 for button down 
@@ -301,7 +315,7 @@ class Utilities ():
      line = ''
      quit = False
      while not quit:
-        (typeInput,data,addr) = self.getKeyOrUdp()
+        (typeInput,data,addr) = self.getKeyOrMqtt()
         if typeInput == 'key': 
            if data == chr(13):
               quit = True
@@ -320,7 +334,9 @@ class Utilities ():
                  ch = data
                  self.showCh (ch, x, y)           
                  x = x + self.chOffset(ch)
-        elif typeInput == 'udp':
+        elif typeInput == 'mqtt':
+           print ( 'get_input, handle mqtt' )
+           exit(1)
            line = data
            quit = True
         elif typeInput == 'tcp':
@@ -365,22 +381,25 @@ if __name__ == "__main__":
    utilities = Utilities(DISPLAYSURF, BIGFONT)
    from Communications import Communications
    
-   comm = Communications ('messages', '192.168.4.1', 'laptop')
-   comm.connect()
-   utilities.comm = comm
+   comm = Communications ('messages', 'localhost', 'laptop')
+   if comm.connectBroker():
+      comm.setTarget ( 'pi7' )
+      utilities.comm = comm
 
-   sprites = utilities.showImages (['quit.jpg'], [(400,500)] )      
-   pygame.display.update() 
-   
-   quit = False
-   while not quit:
-      (event,data,addr) = utilities.getKeyOrUdp()
-      print ( 'Got an input of: ' + str(event)) 
+      sprites = utilities.showImages (['quit.jpg'], [(400,500)] )      
+      pygame.display.update   () 
       
-      # Use data above to determine sprite click?          
-      sprite = utilities.getSpriteClick (event, sprites ) 
-      if sprite != -1: # Quit is the only other option           
-         print ("Selected command: " + str(sprite))
-         quit = True       
+      quit = False
+      while not quit:
+         (event,data,addr) = utilities.getKeyOrMqtt()
+         if utilities.message != '': 
+            print ( '[message]: [' + utilities.message + ']' )
+            utilities.message = ''
+         
+         # Use data above to determine sprite click?          
+         sprite = utilities.getSpriteClick (event, sprites ) 
+         if sprite != -1: # Quit is the only other option           
+            print ("Selected command: " + str(sprite))
+            quit = True       
    
    comm.disconnect()

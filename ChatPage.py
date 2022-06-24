@@ -1,5 +1,6 @@
 import inspect
 import pygame
+from TextBox import TextBox
 
 WHITE      = (255, 255, 255)
 BLACK      = ( 0,0,0 )
@@ -13,67 +14,103 @@ class ChatPage ():
        print ( 'Initialization of Chat' )
        self.iAmHost     = True  
        self.DISPLAYWIDTH  =800
-       self.DISPLAYHEIGHT = 600
-
-    def getChatInput (self, x,y):
-       line = ''
-       quit = False
-       while not quit:
-          (typeInput,data,addr) = self.utilities.getKeyOrUdp()
-          if typeInput == 'key': 
-             if data == chr(13):
-                quit = True
-             else:
-                if data == chr(8):
-                   print ( "backspace detected")
-                   if len(line) > 0:
-                      lastCh = line[len(line)-1]
-                      x = x - self.utilities.chOffset (lastCh) #Todo need to get lastCh from 
-                      self.utilities.showCh (' ', x, y)
-                      self.utilities.showCh (' ', x+4, y)
-                      self.utilities.showCh (' ', x+8, y)
-                      line = line[:len(line)-1] 
-                else:
-                   line = line + data
-                   ch = data
-                   self.utilities.showCh (ch, x, y)           
-                   x = x + self.utilities.chOffset(ch)
-          elif typeInput == 'mqtt':
-             line = data
-             quit = True
-             print ( 'got some mqtt data: ' + data)
-          else:
-             print ( 'typeInput: ' + typeInput )
-          print ( 'Nothing returned' )
-             
-       print ( "getInput: (typeInput,line,addr): (" + typeInput + ',' + line + ',' + addr + ')')
-       return (typeInput,line,addr)         
+       self.DISPLAYHEIGHT = 600      
                 
     def main (self):
        BLACK = (0,0,0)
        self.displaySurface.fill((BLACK))
-       self.utilities.showLabel ('Enter exit to quit2', 50, 20)     
-       self.utilities.showLabel ('Chat:', 250, 55)
-       
+       line1 = TextBox('Enter exit to quit')
+       pos = line1.draw()
+       line2 = TextBox('Chat:')
+       pos = line2.draw(pos)       
+      
        pygame.display.set_caption('Chatting with ' + self.comm.target)        
        pygame.display.update()  
 
        quit = False
-       y = 55
-
+       lastMsg = ''
        while not quit:   
-          (typeInput,message,addr) = self.getChatInput (300,y)
+          (typeInput,message,addr) = self.utilities.getKeyOrMqtt()
+          print ( 'typeInput: [' + str(typeInput) +']') 
+          #if typeInput == pygame.MOUSEBUTTONUP: 
+          #   break       
           if message.lower() == 'exit': 
              quit = True
-             # utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
+             # self.utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
           elif typeInput == 'mqtt': 
-             self.utilities.showLine (addr + ':' + message, 300, y)               
-             print ( 'Received mqtt input: [' + message + ']' )
-             y = y + 20  
-          else:
-             if typeInput != '':
-                print ( 'Got a typeInput of [' + typeInput + ']' )  
-             else:
-                print ( 'Got a nothing typeInput ' )             
+             line = TextBox (addr + ':' + message)
+             pos = line.draw(pos)             
+             print ( 'Received mqtt input: [' + message + ']' )  
+             pygame.display.flip()             
+          elif self.utilities.msg != lastMsg: 
+             if not line is None: 
+                line.clearLast()                  
+             lastMsg = self.utilities.msg             
+             line = TextBox (lastMsg)
+             line.draw (pos)
+             pygame.display.flip()
+             
        print ( 'Go back to the main page...' )
- 
+if __name__ == '__main__':
+   from Utilities import Utilities
+   import platform
+   from Communications import Communications
+   pygame.init()
+     
+   DISPLAYSURF = pygame.display.set_mode((1200, 800))
+   FONT = pygame.font.Font('freesansbold.ttf', 16)
+   BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+   pygame.display.set_caption('Flippy')
+   utilities = Utilities (DISPLAYSURF, BIGFONT)
+   name = 'laptop' if (platform.system() == 'Windows') else 'pi7'
+   target = 'pi7' if (platform.system() == 'Windows') else 'laptop'
+   comm = Communications ('messages', 'localhost', name ) 
+   comm.connectBroker()
+   comm.setTarget (target)
+   utilities.comm = comm
+         
+   line = TextBox('Enter exit to quit')
+   pos = line.draw()
+   line = TextBox('Chat:')
+   pos = line.draw(pos) 
+   
+   pygame.display.flip()
+   run = True
+   lastMsg = ''
+   line = None
+   while run:
+      (event,data,addr) = utilities.getKeyOrMqtt()
+      print ( '[event,data,addr]: [' + str(event) +',' + str(data) + ',' + str(addr) + ']') 
+      if event == pygame.MOUSEBUTTONUP: 
+         break
+      elif event == 'mqtt':
+         print ( 'Write out ' + data + ' to: ' + str(pos) ) 
+         line = TextBox(data)
+         pos = line.draw (pos)
+         pygame.display.flip()
+         if data == 'exit': 
+            break
+         line = None         
+         
+      if utilities.msg != lastMsg:
+         if not line is None:
+            line.clearLast()
+         lastMsg = utilities.msg
+         line = TextBox (lastMsg)
+         line.draw (pos)
+         pygame.display.flip()
+         
+      if utilities.message != '':
+         if utilities.message == 'exit':
+            break
+         else:
+            print ( '[message]: [' + utilities.message + ']' )
+            line = TextBox (utilities.message)
+            pos = line.draw(pos)
+            pygame.display.flip()
+            comm.send(utilities.message )
+            utilities.message = ''
+
+    
+   comm.disconnect()    
+   pygame.quit()
