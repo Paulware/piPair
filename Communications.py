@@ -82,10 +82,13 @@ class Communications:
       ok = True 
       if not self.debug: 
          try:
-            self.client.connect(self.broker, 1883, 60)
+            print ( 'Connect to: ' + self.broker )
+            self.client.connect(self.broker, 1883, 30)
          except Exception as ex:
             print ( 'Could not connect to ' + self.broker + '  because: ' + str(ex))
+            print ( 'Make sure that the mosquito broker is running...' )
             ok = False 
+            exit(1)
       
          self.thread = threading.Thread(target=self.client.loop_forever, args=())
          self.thread.start()

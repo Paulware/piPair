@@ -19,10 +19,11 @@ class ChatPage ():
     def main (self):
        BLACK = (0,0,0)
        self.displaySurface.fill((BLACK))
-       line1 = TextBox('Enter exit to quit')
-       pos = line1.draw()
-       line2 = TextBox('Chat:')
-       pos = line2.draw(pos)       
+       
+       line = TextBox('Enter exit to quit')
+       pos = line.draw()
+       line = TextBox('Chat:')
+       pos = line.draw(pos)        
       
        pygame.display.set_caption('Chatting with ' + self.comm.target)        
        pygame.display.update()  
@@ -30,25 +31,37 @@ class ChatPage ():
        quit = False
        lastMsg = ''
        while not quit:   
-          (typeInput,message,addr) = self.utilities.getKeyOrMqtt()
-          print ( 'typeInput: [' + str(typeInput) +']') 
-          #if typeInput == pygame.MOUSEBUTTONUP: 
-          #   break       
-          if message.lower() == 'exit': 
-             quit = True
-             # self.utilities.udpBroadcast (client, 'Player left chat', 3333) # key input          
-          elif typeInput == 'mqtt': 
-             line = TextBox (addr + ':' + message)
-             pos = line.draw(pos)             
-             print ( 'Received mqtt input: [' + message + ']' )  
-             pygame.display.flip()             
-          elif self.utilities.msg != lastMsg: 
-             if not line is None: 
-                line.clearLast()                  
-             lastMsg = self.utilities.msg             
-             line = TextBox (lastMsg)
-             line.draw (pos)
+          (event,data,addr) = self.utilities.getKeyOrMqtt()
+          print ( '[event,data,addr]: [' + str(event) +',' + str(data) + ',' + str(addr) + ']') 
+          if event == pygame.MOUSEBUTTONUP: 
+             break
+          elif event == 'mqtt':
+             print ( 'Write out ' + data + ' to: ' + str(pos) ) 
+             line = TextBox(data)
+             pos = line.draw (pos)
              pygame.display.flip()
+             if data == 'exit': 
+                break
+             line = None         
+             
+          if self.utilities.msg != lastMsg:
+             if not line is None:
+                line.clearLast()
+                line = TextBox (self.utilities.msg)
+                line.draw (pos)
+             lastMsg = self.utilities.msg
+             pygame.display.flip()
+             
+          if self.utilities.message != '':
+             if self.utilities.message == 'exit':
+                break
+             else:
+                print ( '[message]: [' + self.utilities.message + ']' )
+                line = TextBox (self.utilities.message)
+                pos = line.draw(pos)
+                pygame.display.flip()
+                self.comm.send(self.utilities.message )
+                self.utilities.message = ''           
              
        print ( 'Go back to the main page...' )
 if __name__ == '__main__':
@@ -95,9 +108,9 @@ if __name__ == '__main__':
       if utilities.msg != lastMsg:
          if not line is None:
             line.clearLast()
+            line = TextBox (utilities.msg)
+            line.draw (pos)
          lastMsg = utilities.msg
-         line = TextBox (lastMsg)
-         line.draw (pos)
          pygame.display.flip()
          
       if utilities.message != '':

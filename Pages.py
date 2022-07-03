@@ -171,22 +171,7 @@ class Pages():
           else:
              if typeInput != '':
                 print ( 'Got a typeInput of [' + typeInput + ']' )             
-             '''   
-             elif typeInput == 'udp':
-                addr = str(addr[0])       
-                print ('Got udp ' + chat + ' from: ' + addr )
-                if addr == socket.gethostbyname(socket.gethostname()): 
-                   print ('Ignore this message because it is from myself')
-                else:
-                   showLine (addr + ':' + chat, 300, y)               
-                   y = y + 20             
-             
-          
-          elif typeInput == 'mqtt':
-             print ( 'Chatpage got mqtt input: ' + message + ' from: ' + addr)
-             self.utilities.showLine (addr + ':' + message, 300, y)
-             y = y + 20
-          '''  
+ 
    # Show the list the games and play a game when it is selected
    def joinGamePage(self,showOnly=False):       
        pygame.display.set_caption('Select a game')       
