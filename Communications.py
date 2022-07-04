@@ -33,14 +33,16 @@ class Communications:
       
       self.debug = False 
       
-   def waitFor ( self, message):    
+   def waitFor ( self, message):
+      print ( 'Waiting for: [' + message + ']' )   
       while True: 
          if not self.empty(): 
             msg = self.pop()
             if msg.find (message) > -1: 
                print ( 'comm.waitFor found: ' + message + ' in ' + msg)
                break
-               
+      print ( 'Received: [' + message + ']' ) 
+      
    def waitForPeek ( self, message):    
       while True: 
          if not self.empty(): 

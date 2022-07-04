@@ -26,7 +26,12 @@ class TextBox():
 
     def clearLast (self): 
         surf = pygame.display.get_surface()
+        print ( 'Clearing with black: ' + str(self.rect))
         pygame.draw.rect(surf, (0, 0, 0), self.rect, 0)
+        #pygame.draw.rect(surf, (0,0,0), pygame.Rect ( 0, 0, 300, 200 ))
+        pygame.display.flip()
+        pygame.event.pump()         
+ 
         
     def length(self):
         return len (self.text)

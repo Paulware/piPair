@@ -3,6 +3,7 @@ import pygame
 import Utilities
 import time
 import Communications
+from TextBox import TextBox
 
 # Show the Tic-Tac-Toe Pages
 BLACK = (  0,  0,  0)
@@ -95,9 +96,17 @@ class TicTacToe ():
        print ( 'showStatus' )
        
        if self.iAmHost: 
-          self.utilities.showStatus ( "Waiting for player to join")
+          line = TextBox('Waiting for player to join')
+          pos = line.draw()       
+          # self.utilities.showStatus ( "Waiting for player to join")
           pygame.display.update()
           self.comm.waitFor ( 'join tictactoe')
+          line.clearLast()
+
+          line = TextBox ( 'Ready' )
+          pos = line.draw()
+          pygame.display.update()
+          pygame.event.pump()          
        else: # Host goes first...
           self.utilities.showStatus ( "Waiting for host to move")
           pygame.display.update()
@@ -108,8 +117,8 @@ class TicTacToe ():
        print ( 'Start while loop' )
        myMove = True 
        while not quit and not self.gameOverXY(): 
-          (event,data,addr) = self.utilities.getKeyOrUdp()
-          if self.utilities.isMouseClick (event):           
+          (event,data,addr) = self.utilities.getKeyOrMqtt()       
+          if event == pygame.MOUSEBUTTONUP:           
              pos = data
              x = int(pos[0] / 100) - 2
              y = int(pos[1] / 100) - 1
