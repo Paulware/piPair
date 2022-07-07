@@ -28,10 +28,16 @@ class TextBox():
         surf = pygame.display.get_surface()
         print ( 'Clearing with black: ' + str(self.rect))
         pygame.draw.rect(surf, (0, 0, 0), self.rect, 0)
-        #pygame.draw.rect(surf, (0,0,0), pygame.Rect ( 0, 0, 300, 200 ))
         pygame.display.flip()
         pygame.event.pump()         
  
+    def clearLine (self): 
+        width,height = self.font.size(self.text)
+        width = pygame.display.get_surface().get_width() - self.x
+        rect = pygame.Rect (self.x, self.y-3, width, height+6)
+        pygame.draw.rect (pygame.display.get_surface(), (0,0,0), rect );
+        pygame.display.flip()
+        pygame.event.pump()        
         
     def length(self):
         return len (self.text)

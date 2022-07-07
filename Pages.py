@@ -177,19 +177,23 @@ class Pages():
        pygame.display.set_caption('Select a game')       
        BLACK = (0,0,0)       
        self.displaySurface.fill((BLACK))
-       games = ['Tic Tac Toe', 'Uno']       
-       labels = self.utilities.showSsids(games)    
+       #games = ['Tic Tac Toe', 'Uno']       
+       #labels = self.utilities.showSsids(games)    
        sprites = self.utilities.showImages (['quit.jpg'], [(400,400)] )       
-       self.utilities.showLabel ('Select a game to host (you move first)', 50, 20)    
+       self.utilities.showLabel ('Select a game to join (you move second)', 50, 20)    
        pygame.display.update()
        
-       optionBox = OptionBox (['Chat', 'Tic', 'Un'], 100, 100)
+       optionBox = OptionBox (['Chat', 'TicTacToe', 'Uno'], 100, 100)
        selection = optionBox.getSelection()
        print ( 'Got selection: ' + selection )
 
        if selection == 'Chat': 
           chat = ChatPage (self.displaySurface, self.utilities, self.comm)
           chat.main()
+       elif selection == 'TicTacToe': 
+          ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
+          ticTacToe.iAmHost = False
+          ticTacToe.main()      
        else:       
           quit = True 
           while not quit and not showOnly: 

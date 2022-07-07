@@ -68,14 +68,21 @@ class TicTacToe ():
              break
        return over
     
+    def showStatus (self, message): 
+       line = TextBox(message)
+       line.clearLine()
+       pos = line.draw()
+       pygame.display.update()
+       pygame.event.pump()        
+    
     def gameOverXY(self): 
        gOver = False 
        if self.gameOver ('x'): 
-          self.utilities.showStatus ( "X has won")
+          self.showStatus ( "X has won")
           self.utilities.waitForClick()
           gOver = True
        elif self.gameOver ('o'): 
-          self.utilities.showStatus ( "O has won")
+          self.showStatus ( "O has won")
           self.utilities.waitForClick()
           gOver = True 
        return gOver 
@@ -98,7 +105,7 @@ class TicTacToe ():
        if self.iAmHost: 
           line = TextBox('Waiting for player to join')
           pos = line.draw()       
-          # self.utilities.showStatus ( "Waiting for player to join")
+          # self.showStatus ( "Waiting for player to join")
           pygame.display.update()
           self.comm.waitFor ( 'join tictactoe')
           line.clearLast()
@@ -108,7 +115,7 @@ class TicTacToe ():
           pygame.display.update()
           pygame.event.pump()          
        else: # Host goes first...
-          self.utilities.showStatus ( "Waiting for host to move")
+          self.showStatus ( "Waiting for host to move")
           pygame.display.update()
           self.comm.waitForPeek ( 'move tictactoe')
        
@@ -124,10 +131,10 @@ class TicTacToe ():
              y = int(pos[1] / 100) - 1
              if (x >=0) and (y >=0) and (x <=2) and (y <= 2):
                 if not myMove: 
-                   self.utilities.showStatus ( 'Not your move' )
+                   self.showStatus ( 'Not your move' )
                 else:   
                    if (self.taken[x][y] =='x') or (self.taken[x][y]=='o'): 
-                      self.utilities.showStatus ( "Square already taken")
+                      self.showStatus ( "Square already taken")
                    else:
                       print ('pos: [' + str(x) + ',' + str(y) + ']' ) 
                       if self.drawingX: 
@@ -145,6 +152,9 @@ class TicTacToe ():
              print ("Selected command: " + str(sprite))
              quit = True    
                   
+          # Waiting for opponent move in the format:
+          # move tictactoe X Y 
+          # X is in range 0..2, Y is in range 0..2          
           elif event == 'mqtt':
              if data.find ( 'move tictactoe') > -1: # Opponent has moved 
                 move = data.split ( ' ' )
