@@ -12,6 +12,9 @@ class SubDeck ():
    def __init__ (self, deckBasis=None, numCards=0, width=0, height=0, startXY=(0,0), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
       print ( 'SubDeck.init' )
+      if displaySurface is None: 
+         print ( 'You should specify displaySurface when subdeck is created' )
+         exit (1)
       self.width = width
       self.height = height 
       self.selected = -1
@@ -175,9 +178,11 @@ class SubDeck ():
 
    # Show the sprites at specified start position and update the location of each   
    def showSprites (self): 
+      debugIt = False
       x = self.startX
-      y = self.startY       
-      #print ('showSprites, self.data: ' + str(self.data)) 
+      y = self.startY
+      if debugIt:         
+         print ('showSprites, self.data: ' + str(self.data)) 
 
       index = 0      
       for sprite in self.data:

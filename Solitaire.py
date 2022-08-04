@@ -168,7 +168,7 @@ class Solitaire ():
                       elif selection == 'Show':
                          deck.unhide(index)
           
-    def main (self):
+    def main (self): # This main is for pages.py to call, it can probably be deleted
        self.DISPLAYSURF.fill((BLACK))
        pygame.display.set_caption('Play Uno')        
        

@@ -103,14 +103,16 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52)   
+   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53, 52)   
    
-   hand = SubDeck (deck,7)
+   hand = SubDeck (deck,7, displaySurface = displaySurface)
    # hand.showSprites(100,100,50,100)   
    window = pygame.display.get_surface()
    
    while True: # len(deck.sprites) > 0:
-      hand.showSprites(100,100,80,120,displaySurface) # Show and set their x/y locations
+      hand.showSprites() # Show and set their x/y locations
+      pygame.display.flip()
+      pygame.event.pump() 
       (typeInput,data,addr) = utilities.read()
       if utilities.isMouseClick (typeInput): 
          pos = pygame.mouse.get_pos()
