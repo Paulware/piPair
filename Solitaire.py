@@ -22,6 +22,7 @@ class Solitaire ():
           print ( 'Could not find coverImage for deck...' )
           exit(1)          
 
+       # Deal out the 7 columns of cards 
        x = 100        
        decks=[]
        columns = 7
@@ -64,6 +65,7 @@ class Solitaire ():
           events = utilities.readOne()
           for event in events:
              (typeInput,data,addr) = event
+             print ( 'typeInput: ' + str(typeInput) ) 
              if typeInput == 'move':
                 mousePos = data
              if dragDeck != None:

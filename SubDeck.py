@@ -9,7 +9,7 @@ import pygame
 # plus display capability
 class SubDeck (): 
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=0, height=0, startXY=(0,0), \
+   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
       print ( 'SubDeck.init' )
       if displaySurface is None: 
@@ -92,16 +92,25 @@ class SubDeck ():
          card.drag = False 
    
    def findSprite (self,x,y):
+      debugIt = True 
       index = 0 
       found = -1
-      #print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
+      if debugIt: 
+         print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
       for sprite in self.data: 
-         #print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
+         if debugIt:
+            print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
+            width = sprite.image.get_width()
+            print ( 'width: ' + str(width) ) 
+            height = sprite.image.get_height()
+            print ( 'height: ' + str(height) )             
          if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
-             (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))): 
-            #print ( 'Found sprite at index: ' + str(index))
+             (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))):
+            if debugIt:             
+               print ( 'Found sprite at index: ' + str(index))
             found = index 
          index = index + 1
+      print ( 'Done in findSprite: ' + str(found) ) 
       return found 
       
    def getImage (self,sprite):
@@ -189,12 +198,16 @@ class SubDeck ():
          image = self.getImage (sprite)
          xOffset = self.xMultiplier * image.get_width()
          yOffset = self.yMultiplier * image.get_height()         
-         if sprite.drag: 
+         if sprite.drag:
+            if debugIt:
+               print ( 'sprite is draggable' )          
             pos = pygame.mouse.get_pos()        
             self.displaySurface.blit (image,pos)
             sprite.x = pos[0]
             sprite.y = pos[1]         
          else:
+            if debugIt:
+               print ( 'sprite is not draggable' )
             self.displaySurface.blit (image, (x,y)) 
             # Update location so it can be found later
             sprite.x = x
@@ -225,7 +238,7 @@ if __name__ == '__main__':
    utilities = Utilities (displaySurface, BIGFONT)   
    
    print ( 'Make deck' )
-   deckBasis = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53, 52)
+   deckBasis = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)
    print ( 'Deal' )
    startXY = (100,100)
    hand = SubDeck (deckBasis,7,80,120,startXY,displaySurface)  

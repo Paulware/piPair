@@ -8,105 +8,6 @@ import select
    Utilities
 '''
 class Utilities ():
-   def __init__ (self,displaySurf, font):
-       self.displaySurface = displaySurf
-       self.font = font
-       self.DISPLAYWIDTH=800
-       self.DISPLAYHEIGHT=600       
-       self.statusMessage = ''
-       self.BLACK      = (  0,   0,   0)
-       self.GREEN      = (  0, 155,   0)
-       self.BRIGHTBLUE = (  0,  50, 255)
-       self.BROWN      = (174,  94,   0)
-       self.RED        = (255,   0,   0) 
-       self.comm       = None    
-       self.lastType   = 0   
-       self.message    = ''  
-       self.msg        = ''       
-      
-   def showSsids(self,ssids):
-       BLACK      = (0,   0,   0)
-       self.displaySurface.fill((BLACK))
-       
-       i = 0    
-       y = 55 
-       locations = []
-       for ssid in ssids:
-          x = 150
-          locations.append ( (x,y)) 
-          y = y + 35
-          
-       labels = self.showLabels (ssids, locations)
-       (ssidSurf, ssidRect) = self.createLabel ('Click on SSID to join (password=\'ABCD1234\')', 50, 20)  
-    
-       pygame.display.update()
-       return labels
-       
-   def fileExists (self, filename): 
-      exists = os.path.exists ( filename )   
-      return exists
-      
-   def showImages (self,filenames,locations):
-       images = [] 
-       for filename in filenames:
-           filename = 'images/' + filename 
-           if self.fileExists ( filename): 
-              images.append ( pygame.image.load (filename) )   
-           else:
-              print ( 'This file is missing: ' + filename )           
-
-       sprites = []
-       i = 0
-       for image in images: 
-           sprites.append (self.displaySurface.blit (image, locations[i]) )
-           i = i + 1
-       return sprites
-       
-   def isMouseClick (self,event): 
-       isClick = False 
-       ev = str(event)
-       if ev.find ('MouseButtonUp') > -1: 
-           if ((ev.find ( '\'button\': 1') > -1) or \
-               (ev.find ( '\'button\': 3') > -1)): 
-               print ( 'event: ' + ev ) 
-               print ( 'Got a click' )
-               isClick = True 
-       return isClick
-       
-   def getSpriteClick (self, event, sprites): 
-       self.clicks = {}       
-       found = -1
-       if (event == pygame.MOUSEBUTTONUP) or self.isMouseClick (event): 
-          print ( 'Utilities.getSpriteClick got a mouse up [' + str(event) + ']')
-          pos = pygame.mouse.get_pos()
-          print (str(pos)) 
-     
-          # get a list of all sprites that are under the mouse cursor         
-          clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
-          
-          if clicked_sprite != []:
-             for i in range (len(sprites)):
-                if clicked_sprite[0] == sprites[i]: # just check the first sprite
-                   found = i
-                   break
-          if found == -1: 
-             print ( 'Could not find a sprite' )
-          else:
-             print ( 'Found sprite: ' + str(found)) 
-       return found
-
-   def showStatus (self,status):
-       self.statusMessage = status 
-       if self.statusMessage != "":
-          print ( 'Show status: ' + self.statusMessage )
-          height = self.DISPLAYHEIGHT - 23
-          pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
-          pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
-          self.showLine (self.statusMessage, 1, height+4) # Show status message
-          print ( 'pygame.update')
-          pygame.display.update()
-          print ('Done showing Status: ' + self.statusMessage)
-       
    def chOffset (self, ch): 
       offsets = { '.':4, ':':4, ',':5, '-':4, ' ':4, \
                   'I':4, 'W':13, \
@@ -118,16 +19,17 @@ class Utilities ():
       #   offset = offsets[ch]
       return offset 
     
-   def waitForClick(self): 
-      found = False 
-      print ( 'Wait for click' )
-      while not found:
-         ev = pygame.event.get()
-         for event in ev:  
-            # print ( 'Got event: ' + str(event)) 
-            if self.isMouseClick (event): 
-               found = True 
-      print ( 'Done waiting for click' )    
+   def createLabel (self, msg, x, y):
+       WHITE = (255,255,255)  
+       GREEN = (0,155,0)
+       surface = self.font.render(msg, True, WHITE, GREEN)
+       rect = surface.get_rect()
+       rect.topleft = (x,y)
+       return ((surface,rect))
+
+   def fileExists (self, filename): 
+      exists = os.path.exists ( filename )   
+      return exists
       
    def getKeyOrMqtt(self, blocking=True):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', \
@@ -185,6 +87,142 @@ class Utilities ():
      print ( 'getKeyOrMqtt[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + str(addr) + ']' )           
      return (typeInput,data,addr)
 
+      
+   def getSpriteClick (self, event, sprites): 
+       self.clicks = {}       
+       found = -1
+       if (event == pygame.MOUSEBUTTONUP) or self.isMouseClick (event): 
+          print ( 'Utilities.getSpriteClick got a mouse up [' + str(event) + ']')
+          pos = pygame.mouse.get_pos()
+          print (str(pos)) 
+     
+          # get a list of all sprites that are under the mouse cursor         
+          clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
+          
+          if clicked_sprite != []:
+             for i in range (len(sprites)):
+                if clicked_sprite[0] == sprites[i]: # just check the first sprite
+                   found = i
+                   break
+          if found == -1: 
+             print ( 'Could not find a sprite' )
+          else:
+             print ( 'Found sprite: ' + str(found)) 
+       return found
+      
+   def __init__ (self,displaySurf, font):
+       self.displaySurface = displaySurf
+       self.font = font
+       self.DISPLAYWIDTH=800
+       self.DISPLAYHEIGHT=600       
+       self.statusMessage = ''
+       self.BLACK      = (  0,   0,   0)
+       self.GREEN      = (  0, 155,   0)
+       self.BRIGHTBLUE = (  0,  50, 255)
+       self.BROWN      = (174,  94,   0)
+       self.RED        = (255,   0,   0) 
+       self.comm       = None    
+       self.lastType   = 0   
+       self.message    = ''  
+       self.msg        = ''       
+       
+   def isMouseClick (self,event): 
+       isClick = False 
+       ev = str(event)
+       if ev.find ('MouseButtonUp') > -1: 
+           if ((ev.find ( '\'button\': 1') > -1) or \
+               (ev.find ( '\'button\': 3') > -1)): 
+               print ( 'event: ' + ev ) 
+               print ( 'Got a click' )
+               isClick = True 
+       return isClick
+       
+   def showCh (self, ch,x,y):
+     WHITE = (255,255,255) 
+     GREEN = (0,155,0)
+     surface = self.font.render(str(ch), True, WHITE, GREEN)
+     rect = surface.get_rect()
+     rect.topleft = (x,y)
+     self.displaySurface.blit(surface, rect)
+     pygame.display.update()
+         
+   def showLabels (self, labels, locations):
+       sprites = []
+       i = 0
+       for label in labels: 
+           x = locations[i][0]
+           y = locations[i][1]
+           (surface, rect) = self.createLabel (label, x, y)    
+           sprites.append (self.displaySurface.blit(surface, rect))
+           i = i + 1
+       return sprites  
+     
+   def showLine ( self,line, x,y ):
+     height = self.DISPLAYHEIGHT - 23
+     BLACK = (0,0,0)
+     pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
+     pygame.display.update()
+     for ch in line:
+        self.showCh (ch, x, y)
+        x = x + self.chOffset (ch)       
+             
+   def showImages (self,filenames,locations):
+       images = [] 
+       for filename in filenames:
+           filename = 'images/' + filename 
+           if self.fileExists ( filename): 
+              images.append ( pygame.image.load (filename) )   
+           else:
+              print ( 'This file is missing: ' + filename )           
+
+       sprites = []
+       i = 0
+       for image in images: 
+           sprites.append (self.displaySurface.blit (image, locations[i]) )
+           i = i + 1
+       return sprites
+       
+   def showStatus (self,status):
+       self.statusMessage = status 
+       if self.statusMessage != "":
+          print ( 'Show status: ' + self.statusMessage )
+          height = self.DISPLAYHEIGHT - 23
+          pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
+          pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
+          self.showLine (self.statusMessage, 1, height+4) # Show status message
+          print ( 'pygame.update')
+          pygame.display.update()
+          print ('Done showing Status: ' + self.statusMessage)
+       
+   def showSsids(self,ssids):
+       BLACK      = (0,   0,   0)
+       self.displaySurface.fill((BLACK))
+       
+       i = 0    
+       y = 55 
+       locations = []
+       for ssid in ssids:
+          x = 150
+          locations.append ( (x,y)) 
+          y = y + 35
+          
+       labels = self.showLabels (ssids, locations)
+       (ssidSurf, ssidRect) = self.createLabel ('Click on SSID to join (password=\'ABCD1234\')', 50, 20)  
+    
+       pygame.display.update()
+       return labels
+                       
+   def waitForClick(self): 
+      found = False 
+      print ( 'Wait for click' )
+      while not found:
+         ev = pygame.event.get()
+         for event in ev:  
+            # print ( 'Got event: ' + str(event)) 
+            if self.isMouseClick (event): 
+               found = True 
+      print ( 'Done waiting for click' )    
+      
    def updateWpaSupplicant (self, ssid, password):
       print ('updateWpaSupplicant...tbd' )
       return 
@@ -217,45 +255,7 @@ class Utilities ():
             f.close()      
       except Exception as ex:
          print ("Could not modify wpa_supplicate because: " + str(ex) )
-     
-     
-   def showLabels (self, labels, locations):
-       sprites = []
-       i = 0
-       for label in labels: 
-           x = locations[i][0]
-           y = locations[i][1]
-           (surface, rect) = self.createLabel (label, x, y)    
-           sprites.append (self.displaySurface.blit(surface, rect))
-           i = i + 1
-       return sprites  
-     
-   def createLabel (self, msg, x, y):
-       WHITE = (255,255,255)  
-       GREEN = (0,155,0)
-       surface = self.font.render(msg, True, WHITE, GREEN)
-       rect = surface.get_rect()
-       rect.topleft = (x,y)
-       return ((surface,rect))
-       
-   def showCh (self, ch,x,y):
-     WHITE = (255,255,255) 
-     GREEN = (0,155,0)
-     surface = self.font.render(str(ch), True, WHITE, GREEN)
-     rect = surface.get_rect()
-     rect.topleft = (x,y)
-     self.displaySurface.blit(surface, rect)
-     pygame.display.update()
-    
-   def showLine ( self,line, x,y ):
-     height = self.DISPLAYHEIGHT - 23
-     BLACK = (0,0,0)
-     pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
-     pygame.display.update()
-     for ch in line:
-        self.showCh (ch, x, y)
-        x = x + self.chOffset (ch)
-        
+         
    def read (self, blocking=True): 
      (typeInput,data,addr) = self.getKeyOrMqtt(blocking)
      return (typeInput,data,addr)

@@ -103,34 +103,46 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 53, 52)   
+   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)   
    
    hand = SubDeck (deck,7, displaySurface = displaySurface)
-   # hand.showSprites(100,100,50,100)   
-   window = pygame.display.get_surface()
+      
+   window = displaySurface # pygame.display.get_surface()
    
-   while True: # len(deck.sprites) > 0:
+   quit = False
+   while not quit: # len(deck.sprites) > 0:
       hand.showSprites() # Show and set their x/y locations
-      pygame.display.flip()
-      pygame.event.pump() 
-      (typeInput,data,addr) = utilities.read()
-      if utilities.isMouseClick (typeInput): 
-         pos = pygame.mouse.get_pos()
-         x = pos[0]
-         y = pos[1]
-         index = hand.findSprite (x,y)
-         if index != -1: 
-             optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel'], x, y)
-             selection = optionBox.getSelection()
-             print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-             if selection == 'Cancel': 
-                break
-             elif selection == 'Discard':
-                hand.data[index].deleted = True 
-                # hand.discard (index) 
-             elif selection == 'Use':
-                # hand.discard (index)
-                hand.data[index].deleted = True 
-                hand.drawCard()
+      pygame.display.update() 
+      
+      #pygame.display.flip()
+      #pygame.event.pump() 
+      events = utilities.readOne()
+      for event in events:
+         (typeInput,data,addr) = event
+         print ( 'typeInput: ' + str(typeInput))
+         if typeInput == 'select':
+            print ( '\n\n***Select***\n\ndata: ' + str(data)   )
+            index = hand.findSprite (data[0],data[1])  
+            if index != -1: 
+                x = hand.data[index].x
+                y = hand.data[index].y
+                optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel'], x, y)
+                selection = optionBox.getSelection()
+                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+                if selection == 'Cancel': 
+                   quit = True
+                   print ( 'quit is now: ' + str(quit) )
+                   break
+                elif selection == 'Discard':
+                   hand.data[index].deleted = True 
+                   # hand.discard (index) 
+                elif selection == 'Use':
+                   # hand.discard (index)
+                   hand.data[index].deleted = True 
+                   hand.drawCard()
 
-             window.fill ((0,0,0))
+                window.fill ((0,0,0))
+         else:
+            print ( 'No click detected' )
+            
+   print ( 'Done yo' )

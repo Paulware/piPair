@@ -20,6 +20,7 @@ from SpriteSheet import SpriteSheet
 '''
 class Deck (SpriteSheet): 
 
+   # numImages is the number of images in the deck that is dealt to a player 
    def __init__ (self, filename, numColumns, numRows, numImages, coverIndex):
       SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
       print ( 'Done in Deck.init' ) 
