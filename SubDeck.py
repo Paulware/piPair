@@ -91,7 +91,9 @@ class SubDeck ():
       for card in self.data:
          card.drag = False 
    
-   def findSprite (self,x,y):
+   def findSprite (self,pos):
+      x = pos[0]
+      y = pos[1]
       debugIt = True 
       index = 0 
       found = -1

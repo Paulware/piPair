@@ -122,7 +122,7 @@ if __name__ == '__main__':
          print ( 'typeInput: ' + str(typeInput))
          if typeInput == 'select':
             print ( '\n\n***Select***\n\ndata: ' + str(data)   )
-            index = hand.findSprite (data[0],data[1])  
+            index = hand.findSprite (data)  
             if index != -1: 
                 x = hand.data[index].x
                 y = hand.data[index].y
@@ -142,7 +142,5 @@ if __name__ == '__main__':
                    hand.drawCard()
 
                 window.fill ((0,0,0))
-         else:
-            print ( 'No click detected' )
             
    print ( 'Done yo' )
