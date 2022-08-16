@@ -9,6 +9,8 @@ import pygame
 # plus display capability
 class SubDeck (): 
    # data is a list of objects that have an image and index attribute
+   #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
+   #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
       print ( 'SubDeck.init' )

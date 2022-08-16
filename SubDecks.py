@@ -80,7 +80,7 @@ if __name__ == '__main__':
    parts = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 50) 
    parts.coverIndex = 52 
    parts1 = SubDeck (parts,2,80,120, (100,100), displaySurface)  
-   parts2 = SubDeck (parts,3,80,120, (200,100), displaySurface)  
+   parts2 = SubDeck (parts,3,80,120, (300,100), displaySurface)  
    decks  = SubDecks([parts1,parts2])
          
    window = pygame.display.get_surface()

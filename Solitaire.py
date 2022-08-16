@@ -65,7 +65,7 @@ class Solitaire ():
           events = utilities.readOne()
           for event in events:
              (typeInput,data,addr) = event
-             print ( 'typeInput: ' + str(typeInput) ) 
+             # print ( 'typeInput: ' + str(typeInput) ) 
              if typeInput == 'move':
                 mousePos = data
              if dragDeck != None:

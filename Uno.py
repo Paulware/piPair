@@ -119,7 +119,7 @@ if __name__ == '__main__':
       events = utilities.readOne()
       for event in events:
          (typeInput,data,addr) = event
-         print ( 'typeInput: ' + str(typeInput))
+         # print ( 'typeInput: ' + str(typeInput))
          if typeInput == 'select':
             print ( '\n\n***Select***\n\ndata: ' + str(data)   )
             index = hand.findSprite (data)  
