@@ -2,10 +2,13 @@ import inspect
 import pygame
 import time
 import Communications
-from Deck import Deck
+
+from Deck      import Deck
 from Utilities import Utilities
 from OptionBox import OptionBox
-from SubDeck import SubDeck
+from SubDeck   import SubDeck
+from SubDecks  import SubDecks
+from TextBox   import TextBox
  
 BLACK = (  0,  0,  0)
 RED   = (255,  0,  0)
@@ -16,7 +19,34 @@ class Uno ():
        self.DISPLAYSURF = DISPLAYSURF
        self.utilities   = utilities       
        print ( 'Initialization Uno' )
-       self.iAmHost     = True        
+       self.iAmHost     = True   
+
+    def isNumber (self,index): 
+       isNum = False
+       if index < 39: 
+          if (index % 10) != 9: 
+             isNum = True 
+       return isNum
+
+    def getColor (self,index): 
+       if (index == 9) or (index == 19) or (index == 29) or (index == 39):
+          color = 'All'       
+       elif (index < 10) or (index == 40) or (index == 44) or (index == 48):
+          color = 'Red'
+       elif (index < 20) or (index == 41) or (index == 45) or (index == 49):
+          color = 'Orange'
+       elif (index < 30) or (index == 42) or (index == 46) or (index == 50): 
+          color = 'Blue'
+       elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
+          color = 'Green'        
+       return color
+       
+
+    def getNumber (self,index): 
+       value = 0
+       if self.isNumber (index): 
+          value = (index % 10) + 1
+       return value
     
     def gameOver (self): 
        over = False
@@ -103,15 +133,25 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)   
+   deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
+   hand        = SubDeck (deck,  7, startXY=(100,300), displaySurface=displaySurface)   
+   discardPile = SubDeck (deck,  1, startXY=(100,100), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   drawPile    = SubDeck (deck, 44, startXY=(300,100), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   drawPile.hideAll () 
    
-   hand = SubDeck (deck,7, displaySurface = displaySurface)
+   cards=[]
+   cards.append (hand)
+   cards.append (drawPile)   
+   cards.append (discardPile)
+   decks = SubDecks (cards)    
+   
+   line1 = TextBox('Discard' ,x=100,y=75)
+   pos = line1.draw()   
       
-   window = displaySurface # pygame.display.get_surface()
-   
+   window = displaySurface # pygame.display.get_surface()   
    quit = False
    while not quit: # len(deck.sprites) > 0:
-      hand.showSprites() # Show and set their x/y locations
+      decks.showSprites() # Show and set their x/y locations
       pygame.display.update() 
       
       #pygame.display.flip()
@@ -126,20 +166,18 @@ if __name__ == '__main__':
             if index != -1: 
                 x = hand.data[index].x
                 y = hand.data[index].y
-                optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel'], x, y)
+                optionBox = OptionBox (['Play', 'Cancel'], x, y)
                 selection = optionBox.getSelection()
                 print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
                 if selection == 'Cancel': 
                    quit = True
                    print ( 'quit is now: ' + str(quit) )
                    break
-                elif selection == 'Discard':
+                elif selection == 'Play':
+                   discardPile.addCard (hand,index)
                    hand.data[index].deleted = True 
                    # hand.discard (index) 
-                elif selection == 'Use':
-                   # hand.discard (index)
-                   hand.data[index].deleted = True 
-                   hand.drawCard()
+                   hand.addCard (drawPile, drawPile.topCard())
 
                 window.fill ((0,0,0))
             
