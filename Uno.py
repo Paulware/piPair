@@ -134,9 +134,9 @@ if __name__ == '__main__':
    utilities = Utilities (displaySurface, BIGFONT)   
    
    deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
-   hand        = SubDeck (deck,  7, startXY=(100,300), displaySurface=displaySurface)   
-   discardPile = SubDeck (deck,  1, startXY=(100,100), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile    = SubDeck (deck, 44, startXY=(300,100), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
+   discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   drawPile    = SubDeck (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
    drawPile.hideAll () 
    
    cards=[]
@@ -145,9 +145,10 @@ if __name__ == '__main__':
    cards.append (discardPile)
    decks = SubDecks (cards)    
    
-   line1 = TextBox('Discard' ,x=100,y=75)
-   pos = line1.draw()   
-      
+   TextBox('Opponent', x=100, y=  5).draw()
+   TextBox('Discard',  x=100, y=175).draw()
+   TextBox('Draw',     x=310, y=175).draw()
+   TextBox('Hand',     x=100, y=375).draw()   
    window = displaySurface # pygame.display.get_surface()   
    quit = False
    while not quit: # len(deck.sprites) > 0:
