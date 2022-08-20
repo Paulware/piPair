@@ -21,32 +21,6 @@ class Uno ():
        print ( 'Initialization Uno' )
        self.iAmHost     = True   
 
-    def isNumber (self,index): 
-       isNum = False
-       if index < 39: 
-          if (index % 10) != 9: 
-             isNum = True 
-       return isNum
-
-    def getColor (self,index): 
-       if (index == 9) or (index == 19) or (index == 29) or (index == 39):
-          color = 'All'       
-       elif (index < 10) or (index == 40) or (index == 44) or (index == 48):
-          color = 'Red'
-       elif (index < 20) or (index == 41) or (index == 45) or (index == 49):
-          color = 'Orange'
-       elif (index < 30) or (index == 42) or (index == 46) or (index == 50): 
-          color = 'Blue'
-       elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
-          color = 'Green'        
-       return color
-       
-
-    def getNumber (self,index): 
-       value = 0
-       if self.isNumber (index): 
-          value = (index % 10) + 1
-       return value
     
     def gameOver (self): 
        over = False
@@ -125,6 +99,9 @@ class Uno ():
                 self.drawingX = not self.drawingX                
              myMove = True               
        print ( 'Go back to the main page...' )
+       
+    def topInfo (self): 
+       
     
 if __name__ == '__main__':
  

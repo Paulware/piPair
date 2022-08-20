@@ -223,7 +223,7 @@ class SubDeck ():
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
       self.data[index].tapped = value
-   
+
    def topSheetIndex (self): 
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex

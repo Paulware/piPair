@@ -20,18 +20,6 @@ from SpriteSheet import SpriteSheet
 '''
 class Deck (SpriteSheet): 
 
-   # numImages is the number of images in the deck that is dealt to a player 
-   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex):
-      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
-      print ( 'Done in Deck.init' ) 
-     
-   def getRandomIndex (self,listLength):         
-      index = -1
-      if listLength > 0:
-         index = int ( random.random() * listLength)
-      # print ( 'Got a random index: ' + str(index))
-      return index
-
    def deal (self, numCards): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
@@ -46,7 +34,20 @@ class Deck (SpriteSheet):
          self.data.pop (index)
             
       return hand
+      
+   def getRandomIndex (self,listLength):         
+      index = -1
+      if listLength > 0:
+         index = int ( random.random() * listLength)
+      # print ( 'Got a random index: ' + str(index))
+      return index
+
    
+   # numImages is the number of images in the deck that is dealt to a player 
+   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex):
+      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
+      print ( 'Done in Deck.init' ) 
+     
 if __name__ == '__main__':
 
    import pygame
