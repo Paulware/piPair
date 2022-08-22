@@ -32,7 +32,7 @@ class SubDecks():
       else:
          print ( 'Found an empty column in deck: ' + str(count) )
       return found       
-      
+            
    def findSprite (self, pos):
       index = -1
       found = None

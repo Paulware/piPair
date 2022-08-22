@@ -22,7 +22,7 @@ class SubDeck ():
       self.selected = -1
       print ( 'startXY: ' + str(startXY) ) 
       self.startX = startXY [0]
-      self.startY = startXY [1]
+      self.startY = startXY [1]      
       self.displaySurface = displaySurface
       self.xMultiplier = xMultiplier
       self.yMultiplier = yMultiplier
@@ -43,11 +43,21 @@ class SubDeck ():
             dealtCards = self.deck.deal (numCards)
                
             self.data = dealtCards
+            xOffset = self.xMultiplier * width
+            yOffset = self.yMultiplier * height  
+            x = self.startX
+            y = self.startY 
+            first = True             
             for card in self.data: # Set the width/height of each image 
                card.image = pygame.transform.scale(card.image, (width, height))                                     
                card.angle = 0
                card.hide  = False
-               card.tapped = False 
+               card.tapped = False
+               card.x = x
+               card.y = y
+               x = x + xOffset
+               y = y + yOffset 
+                                  
             self.numImages = len(self.data)
          
       print ('Total number of cards: ' + str(self.numImages)) 
@@ -88,6 +98,21 @@ class SubDeck ():
       self.data[index].drag = value
       self.selected = index 
       
+   # Show the sprites at specified start position and update the location of each   
+   def draw (self): 
+      debugIt = False
+      if debugIt:         
+         print ('draw, self.data: ' + str(self.data)) 
+
+      index = 0      
+      for sprite in self.data:
+         image = self.getImage (sprite)
+         self.displaySurface.blit (image, (sprite.x,sprite.y)) 
+         # Update location so it can be found later      
+         
+      pygame.display.flip()
+      pygame.event.pump()     
+               
    def dropAll (self):
       print ( 'Dropping all cards')
       for card in self.data:
@@ -134,10 +159,6 @@ class SubDeck ():
       for card in self.data:
          card.hide = True 
    
-   def showAll (self):
-      for card in self.data:
-         card.hide = False
-   
    def length (self):
       print ( 'Length of deck: ' + str(len(self.data)))       
       return len(self.data)
@@ -148,6 +169,13 @@ class SubDeck ():
          print ( 'self.data[' + str(count) + '].index: ' + str(card.sheetIndex))  
          count = count + 1
          
+   def move (self,index,pos): 
+      x = pos[0]
+      y = pos[1]
+      # print ( 'deck.data[' + str(index) + '].x = ' + str(x) + '\ndeck.data[' + str(index) + '].y = ' + str(y) )      
+      self.data[index].x = pos[0]
+      self.data[index].y = pos[1]    
+                  
    def remove (self,index): 
       self.data.pop (index)
       
@@ -188,10 +216,14 @@ class SubDeck ():
       # get a rotated image
       rotated_image = pygame.transform.rotate(image, angle)      
       return rotated_image  
-
+      
+   def showAll (self):
+      for card in self.data:
+         card.hide = False
+   
    # Show the sprites at specified start position and update the location of each   
    def showSprites (self): 
-      debugIt = False
+      debugIt = True
       x = self.startX
       y = self.startY
       if debugIt:         
@@ -211,7 +243,7 @@ class SubDeck ():
             sprite.y = pos[1]         
          else:
             if debugIt:
-               print ( 'sprite is not draggable' )
+               print ( 'showSprites, sprite is not draggable' )
             self.displaySurface.blit (image, (x,y)) 
             # Update location so it can be found later
             sprite.x = x
@@ -248,32 +280,47 @@ if __name__ == '__main__':
    hand = SubDeck (deckBasis,7,80,120,startXY,displaySurface)  
    print ( 'Done dealing ' )
    window = pygame.display.get_surface()
-   
-   while True:
+   dragCard = None
+   quit = False    
+   while not quit:
       window.fill ((0,0,0))
-      hand.showSprites() # Show and set their x/y locations
-      pygame.display.update()
-      (typeInput,data,addr) = utilities.read()
-      if utilities.isMouseClick (typeInput): 
-         pos = pygame.mouse.get_pos()
-         x = pos[0]
-         y = pos[1]
-         index = hand.findSprite (x,y)
-         if index != -1: 
-             optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
-             selection = optionBox.getSelection()
-             print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-             if selection == 'Cancel': 
-                break
-             elif selection == 'Discard':
-                hand.discard (index) 
-             elif selection == 'Tap':                
-                hand.tap (index, True )
-             elif selection == 'Use':
-                hand.discard (index)
-                hand.drawCard()
-             elif selection == 'Hide':
-                hand.hide(index)
-             elif selection == 'Show':
-                hand.unhide(index)
+      hand.draw()
+      events = utilities.readOne()
+      for event in events:
+         (typeInput,data,addr) = event      
+         if typeInput == 'drag': 
+            if dragCard is None:
+               dragCard = hand.findSprite (data) 
+               sheetIndex = hand.data[dragCard].sheetIndex 
+               print ( '\n\n***DRAG*** ' + str(dragCard) + '.' + str(sheetIndex) + '\n\n' )
+         elif typeInput == 'drop':
+            print ( '\n***DROP*** ' + str(dragCard) + '.' + str(sheetIndex) ) 
+            dragCard = None 
+         elif typeInput == 'move':
+            if not dragCard is None:
+               hand.move (dragCard,data)         
+         elif typeInput == 'right': 
+            pos = pygame.mouse.get_pos()
+            index = hand.findSprite (pos)
+            if index != -1: 
+               x = pos[0]
+               y = pos[1]
+               optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
+               selection = optionBox.getSelection()
+               print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+               if selection == 'Cancel': 
+                  quit = True 
+               elif selection == 'Discard':
+                  hand.discard (index) 
+               elif selection == 'Tap':                
+                  hand.tap (index, True )
+               elif selection == 'Use':
+                  hand.discard (index)
+                  hand.drawCard()
+               elif selection == 'Hide':
+                  hand.hide(index)
+               elif selection == 'Show':
+                  hand.unhide(index)
+         
+    
 

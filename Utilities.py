@@ -302,7 +302,7 @@ class Utilities ():
                            print ('select ' + str(event)) 
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
-                        print ( 'Ignore right button up' )
+                        typeInput = 'right'
          except Exception as ex:
             print ( 'readOne has exception : ' + str(ex)) 
          if typeInput != '': 

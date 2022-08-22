@@ -64,51 +64,90 @@ class UnoCards (SubDeck):
    
    def canDrop (self,topIndex,bottomIndex): 
       ok = False 
-      topFace = self.face(topIndex)
-      bottomFace = self.face(bottomIndex)
-      if (self.getColor (topFace) == self.getColor(bottomFace)) or \
-         (self.getNumber(topFace) == self.getNumber(bottomFace)) or \
-         (self.getName(topFace).find ( 'Joker') > -1):
+      if (self.getColor (topIndex) == self.getColor(bottomIndex)) or \
+         (self.getNumber(topIndex) == self.getNumber(bottomIndex)) or \
+         (self.cardName(topIndex).find ( 'Joker') > -1):
             ok = True
             print ( 'canDrop is ok...' )
       return ok
       
-   def emptyColumn(self):
-      return (self.length() == 0)
-
-   def getInfo (self,sheetIndex):
+   def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
               self.cardName(sheetIndex))      
     
 if __name__ == '__main__':
-   from Deck import Deck
+   from Deck      import Deck
    from Utilities import Utilities
    from OptionBox import OptionBox
- 
+   from SubDecks  import SubDecks
+   from TextBox   import TextBox
+   import time   
+   
    pygame.init()
    displaySurface = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   print ( 'Make deck' )
-   deckBasis = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52) 
-   print ( 'Deal' )
-   startXY = (100,100)
-   hand = UnoCards (deckBasis,7,startXY=(100,400),displaySurface=displaySurface)  
-   print ( 'Done dealing ' )
+   deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
+   hand        = UnoCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
+   discardPile = UnoCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   drawPile    = UnoCards (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+   drawPile.hideAll () 
+   
+   cards=[]
+   cards.append (hand)
+   cards.append (drawPile)   
+   cards.append (discardPile)
+   decks = SubDecks (cards)    
+   
+   TextBox('Opponent', x=100, y=  5).draw()
+   TextBox('Discard',  x=100, y=175).draw()
+   TextBox('Draw',     x=310, y=175).draw()
+   TextBox('Hand',     x=100, y=375).draw() 
    window = pygame.display.get_surface()
    
    quit = False
+   dragCard = None
+   
+   decks.showSprites() # Show and set their x/y locations
+   hand.showSprites()
+   #pygame.display.flip()
+   pygame.display.update() 
+   
    while not quit:
-      window.fill ((0,0,0))
-      hand.showSprites() # Show and set their x/y locations
-      pygame.display.update() 
+      #decks.showSprites() # Show and set their x/y locations
+      #hand.showSprites()
+      #pygame.display.update() 
       
       events = utilities.readOne()
       for event in events:
          (typeInput,data,addr) = event
-         if typeInput == 'select':      
+         if typeInput == 'move':
+            if not dragCard is None:
+               x = data[0]
+               y = data[1]
+               print ( 'Moving...' + str(dragCard) + ' to [' + str(x) + ',' + str(y) + ']')
+               hand.move (dragCard,data)
+                  
+         elif typeInput == 'drag':
+            if dragCard is None:
+               dragCard = hand.findSprite (data) 
+               sheetIndex = hand.data[dragCard].sheetIndex
+               hand.data[dragCard].drag = True 
+               print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
+         elif typeInput == 'drop':
+            (deck,index) = decks.findSprite (data) # Where are we dropping                                  
+            if deck == discardPile: 
+               dropSheetIndex = deck.data[index].sheetIndex
+               if discardPile.canDrop ( sheetIndex, dropSheetIndex):                   
+                  print ( 'Drop on discard Pile' ) 
+               else:
+                  print ( 'Illegal Uno drop' )
+            else: 
+               print ( 'Illegal drop yo' )
+            dragCard = None
+         elif typeInput == 'select':      
             index = hand.findSprite (data)  
             if index != -1: 
                x = hand.data[index].x
@@ -130,4 +169,6 @@ if __name__ == '__main__':
                #   hand.addCard (drawPile, drawPile.topCard())
 
                window.fill ((0,0,0))
+         else:
+            print ( 'event: ' + typeInput)
 
