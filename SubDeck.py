@@ -108,10 +108,7 @@ class SubDeck ():
       for sprite in self.data:
          image = self.getImage (sprite)
          self.displaySurface.blit (image, (sprite.x,sprite.y)) 
-         # Update location so it can be found later      
-         
-      pygame.display.flip()
-      pygame.event.pump()     
+         # Update location so it can be found later          
                
    def dropAll (self):
       print ( 'Dropping all cards')
@@ -170,8 +167,8 @@ class SubDeck ():
          count = count + 1
          
    def move (self,index,pos): 
-      x = pos[0]
-      y = pos[1]
+      # self.displaySurface.fill ((0,0,0))   
+   
       # print ( 'deck.data[' + str(index) + '].x = ' + str(x) + '\ndeck.data[' + str(index) + '].y = ' + str(y) )      
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]    
@@ -221,6 +218,7 @@ class SubDeck ():
       for card in self.data:
          card.hide = False
    
+   '''
    # Show the sprites at specified start position and update the location of each   
    def showSprites (self): 
       debugIt = True
@@ -251,7 +249,9 @@ class SubDeck ():
             x = x + xOffset  
             y = y + yOffset            
          index = index + 1
+   '''      
       
+   # Note: Tap should be for a specific game.   
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
       self.data[index].tapped = value
@@ -285,6 +285,8 @@ if __name__ == '__main__':
    while not quit:
       window.fill ((0,0,0))
       hand.draw()
+      utilities.flip()
+      
       events = utilities.readOne()
       for event in events:
          (typeInput,data,addr) = event      

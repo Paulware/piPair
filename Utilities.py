@@ -31,6 +31,10 @@ class Utilities ():
       exists = os.path.exists ( filename )   
       return exists
       
+   def flip(self):
+      pygame.display.flip()
+      pygame.event.pump()
+      
    def getKeyOrMqtt(self, blocking=True):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', \
                    '`':'~',  '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', '0':')' }
