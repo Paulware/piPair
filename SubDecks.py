@@ -34,19 +34,28 @@ class SubDecks():
       return found       
             
    def findSprite (self, pos):
-      index = -1
+      debugIt = True
+      if debugIt: 
+         print ( 'SubDecks.findSprite (' + str(pos) + ')' )
       found = None
-      for deck in self.decks:
-         # print ( 'SubDecks.findSprite, deck.topIndex(): ' + str(deck.topIndex() ) ) 
-         index = deck.findSprite (pos)
-         if index != -1:
-            found = deck
-            break
+      if pos is None: 
+         print ( 'SubDecks.findSprite, pos == None' )
+      elif len(pos) != 2: 
+         print ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
+      else:
+      
+         for deck in self.decks:           
+            index = deck.findSprite (pos)
+            if not index is None:
+               found = deck
+               break
             
       if found is None:
          print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
       else:
-         print ( 'Found a match with this deck and position: ' + str(pos) + ' : ' + str(index)) 
+         print ( 'SubDecks.findSprite, found: ' + str(found) ) 
+         print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
+         
       return (found,index)
    
    def draw (self):      
@@ -86,7 +95,8 @@ if __name__ == '__main__':
          
    window = pygame.display.get_surface()
    quit = False 
-   dragging = None    
+   dragging = None  
+      
    
    mousePos = (0,0)
    while not quit:
@@ -102,21 +112,23 @@ if __name__ == '__main__':
                deck.move (dragging,data)               
             mousePos = data
          elif typeInput == 'drop':
+            print ( '*** DROP *** ' )
             (deck,index) = decks.findSprite (data) # Where are we dropping               
             if deck is None: 
-               print ( 'Deck is none' ) 
+               print ( 'Drop Event, could not find an associated deck' ) 
             else:                   
                print ( 'Got drop index: ' + str(index))  
-               print ( 'Add card: ' + str(dragging.sheetIndex) + ' to deck: ' )  
-               deck.append(dragging)                 
+               print ( 'Add card: ' + str(deck.data[dragging].sheetIndex) + ' to deck ' )  
+               deck.append(deck.data[dragging])                 
             dragging = None
          elif typeInput == 'drag': 
             if dragging is None: 
                (deck,index) = decks.findSprite (data)
                dragging = index
          elif typeInput == 'right':
+            print ( '*** RIGHT *** ')
             (deck,index) = decks.findSprite (data)
-            if deck != None: 
+            if not deck is None: 
                 optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], data[0], data[1])
                 selection = optionBox.getSelection()
                 print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 

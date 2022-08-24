@@ -307,6 +307,7 @@ class Utilities ():
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
                         typeInput = 'right'
+                        data = event.pos
          except Exception as ex:
             print ( 'readOne has exception : ' + str(ex)) 
          if typeInput != '': 

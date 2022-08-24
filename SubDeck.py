@@ -116,28 +116,33 @@ class SubDeck ():
          card.drag = False 
    
    def findSprite (self,pos):
-      x = pos[0]
-      y = pos[1]
-      debugIt = True 
-      index = 0 
-      found = -1
-      if debugIt: 
-         print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
-      for sprite in self.data: 
-         if debugIt:
-            print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
-            width = sprite.image.get_width()
-            print ( 'width: ' + str(width) ) 
-            height = sprite.image.get_height()
-            print ( 'height: ' + str(height) )             
-         if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
-             (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))):
-            if debugIt:             
-               print ( 'Found sprite at index: ' + str(index))
-            found = index 
-         index = index + 1
-      print ( 'Done in findSprite: ' + str(found) ) 
-      return found 
+      found = None
+      if pos is None: 
+         print ( 'ERR...SubDeck.findSprite, pos is None' )
+      if len(pos) != 2: 
+         print ( 'ERR...SubDeck.findSprite, pos is not correct [' + str(pos) + ']') 
+      else:
+         x = pos[0]
+         y = pos[1]
+         debugIt = True 
+         index = 0 
+         if debugIt: 
+            print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
+         for sprite in self.data: 
+            if debugIt:
+               print ( '[x,y,spritex,spritey]: [' + str(x) + ',' + str(y) + ',' + str(sprite.x) + ',' + str(sprite.y) + ']' )
+               width = sprite.image.get_width()
+               print ( 'width: ' + str(width) ) 
+               height = sprite.image.get_height()
+               print ( 'height: ' + str(height) )             
+            if ((x > sprite.x) and (x < (sprite.x + sprite.image.get_width())) and \
+                (y > sprite.y) and (y < (sprite.y + sprite.image.get_height()))):
+               if debugIt:             
+                  print ( 'Found sprite at index: ' + str(index))
+               found = index 
+            index = index + 1
+         print ( 'Done in findSprite: ' + str(found) ) 
+         return found 
       
    def getImage (self,sprite):
       if sprite.hide: 
