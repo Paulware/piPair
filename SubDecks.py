@@ -61,10 +61,8 @@ class SubDecks():
    def draw (self):      
       for deck in self.decks:          
          deck.draw ()
-               
+   '''            
    def updateDisplay(self, dragDeck, pos):
-      pass 
-      '''
       if time.time() > self.showTime:
          self.displaySurface.fill ((0,0,0))
          self.draw()
@@ -74,7 +72,8 @@ class SubDecks():
             dragDeck.draw()
          self.showTime = time.time() + 0.05
          pygame.display.update()
-      '''
+   '''
+   
 if __name__ == '__main__':
    import pygame
    from Deck import Deck
@@ -95,9 +94,11 @@ if __name__ == '__main__':
          
    window = pygame.display.get_surface()
    quit = False 
-   dragging = None  
-      
    
+   # dragging: index to a card in the deck where deck is the 
+   #           last deck selected
+   dragging = None
+         
    mousePos = (0,0)
    while not quit:
       window.fill ((0,0,0))   
@@ -108,7 +109,7 @@ if __name__ == '__main__':
       for event in events: 
          (typeInput, data, addr ) = event
          if typeInput == 'move': 
-            if dragging != None: 
+            if not dragging is None: 
                deck.move (dragging,data)               
             mousePos = data
          elif typeInput == 'drop':

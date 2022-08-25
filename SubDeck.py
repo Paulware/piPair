@@ -116,6 +116,8 @@ class SubDeck ():
          card.drag = False 
    
    def findSprite (self,pos):
+      debugIt = False 
+   
       found = None
       if pos is None: 
          print ( 'ERR...SubDeck.findSprite, pos is None' )
@@ -124,7 +126,6 @@ class SubDeck ():
       else:
          x = pos[0]
          y = pos[1]
-         debugIt = True 
          index = 0 
          if debugIt: 
             print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
