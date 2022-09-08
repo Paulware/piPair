@@ -69,9 +69,8 @@ class SpriteSheet:
          
       return image       
    
-   #def remove (self,index): 
-   #   self.data.pop (index)
-
+   # numImages is the total number of images
+   # coverIndex is the zero-based index that points to the back cover 
    def __init__(self, filename, numColumns, numRows, numImages, coverIndex):    
       self.numImages = numImages
       self.coverIndex = coverIndex 
@@ -96,7 +95,7 @@ class SpriteSheet:
    
 def showCard (sheet, index, displaySurface): 
   image = sheet.data[index].image
-  print ( 'Showing index: ' + str(sheet.data[index].index) ) 
+  print ( 'Showing index: ' + str(sheet.data[index].sheetIndex) ) 
   width  = sheet.spriteWidth
   height = sheet.spriteHeight
   position = (10,50)
@@ -110,7 +109,7 @@ if __name__ == '__main__':
    DISPLAYSURF = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities.Utilities (DISPLAYSURF, BIGFONT)      
-   spriteSheet = SpriteSheet ('images/unoSpriteSheet.jpg', 10, 6, 52) 
+   spriteSheet = SpriteSheet ('images/unoSpriteSheet.jpg', 10, 6, 53, 52) 
    showCard (spriteSheet,7,DISPLAYSURF)
    
    (typeInput,data,addr) = utilities.read()

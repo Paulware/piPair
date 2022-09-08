@@ -110,16 +110,11 @@ if __name__ == '__main__':
    quit = False
    dragCard = None
    
-   decks.showSprites() # Show and set their x/y locations
-   hand.showSprites()
-   #pygame.display.flip()
+   decks.draw() # Show and set their x/y locations
+   hand.draw()
    pygame.display.update() 
    
-   while not quit:
-      #decks.showSprites() # Show and set their x/y locations
-      #hand.showSprites()
-      #pygame.display.update() 
-      
+   while not quit:      
       events = utilities.readOne()
       for event in events:
          (typeInput,data,addr) = event

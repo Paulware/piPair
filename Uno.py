@@ -98,10 +98,7 @@ class Uno ():
                    self.drawO (x,y)
                 self.drawingX = not self.drawingX                
              myMove = True               
-       print ( 'Go back to the main page...' )
-       
-    def topInfo (self): 
-       
+       print ( 'Go back to the main page...' ) 
     
 if __name__ == '__main__':
  
@@ -129,7 +126,7 @@ if __name__ == '__main__':
    window = displaySurface # pygame.display.get_surface()   
    quit = False
    while not quit: # len(deck.sprites) > 0:
-      decks.showSprites() # Show and set their x/y locations
+      decks.draw() # Show and set their x/y locations
       pygame.display.update() 
       
       #pygame.display.flip()

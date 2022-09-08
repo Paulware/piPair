@@ -61,5 +61,6 @@ if __name__ == '__main__':
    deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)
    
    hand = deck.deal(2) 
-   print ( 'Got hand: ' + str(hand)) 
+   for card in hand: 
+      print ( 'Got card: ' + str(card.sheetIndex)) 
   

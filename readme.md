@@ -4,7 +4,21 @@ But, the python code itself can be tested solely on a LAN network with windows p
 The idea is to connect 2 (or more) raspberry pi using the pi's wifi chip and then chat or play games.
 <br>Recommended bluetooth keyboard (Logitech K380):<br>
 <img src="images/k380.jpg">
+<h2>Classes</h2>
+The code is separated into classes<br>
+<Table border="2px solid">
+<tr><th>Class</th><th>Description</th></tr>
+<tr><td>SpriteSheet.py</td><td>Read a spritesheet containing all card images</td></tr>
+<tr><td>Deck.py</td><td>Create a deck from the spritesheet</td></tr>
+<tr><td>SubDeck.py</td><td>"Deal" a sub deck from the deck and display it</td></tr>
+<tr><td>PlayingCards.py</td><td>Utility class for standard 52 card playing deck</td></tr>
+<tr><td>UnoCards.py</td><td>Utility class for Uno playing deck</td><tr>
+<tr><td>Solitaire.py</td><td>The classic solo game</td></tr>
+<tr><td>Uno.py</td><td>The game</td></tr>
+</table>
+<hr>
 <p>
+
 Code is written in python in a module fashion so that students can add more games.<br>
 Currently the games that are supported are:
 <ul>
@@ -14,6 +28,7 @@ Currently the games that are supported are:
   <li>Chess</li>
   <li>Tank (battle)</li>
   <li>MTG (Magic the Gathering)</li>
+  <li>Uno</li>
   <li>Diplomacy (in progress)</li>
 </ul>
 <h1>Raspberry Pi Setup</h1>
