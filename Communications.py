@@ -133,6 +133,7 @@ class Communications:
       
          
    def send ( self, message):
+      print ( 'comm.send [' + message + ']' )
       while True: 
          self.publish (self.target, message, self.count)         
          if self.waitAck (): 

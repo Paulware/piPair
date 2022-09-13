@@ -277,6 +277,7 @@ class Pages():
                   ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
                   ticTacToe.main()                                    
                elif sprite == 2:
+                  print ( 'sprite == 2, init uno' )
                   uno = Uno (self.displaySurface,self.utilities,self.comm)
                   uno.main()
                elif sprite == 3:
@@ -370,6 +371,7 @@ class Pages():
                      self.hostGamePage()
        except Exception as ex:
           print ( 'Trouble in mainPage: ' + str(ex)) 
+          exit(1)
        #finally:
        #   self.comm.disconnect() 
        print ( 'Done in mainPage are all threads terminated?')

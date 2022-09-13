@@ -27,13 +27,16 @@ class Uno ():
        return over
     
     def main (self):
+       print ( 'Uno.main' )
        self.DISPLAYSURF.fill((BLACK))
        pygame.display.set_caption('Play Uno')        
        
        sprites = self.utilities.showImages (['quit.jpg'], [(400,500)] ) 
        pygame.display.update()       
        
+       print ( 'make deck')
        deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52)   
+       print ( 'deck made')
    
        if self.iAmHost: 
           self.utilities.showStatus ( "Waiting for player to join")
