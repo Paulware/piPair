@@ -41,6 +41,7 @@ pages = Pages(DISPLAYSURF, utilities, platform.system()=='Windows')
 name = 'laptop' if (platform.system() == 'Windows') else 'pi7'
 comm = Communications ('messages', 'localhost', name ) # '192.168.4.1', name )
 comm.connectBroker()
+print ( 'Back from connectBroker' )
 utilities.comm = comm
 pages.comm = comm
 pages.mainPage()

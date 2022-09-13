@@ -128,7 +128,8 @@ class Utilities ():
        self.comm       = None    
        self.lastType   = 0   
        self.message    = ''  
-       self.msg        = ''       
+       self.msg        = '' 
+       self.quit       = False       
        
    def isMouseClick (self,event): 
        isClick = False 
@@ -141,6 +142,62 @@ class Utilities ():
                isClick = True 
        return isClick
        
+   def read (self, blocking=True): 
+     (typeInput,data,addr) = self.getKeyOrMqtt(blocking)
+     return (typeInput,data,addr)
+     
+   # event.type == 1025 for button down 
+   # event.type == 1026 for button up   
+   # event.button == 1 for left button 
+   # event.button == 3 for right button 
+   def readOne (self):
+      events = []       
+      ev = pygame.event.get()
+      data = '' 
+      for event in ev:       
+         typeInput = ''
+         try: 
+            if event.type == 1024: # Mouse Motion                
+               typeInput = 'move'
+               data = event.pos
+               if self.lastType != 1024: 
+                  print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
+                  self.lastType = 1024
+            else:
+               if hasattr(event, 'button'): 
+                  if event.button == 1: 
+                     print ( 'drag' )
+                     if event.type == 1025: # button down 
+                        typeInput = 'drag'
+                        data = event.pos 
+                        if self.lastType != 1025: 
+                           print ('drag: ' + str(event)) 
+                           self.lastType = 1025
+                     elif event.type == 1026: # button up 
+                        print ( 'drop event' )
+                        typeInput = 'drop'              
+                        data = event.pos                                    
+                        if self.lastType != 1026: 
+                           print ('drop: ' + str(event)) 
+                           self.lastType = 1026
+                  elif event.button == 3: 
+                     if event.type == 1025: # button down 
+                        typeInput = 'select'
+                        data = event.pos 
+                        if self.lastType != 1025: 
+                           print ('select ' + str(event)) 
+                           self.lastType = 1025
+                     elif event.type == 1026: # button up 
+                        typeInput = 'right'
+                        data = event.pos
+         except Exception as ex:
+            print ( 'readOne has exception : ' + str(ex)) 
+         if typeInput != '': 
+            events.append ( (typeInput, data, 'mouse' ) )
+      #if len(events) > 0: 
+      #   print ( 'events: ' + str(events) ) 
+      return events
+        
    def showCh (self, ch,x,y):
      WHITE = (255,255,255) 
      GREEN = (0,155,0)
@@ -215,107 +272,7 @@ class Utilities ():
     
        pygame.display.update()
        return labels
-                       
-   def waitForClick(self): 
-      found = False 
-      print ( 'Wait for click' )
-      while not found:
-         ev = pygame.event.get()
-         for event in ev:  
-            # print ( 'Got event: ' + str(event)) 
-            if self.isMouseClick (event): 
-               found = True 
-      print ( 'Done waiting for click' )    
-      
-   def updateWpaSupplicant (self, ssid, password):
-      print ('updateWpaSupplicant...tbd' )
-      return 
-      try: 
-         f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
-         lines = f.readlines()
-         f.close()
-         found = False
-         for line in lines:
-            if line.find ( 'network=') > -1: 
-               found = True
-               break
-               
-         if found:
-            f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
-            for line in lines:
-                if line.lower().find ( 'ssid=') > -1: 
-                   f.write ( '     ssid=\"' + ssid + '\"\n')
-                elif line.lower().find ( 'psk=') > -1:
-                   f.write ( '     psk=\"' + password + '\"\n')
-                else:
-                   f.write (line)
-            f.close()
-         else:
-            f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'a')
-            f.write ( 'network={\n')
-            f.write ( '     ssid=\"' + ssid + '\"\n')
-            f.write ( '     psk=\"' + password + '\"\n')
-            f.write ( '}\n' )
-            f.close()      
-      except Exception as ex:
-         print ("Could not modify wpa_supplicate because: " + str(ex) )
-         
-   def read (self, blocking=True): 
-     (typeInput,data,addr) = self.getKeyOrMqtt(blocking)
-     return (typeInput,data,addr)
-     
-   # event.type == 1025 for button down 
-   # event.type == 1026 for button up   
-   # event.button == 1 for left button 
-   # event.button == 3 for right button 
-   def readOne (self):
-      events = []       
-      ev = pygame.event.get()
-      data = '' 
-      for event in ev:       
-         typeInput = ''
-         try: 
-            if event.type == 1024: # Mouse Motion                
-               typeInput = 'move'
-               data = event.pos
-               if self.lastType != 1024: 
-                  print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
-                  self.lastType = 1024
-            else:
-               if hasattr(event, 'button'): 
-                  if event.button == 1: 
-                     print ( 'drag' )
-                     if event.type == 1025: # button down 
-                        typeInput = 'drag'
-                        data = event.pos 
-                        if self.lastType != 1025: 
-                           print ('drag: ' + str(event)) 
-                           self.lastType = 1025
-                     elif event.type == 1026: # button up 
-                        print ( 'drop event' )
-                        typeInput = 'drop'              
-                        data = event.pos                                    
-                        if self.lastType != 1026: 
-                           print ('drop: ' + str(event)) 
-                           self.lastType = 1026
-                  elif event.button == 3: 
-                     if event.type == 1025: # button down 
-                        typeInput = 'select'
-                        data = event.pos 
-                        if self.lastType != 1025: 
-                           print ('select ' + str(event)) 
-                           self.lastType = 1025
-                     elif event.type == 1026: # button up 
-                        typeInput = 'right'
-                        data = event.pos
-         except Exception as ex:
-            print ( 'readOne has exception : ' + str(ex)) 
-         if typeInput != '': 
-            events.append ( (typeInput, data, 'mouse' ) )
-      #if len(events) > 0: 
-      #   print ( 'events: ' + str(events) ) 
-      return events
-        
+       
    def getInput (self, x,y):
      line = ''
      quit = False
@@ -377,6 +334,57 @@ class Utilities ():
    def showLabel (self, msg, x, y):
        (surface, rect) = self.createLabel (msg, x, y)     
        self.displaySurface.blit(surface, rect)    
+       
+   def stop (self):
+       self.quit = True  
+       print ( '*** Done in Utilities.stop ***' )
+       # pygame.display.quit()
+       # exit(1)       
+                       
+   def updateWpaSupplicant (self, ssid, password):
+      print ('updateWpaSupplicant...tbd' )
+      return 
+      try: 
+         f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
+         lines = f.readlines()
+         f.close()
+         found = False
+         for line in lines:
+            if line.find ( 'network=') > -1: 
+               found = True
+               break
+               
+         if found:
+            f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
+            for line in lines:
+                if line.lower().find ( 'ssid=') > -1: 
+                   f.write ( '     ssid=\"' + ssid + '\"\n')
+                elif line.lower().find ( 'psk=') > -1:
+                   f.write ( '     psk=\"' + password + '\"\n')
+                else:
+                   f.write (line)
+            f.close()
+         else:
+            f = open ( '/etc/wpa_supplicant/wpa_supplicant.conf', 'a')
+            f.write ( 'network={\n')
+            f.write ( '     ssid=\"' + ssid + '\"\n')
+            f.write ( '     psk=\"' + password + '\"\n')
+            f.write ( '}\n' )
+            f.close()      
+      except Exception as ex:
+         print ("Could not modify wpa_supplicate because: " + str(ex) )
+         
+   def waitForClick(self): 
+      found = False 
+      print ( 'Wait for click' )
+      while not found:
+         ev = pygame.event.get()
+         for event in ev:  
+            # print ( 'Got event: ' + str(event)) 
+            if self.isMouseClick (event): 
+               found = True 
+      print ( 'Done waiting for click' )    
+      
        
 if __name__ == "__main__":
    print ("pygame.init")

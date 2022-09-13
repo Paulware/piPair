@@ -195,8 +195,7 @@ class Pages():
           ticTacToe.iAmHost = False
           ticTacToe.main()      
        else:       
-          quit = True 
-          while not quit and not showOnly: 
+          while not self.utilities.quit and not showOnly: 
              ev = pygame.event.get()
              for event in ev:
                # Check if an ssid is clicked on
@@ -214,8 +213,7 @@ class Pages():
                      self.comm.send ( 'join uno')
                      uno = Uno(self.displaySurface,self.utilities,self.comm)
                      uno.iAmHost = False
-                     uno.main()                   
-                     quit = True                   
+                     uno.main()                                     
           '''
           if self.comm.isReady():
              print ( 'in joinGame, comm is ready' ) 
@@ -252,7 +250,8 @@ class Pages():
                
  
    # Show the list the games and play a game when it is selected
-   def hostGamePage(self,showOnly=False):       
+   def hostGamePage(self,showOnly=False):  
+       print ( 'hostGamePage ' )   
        pygame.display.set_caption('Select a game')       
        BLACK = (0,0,0)       
        self.displaySurface.fill((BLACK))
@@ -262,8 +261,7 @@ class Pages():
        self.utilities.showLabel ('Select a game or Quit', 50, 20)    
        pygame.display.update()
        
-       quit = False
-       while not quit and not showOnly:   
+       while not self.utilities.quit and not showOnly:   
           ev = pygame.event.get()
           for event in ev:   
             # Check if an ssid is clicked on       
@@ -280,6 +278,7 @@ class Pages():
                   print ( 'sprite == 2, init uno' )
                   uno = Uno (self.displaySurface,self.utilities,self.comm)
                   uno.main()
+                  print ( 'Back from uno.main()' )
                elif sprite == 3:
                   self.checkersPage()
                elif sprite == 4:
@@ -293,7 +292,7 @@ class Pages():
             #if sprite != -1: # Quit is the only other option           
             #   print ("Selected command: " + str(sprite))
             #   quit = True  
-       print ( 'Done in gamePage, reshow mainPage' )
+       print ( '***Done in hostGamePage, reshow mainPage' )
        self.mainPage (True)
        
    # Show the list of players and allow selection
@@ -332,7 +331,9 @@ class Pages():
        print ( 'Returning to mainpage' )  
        self.mainPage (True)       
        
-   def mainPage(self,showOnly = False):   
+   def mainPage(self,showOnly = False):  
+       print ( 'Pages.mainPage' )
+       
        if self.comm.target != '': 
           pygame.display.set_caption('Host Join or Play, connected to: ' + self.comm.target)        
        else:
@@ -347,9 +348,8 @@ class Pages():
        pygame.display.update()
        self.comm.target = 'pi7' if (platform.system() == 'Windows') else 'laptop'
 
-       quit = False
        try: 
-          while not quit and not showOnly:   
+          while not self.utilities.quit and not showOnly:   
              ev = pygame.event.get()
              for event in ev:       
                sprite = self.utilities.getSpriteClick (event, sprites )
@@ -370,8 +370,11 @@ class Pages():
                   elif sprite == 5: # Host Game
                      self.hostGamePage()
        except Exception as ex:
-          print ( 'Trouble in mainPage: ' + str(ex)) 
-          exit(1)
-       #finally:
-       #   self.comm.disconnect() 
-       print ( 'Done in mainPage are all threads terminated?')
+          print ( 'call self.comm.stop' )
+          self.comm.stop()
+          print ( 'call self.utilities.stop ' )
+          self.utilities.stop() 
+          print ( 'Back from utilities.stop ' )
+          print ( 'Trouble in mainPage: ' + str(ex))
+          
+       print ( 'Done in mainPage all threads should be terminated')

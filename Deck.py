@@ -52,7 +52,7 @@ class Deck (SpriteSheet):
       print ( 'Done in Deck.init' ) 
      
 if __name__ == '__main__':
-
+   print ( '***Deck __main__' ) 
    import pygame
    import Utilities
    from OptionBox import OptionBox 

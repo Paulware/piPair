@@ -29,6 +29,7 @@ class Communications:
          ok = False 
       
       self.thread = threading.Thread(target=self.client.loop_forever, args=())
+      print ('***Communications starting the client loop_forever thread' )
       self.thread.start()
       self.target = ''
       self.waitConnected()

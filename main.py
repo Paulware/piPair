@@ -117,8 +117,6 @@ def readConfigData():
       assert False, 'error while reading config data, line:[' + line + '] exception: ' + str(ex) 
       iAmHost = None
 
-
-
 '''
    Utilities
 '''
