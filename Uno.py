@@ -105,25 +105,27 @@ class Uno ():
                          self.comm.send ( 'move tictactoe ' + str(x) + ' ' + str(y))
              '''
                                 
-             # Use data above to determine sprite click?          
-             sprite = self.utilities.getSpriteClick (event, sprites ) 
-             if sprite != -1: # Quit is the only other option           
-                print ("Selected command: " + str(sprite))
-                quit = True    
-                     
-             elif event == 'mqtt':
-                if data.find ( 'move tictactoe') > -1: # Opponent has moved 
-                   move = data.split ( ' ' )
-                   print ( 'move : ' + str(move) ) 
-                   x = int (move[2])
-                   y = int (move[3])
-                   print ( 'x,y: ' + str(x) + ',' + str(y) ) 
-                   if self.drawingX: 
-                      self.drawX (x,y)
-                   else:
-                      self.drawO (x,y)
-                   self.drawingX = not self.drawingX                
-                myMove = True               
+             # Use data above to determine sprite click?  
+              
+             if typeInput == 'drag':  
+                sprite = self.utilities.findSpriteClick (event[1], sprites ) 
+                if sprite != -1: # Quit is the only other option           
+                   print ("Selected command: " + str(sprite))
+                   quit = True    
+                        
+                elif event == 'mqtt':
+                   if data.find ( 'move tictactoe') > -1: # Opponent has moved 
+                      move = data.split ( ' ' )
+                      print ( 'move : ' + str(move) ) 
+                      x = int (move[2])
+                      y = int (move[3])
+                      print ( 'x,y: ' + str(x) + ',' + str(y) ) 
+                      if self.drawingX: 
+                         self.drawX (x,y)
+                      else:
+                         self.drawO (x,y)
+                      self.drawingX = not self.drawingX                
+                   myMove = True               
        print ( 'Go back to the main page...' ) 
     
 if __name__ == '__main__':

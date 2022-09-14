@@ -92,7 +92,19 @@ class Utilities ():
      return (typeInput,data,addr)
 
       
+   def findSpriteClick (self, pos, sprites ): 
+      print ( 'findSpriteClick' )
+      found = -1
+      clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
+      for i in range (len(sprites)): 
+         if clicked_sprite[0] == sprites [i]: 
+            found = i
+            break
+      return found
+               
+      
    def getSpriteClick (self, event, sprites): 
+       print ( 'getSpriteClick event: ' + str(event)  )
        self.clicks = {}       
        found = -1
        if (event == pygame.MOUSEBUTTONUP) or self.isMouseClick (event): 

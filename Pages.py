@@ -250,43 +250,51 @@ class Pages():
                
  
    # Show the list the games and play a game when it is selected
-   def hostGamePage(self,showOnly=False):  
+   def hostGamePage(self,showOnly=False): 
+
+       def showOptions (): 
+          self.displaySurface.fill((BLACK))
+          games = ['Chat', 'Tic Tac Toe', 'Uno', 'Checkers', 'Chess', 'Panzer Leader', 'Quit']       
+          labels = self.utilities.showSsids(games)           
+          self.utilities.showLabel ('Select a game or Quit', 50, 20)    
+          pygame.display.update()       
+          return labels
        print ( 'hostGamePage ' )   
        pygame.display.set_caption('Select a game')       
        BLACK = (0,0,0)       
-       self.displaySurface.fill((BLACK))
-       games = ['Chat', 'Tic Tac Toe', 'Uno', 'Checkers', 'Chess', 'Panzer Leader']       
-       labels = self.utilities.showSsids(games)    
-       # sprites = self.utilities.showImages (['quit.jpg'], [(400,400)] )       
-       self.utilities.showLabel ('Select a game or Quit', 50, 20)    
-       pygame.display.update()
+       labels = showOptions()
        
-       while not self.utilities.quit and not showOnly:   
-          ev = pygame.event.get()
-          for event in ev:   
-            # Check if an ssid is clicked on       
-            sprite = self.utilities.getSpriteClick (event, labels ) 
-            if sprite != -1:          
-               print ("Selected game: " + str(sprite)) 
-               if sprite == 0: 
-                  chatPage = ChatPage (self.displaySurface,self.utilities,self.comm)
-                  chatPage.main()
-               elif sprite == 1:
-                  ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
-                  ticTacToe.main()                                    
-               elif sprite == 2:
-                  print ( 'sprite == 2, init uno' )
-                  uno = Uno (self.displaySurface,self.utilities,self.comm)
-                  uno.main()
-                  print ( 'Back from uno.main()' )
-               elif sprite == 3:
-                  self.checkersPage()
-               elif sprite == 4:
-                  self.chessPage()
-               elif sprite == 5:
-                  self.panzerLeaderPage()
-               quit = True
-               
+       quit = False
+       while not quit and not showOnly:
+          events = self.utilities.readOne()
+          for event in events:
+             (typeInput,data,addr) = event
+             # Check if an ssid is clicked on 
+             if typeInput == 'drag':         
+                pos = event[1]             
+                sprite = self.utilities.findSpriteClick (pos, labels ) 
+                if sprite != -1:          
+                   print ("Selected game: " + str(sprite)) 
+                   if sprite == 0: 
+                      chatPage = ChatPage (self.displaySurface,self.utilities,self.comm)
+                      chatPage.main()
+                   elif sprite == 1:
+                      ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
+                      ticTacToe.main()                                    
+                   elif sprite == 2:
+                      print ( 'sprite == 2, init uno' )
+                      uno = Uno (self.displaySurface,self.utilities,self.comm)
+                      uno.main()
+                      labels = showOptions()
+                      print ( 'Back from uno.main()' )
+                   elif sprite == 3:
+                      self.checkersPage()
+                   elif sprite == 4:
+                      self.chessPage()
+                   elif sprite == 5:
+                      self.panzerLeaderPage()
+                   elif sprite == 6:
+                      quit = True                   
                
             #sprite = self.utilities.getSpriteClick (event, sprites ) 
             #if sprite != -1: # Quit is the only other option           
@@ -349,7 +357,8 @@ class Pages():
        self.comm.target = 'pi7' if (platform.system() == 'Windows') else 'laptop'
 
        try: 
-          while not self.utilities.quit and not showOnly:   
+          quit = False 
+          while not quit and not showOnly:   
              ev = pygame.event.get()
              for event in ev:       
                sprite = self.utilities.getSpriteClick (event, sprites )
