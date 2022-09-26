@@ -214,34 +214,49 @@ if __name__ == "__main__":
    utilities = Utilities(DISPLAYSURF, BIGFONT)  
    userMessage = ''            
 
-      
-   if len(sys.argv) != 4:
+   if len(sys.argv) == 1: 
+      broker = 'localhost'
+      myName = 'pi7'
+      target = 'laptop'
+   elif len(sys.argv) != 4:
       print ( 'Note mosquitto should be installed and running' )
       print ( 'Usage: python3 Communications.py broker myName targetName' )
       print ( 'python3 Communications.py localhost pi7 laptop' )
+      exit(1)
    else:
-      print ( 'To test, install mosquitto and then run mosquitto from the C:\Program Files\Mosquitto' )
-      try: 
-         topic = 'messages'
-         broker = sys.argv[1]
-         myName = sys.argv[2]
-         target = sys.argv[3]          
-
-         print ( 'I am ' + myName + ' talking to: ' + target ) 
-         comm = Communications (topic,broker,myName);
-         if comm.connectBroker(): 
-            comm.setTarget (target)            
-
-            while True:  
-               (event,data,addr) = utilities.getKeyOrMqtt()
+      broker = sys.argv[1]
+      myName = sys.argv[2]
+      target = sys.argv[3]          
+      
+   topic = 'messages'
+      
+   print ( 'To test, install mosquitto and then run mosquitto from the C:\Program Files\Mosquitto' )
+   try: 
+      print ( 'I am ' + myName + ' talking to: ' + target ) 
+      comm = Communications (topic,broker,myName);
+      if comm.connectBroker(): 
+         comm.setTarget (target)            
+         quit = False 
+         while not quit:  
+            events = utilities.readOne()
+            for ev in events: 
+               (event, data, addr ) = ev
+               if (event == 'keypress'):
+                  if (data == '1'): 
+                     print ( 'Output test data for command 1' )
+                  elif (data == '2'):
+                     print ( 'Output test data for command 2' ) 
+                  elif (data == 'q'): 
+                     quit = True
+                     
                if utilities.message != '': 
                   print ( 'handle message : [' + utilities.message + ']' )               
                   comm.send(utilities.message )
                   if utilities.message == 'quit': 
                      break
                   utilities.message = ''
-         else:
-            print ( 'Could not initialize Communications')
-            
-      finally:
-         comm.disconnect()      
+      else:
+         print ( 'Could not initialize Communications')
+         
+   finally:
+      comm.disconnect()      

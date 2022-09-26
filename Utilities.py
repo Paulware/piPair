@@ -178,7 +178,8 @@ class Utilities ():
        self.lastType   = 0   
        self.message    = ''  
        self.msg        = '' 
-       self.quit       = False       
+       self.quit       = False
+       self.debugIt    = False        
        
    def isMouseClick (self,event): 
        isClick = False 
@@ -199,6 +200,7 @@ class Utilities ():
    # event.type == 1026 for button up   
    # event.button == 1 for left button 
    # event.button == 3 for right button 
+   # event.type == 769 for keyup 
    def readOne (self):
       events = []       
       ev = pygame.event.get()
@@ -210,41 +212,57 @@ class Utilities ():
                typeInput = 'move'
                data = event.pos
                if self.lastType != 1024: 
-                  print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
+                  if self.debugIt: 
+                     print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
                   self.lastType = 1024
             else:
                if hasattr(event, 'button'): 
                   if event.button == 1: 
-                     print ( 'drag' )
+                     if self.debugIt:
+                        print ( 'drag' )
                      if event.type == 1025: # button down 
                         typeInput = 'drag'
                         data = event.pos 
                         if self.lastType != 1025: 
-                           print ('drag: ' + str(event)) 
+                           if self.debugIt:
+                              print ('drag: ' + str(event)) 
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
-                        print ( 'drop event' )
+                        if self.debugIt:
+                           print ( 'drop event' )
                         typeInput = 'drop'              
                         data = event.pos                                    
                         if self.lastType != 1026: 
-                           print ('drop: ' + str(event)) 
+                           if self.debugIt:
+                              print ('drop: ' + str(event)) 
                            self.lastType = 1026
                   elif event.button == 3: 
                      if event.type == 1025: # button down 
                         typeInput = 'select'
                         data = event.pos 
                         if self.lastType != 1025: 
-                           print ('select ' + str(event)) 
+                           if self.debugIt:
+                              print ('select ' + str(event)) 
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
                         typeInput = 'right'
                         data = event.pos
+               elif event.type == 769: # keyup 
+                  typeInput = 'keypress'
+                  data = event.unicode
+                  if self.debugIt:
+                     print ( 'events: ' + str(events) ) 
+                  if data == ' ': 
+                     self.debugIt = not self.debugIt
+               elif self.debugIt: 
+                  print ( 'Not handled event: ' + str(event))
+                                     
          except Exception as ex:
             print ( 'readOne has exception : ' + str(ex)) 
          if typeInput != '': 
             events.append ( (typeInput, data, 'mouse' ) )
-      #if len(events) > 0: 
-      #   print ( 'events: ' + str(events) ) 
+      if (len(events) > 0) and self.debugIt: 
+         print ( 'events: ' + str(events) ) 
       return events
         
    def showCh (self, ch,x,y):
