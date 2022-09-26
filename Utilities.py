@@ -3,6 +3,7 @@ import subprocess
 import os
 import socket
 import select
+from TextBox import TextBox
 
 '''
    Utilities
@@ -102,6 +103,42 @@ class Utilities ():
             break
       return found
                
+   def getInput (self, x,y):
+     line = ''
+     quit = False
+     while not quit:
+        (typeInput,data,addr) = self.getKeyOrMqtt()
+        if typeInput == 'key': 
+           if data == chr(13):
+              quit = True
+           else:
+              if data == chr(8):
+                 print ( "backspace detected")
+                 if len(line) > 0:
+                    lastCh = line[len(line)-1]
+                    x = x - self.chOffset (lastCh) #Todo need to get lastCh from 
+                    self.showCh (' ', x, y)
+                    self.showCh (' ', x+4, y)
+                    self.showCh (' ', x+8, y)
+                    line = line[:len(line)-1] 
+              else:
+                 line = line + data
+                 ch = data
+                 self.showCh (ch, x, y)           
+                 x = x + self.chOffset(ch)
+        elif typeInput == 'mqtt':
+           print ( 'get_input, handle mqtt' )
+           exit(1)
+           line = data
+           quit = True
+        elif typeInput == 'tcp':
+           line = data
+           print ( 'got some tcp data yo: ' + data)
+           quit = True
+           
+     print ( "getInput: " + line)
+     return (typeInput,line,addr)  
+
       
    def getSpriteClick (self, event, sprites): 
        print ( 'getSpriteClick event: ' + str(event)  )
@@ -261,11 +298,14 @@ class Utilities ():
           print ( 'Show status: ' + self.statusMessage )
           height = self.DISPLAYHEIGHT - 23
           pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
-          pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
-          self.showLine (self.statusMessage, 1, height+4) # Show status message
+          #pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
+          #self.showLine (self.statusMessage, 1, height+4) # Show status message
+          line1 = TextBox ( status )
+          line1.draw ( (0,600,30) )
           print ( 'pygame.update')
           pygame.display.update()
           print ('Done showing Status: ' + self.statusMessage)
+          
        
    def showSsids(self,ssids):
        BLACK      = (0,   0,   0)
@@ -285,42 +325,6 @@ class Utilities ():
        pygame.display.update()
        return labels
        
-   def getInput (self, x,y):
-     line = ''
-     quit = False
-     while not quit:
-        (typeInput,data,addr) = self.getKeyOrMqtt()
-        if typeInput == 'key': 
-           if data == chr(13):
-              quit = True
-           else:
-              if data == chr(8):
-                 print ( "backspace detected")
-                 if len(line) > 0:
-                    lastCh = line[len(line)-1]
-                    x = x - self.chOffset (lastCh) #Todo need to get lastCh from 
-                    self.showCh (' ', x, y)
-                    self.showCh (' ', x+4, y)
-                    self.showCh (' ', x+8, y)
-                    line = line[:len(line)-1] 
-              else:
-                 line = line + data
-                 ch = data
-                 self.showCh (ch, x, y)           
-                 x = x + self.chOffset(ch)
-        elif typeInput == 'mqtt':
-           print ( 'get_input, handle mqtt' )
-           exit(1)
-           line = data
-           quit = True
-        elif typeInput == 'tcp':
-           line = data
-           print ( 'got some tcp data yo: ' + data)
-           quit = True
-           
-     print ( "getInput: " + line)
-     return (typeInput,line,addr)  
-
    def scanForSsids (self):
        ssids = []
        print ( "Show wlan ssids" )               
