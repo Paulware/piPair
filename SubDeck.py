@@ -223,39 +223,6 @@ class SubDeck ():
    def showAll (self):
       for card in self.data:
          card.hide = False
-   
-   '''
-   # Show the sprites at specified start position and update the location of each   
-   def showSprites (self): 
-      debugIt = True
-      x = self.startX
-      y = self.startY
-      if debugIt:         
-         print ('showSprites, self.data: ' + str(self.data)) 
-
-      index = 0      
-      for sprite in self.data:
-         image = self.getImage (sprite)
-         xOffset = self.xMultiplier * image.get_width()
-         yOffset = self.yMultiplier * image.get_height()         
-         if sprite.drag:
-            if debugIt:
-               print ( 'sprite is draggable' )          
-            pos = pygame.mouse.get_pos()        
-            self.displaySurface.blit (image,pos)
-            sprite.x = pos[0]
-            sprite.y = pos[1]         
-         else:
-            if debugIt:
-               print ( 'showSprites, sprite is not draggable' )
-            self.displaySurface.blit (image, (x,y)) 
-            # Update location so it can be found later
-            sprite.x = x
-            sprite.y = y
-            x = x + xOffset  
-            y = y + yOffset            
-         index = index + 1
-   '''      
       
    # Note: Tap should be for a specific game.   
    def tap (self,index,value): 

@@ -1,7 +1,7 @@
 import inspect
 import pygame
 import time
-import Communications
+from Communications import Communications
 
 from Deck      import Deck
 from Utilities import Utilities
@@ -34,30 +34,25 @@ class Uno ():
        pygame.display.update()       
 
        deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)   
-          
-          
+                 
        if self.iAmHost: 
           state = 1   
-          self.utilities.showStatus ( "Waiting for player to join")
-          '''
+          self.utilities.showStatus ( "Waiting for player to join")         
           pygame.display.update()
           self.comm.waitFor ( 'join uno')
-          hand = SubDeck (deck,7)
-          hand.showSprites(100,600,80,120,self.DISPLAYSURF) 
-          opponent = SubDeck (deck,7)
-          opponent.changeImage ( 'images/unoFlip.jpg')          
-          opponent.showSprites(100,100,80,120,self.DISPLAYSURF)
-          inputStack = SubDeck (deck, 52 - 14)
-          inputStack.changeImage ( 'images/unoFlip.jpg')
-          inputStack.showStack (100,300,80,120,self.DISPLAYSURF)
-          '''
+          hand = SubDeck (deck,7, displaySurface=self.DISPLAYSURF)
+          hand.draw()
+          opponent = SubDeck (deck,7, displaySurface=self.DISPLAYSURF)
+          #opponent.changeImage ( 'images/unoFlip.jpg')          
+          opponent.draw()
+          inputStack = SubDeck (deck, 52 - 14, displaySurface=self.DISPLAYSURF)
+          #inputStack.changeImage ( 'images/unoFlip.jpg')
+          inputStack.draw() # showStack (100,300,80,120,self.DISPLAYSURF)
        else: # Host goes first...
           state = 2
-          '''
           self.utilities.showStatus ( "Waiting for host to deal")
           pygame.display.update()
           self.comm.waitForPeek ( 'deal uno')
-          '''
        
        joinTimeout = 0    
        print ( 'Start while loop' )
@@ -69,13 +64,13 @@ class Uno ():
                 msg = self.comm.pop()
                 if msg.find ('join uno') > -1: 
                    state = 3 
-                   print ( 'found: ' + message + ' in ' + msg)
+                   print ( 'found: join uno in ' + msg)
           elif state == 2: 
              if not self.comm.empty(): 
                 msg = self.comm.peek()
                 if msg.find ('deal uno') > -1: 
                    state = 3 
-                   print ( 'found: ' + message + ' in ' + msg)
+                   print ( 'found: deal uno in ' + msg)
        
           events = self.utilities.readOne()
           for event in events:
@@ -124,64 +119,86 @@ class Uno ():
                          self.drawX (x,y)
                       else:
                          self.drawO (x,y)
-                      self.drawingX = not self.drawingX                
-                   myMove = True               
+                      self.drawingX = not self.drawingX     
+                   myMove = True    
+          if self.utilities.quit:
+             print ( 'self.utilities.quit' )
+          elif self.gameOver(): 
+             print ( 'self.gameOver' )
+          elif quit: 
+             print ( 'quit == True' )          
        print ( 'Go back to the main page...' ) 
     
 if __name__ == '__main__':
- 
-   pygame.init()
-   displaySurface = pygame.display.set_mode((1200, 800))
-   BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
-   utilities = Utilities (displaySurface, BIGFONT)   
-   
-   deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
-   hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
-   discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile    = SubDeck (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile.hideAll () 
-   
-   cards=[]
-   cards.append (hand)
-   cards.append (drawPile)   
-   cards.append (discardPile)
-   decks = SubDecks (cards)    
-   
-   TextBox('Opponent', x=100, y=  5).draw()
-   TextBox('Discard',  x=100, y=175).draw()
-   TextBox('Draw',     x=310, y=175).draw()
-   TextBox('Hand',     x=100, y=375).draw()   
-   window = displaySurface # pygame.display.get_surface()   
-   quit = False
-   while not quit: # len(deck.sprites) > 0:
-      decks.draw() # Show and set their x/y locations
-      pygame.display.update() 
+   try: 
+      import sys
+      numParameters = len(sys.argv)
+      print ( 'number of parameters: ' + str(numParameters) ) 
       
-      #pygame.display.flip()
-      #pygame.event.pump() 
-      events = utilities.readOne()
-      for event in events:
-         (typeInput,data,addr) = event
-         # print ( 'typeInput: ' + str(typeInput))
-         if typeInput == 'select':
-            print ( '\n\n***Select***\n\ndata: ' + str(data)   )
-            index = hand.findSprite (data)  
-            if index != -1: 
-                x = hand.data[index].x
-                y = hand.data[index].y
-                optionBox = OptionBox (['Play', 'Cancel'], x, y)
-                selection = optionBox.getSelection()
-                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-                if selection == 'Cancel': 
-                   quit = True
-                   print ( 'quit is now: ' + str(quit) )
-                   break
-                elif selection == 'Play':
-                   discardPile.addCard (hand,index)
-                   hand.data[index].deleted = True 
-                   # hand.discard (index) 
-                   hand.addCard (drawPile, drawPile.topCard())
+      pygame.init()
+      displaySurface = pygame.display.set_mode((1200, 800))
+      BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+      
+      name = 'pi7'   
+      comm = Communications ('messages', 'localhost', name )
+      comm.connectBroker()
+      comm.setTarget ( 'laptop' )
+      print ( 'Back from connectBroker' )
+      
+      utilities = Utilities (displaySurface, BIGFONT)   
+      utilities.comm = comm
+      
+      deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
+      hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
+      discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+      drawPile    = SubDeck (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+      drawPile.hideAll () 
+      
+      # creates decks array 
+      cards=[]
+      cards.append (hand)
+      cards.append (drawPile)   
+      cards.append (discardPile)
+      decks = SubDecks (cards)    
+      
+      TextBox('Opponent', x=100, y=  5).draw()
+      TextBox('Discard',  x=100, y=175).draw()
+      TextBox('Draw',     x=310, y=175).draw()
+      TextBox('Hand',     x=100, y=375).draw()   
+      window = displaySurface # pygame.display.get_surface()   
+      quit = False
+      
+      comm.send ( 'join uno')   
+      
+      while not quit: # len(deck.sprites) > 0:
+         decks.draw() # Show and set their x/y locations
+         pygame.display.update() 
+         
+         events = utilities.readOne()
+         for event in events:
+            (typeInput,data,addr) = event
+            # print ( 'typeInput: ' + str(typeInput))
+            if typeInput == 'select':
+               print ( '\n\n***Select***\n\ndata: ' + str(data)   )
+               index = hand.findSprite (data)  
+               if index != -1: 
+                   x = hand.data[index].x
+                   y = hand.data[index].y
+                   optionBox = OptionBox (['Play', 'Cancel'], x, y)
+                   selection = optionBox.getSelection()
+                   print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+                   if selection == 'Cancel': 
+                      quit = True
+                      print ( 'quit is now: ' + str(quit) )
+                      break
+                   elif selection == 'Play':
+                      discardPile.addCard (hand,index)
+                      hand.data[index].deleted = True 
+                      # hand.discard (index) 
+                      hand.addCard (drawPile, drawPile.topCard())
 
-                window.fill ((0,0,0))
-            
-   print ( 'Done yo' )
+                   window.fill ((0,0,0))
+               
+      print ( 'Done yo' )
+   finally: 
+      comm.disconnect()

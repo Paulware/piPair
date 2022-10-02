@@ -141,7 +141,7 @@ class Utilities ():
 
       
    def getSpriteClick (self, event, sprites): 
-       print ( 'getSpriteClick event: ' + str(event)  )
+       # print ( 'getSpriteClick event: ' + str(event)  )
        self.clicks = {}       
        found = -1
        if (event == pygame.MOUSEBUTTONUP) or self.isMouseClick (event): 

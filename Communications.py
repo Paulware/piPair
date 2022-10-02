@@ -136,14 +136,17 @@ class Communications:
       print ( 'Target is now set to: ' + target )
       
    def send ( self, message):
-      print ( 'comm.send [' + message + ']' )
-      while True: 
-         self.publish (self.target, message, self.count)         
-         if self.waitAck (): 
-            self.count = self.count + 1 
-            break
-         else:
-            print ( 'Re publish message: ' + message)
+      if self.target == '': 
+         raise Exception('Communication.target not set, use setTarget')
+      else:
+         print ( 'comm.send [' + message + ']' )
+         while True: 
+            self.publish (self.target, message, self.count)         
+            if self.waitAck (): 
+               self.count = self.count + 1 
+               break
+            else:
+               print ( 'Re publish message: ' + message)
       
    def stop(self):
       self.quit = True
