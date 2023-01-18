@@ -233,21 +233,22 @@ if __name__ == "__main__":
       
    topic = 'messages'
       
-   print ( 'To test, install mosquitto and then run mosquitto from the C:\Program Files\Mosquitto' )
    try: 
       print ( 'I am ' + myName + ' talking to: ' + target ) 
       comm = Communications (topic,broker,myName);
       if comm.connectBroker(): 
          comm.setTarget (target)            
          quit = False 
+         print ( 'Ready to accept test commands 1,2,q' )
          while not quit:  
             events = utilities.readOne()
             for ev in events: 
                (event, data, addr ) = ev
                if (event == 'keypress'):
                   if (data == '1'): 
-                     print ( 'Output test data for command 1' )
-                  elif (data == '2'):
+                     print ( 'send dealuno' )
+                     comm.send ( 'join uno')                       
+                  elif (data == '2'): 
                      print ( 'Output test data for command 2' ) 
                   elif (data == 'q'): 
                      quit = True

@@ -44,6 +44,7 @@ class Uno ():
           self.comm.waitFor ( 'join uno')
           deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
           hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
+          opponent    = SubDeck (deck,  7, startXY=(100,50), displaySurface=displaySurface)
           discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
           drawPile    = SubDeck (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
           drawPile.hideAll () 
@@ -51,6 +52,7 @@ class Uno ():
           # creates decks array 
           cards=[]
           cards.append (hand)
+          cards.append (opponent)
           cards.append (drawPile)   
           cards.append (discardPile)
           decks = SubDecks (cards)    
@@ -64,6 +66,7 @@ class Uno ():
           self.comm.send ( 'deal uno')
        else: # Host goes first...
           state = 2
+          self.comm.send ( 'join uno' )
           self.utilities.showStatus ( "Waiting for host to deal")
           pygame.display.update()
           self.comm.waitForPeek ( 'deal uno')
@@ -164,6 +167,11 @@ if __name__ == '__main__':
       utilities = Utilities (displaySurface, BIGFONT)   
       utilities.comm = comm
       
+      uno = Uno(self.displaySurface,utilities,comm)
+      uno.iAmHost = True
+      uno.main()       
+      
+      '''
       deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
       hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
       discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
@@ -175,7 +183,7 @@ if __name__ == '__main__':
       cards.append (hand)
       cards.append (drawPile)   
       cards.append (discardPile)
-      decks = SubDecks (cards)    
+      decks = SubDecks (cards)
       
       TextBox('Opponent', x=100, y=  5).draw()
       TextBox('Discard',  x=100, y=175).draw()
@@ -220,5 +228,6 @@ if __name__ == '__main__':
                    window.fill ((0,0,0))
                
       print ( 'Done yo' )
+      '''
    finally: 
       comm.disconnect()

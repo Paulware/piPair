@@ -210,7 +210,7 @@ class Pages():
                      ticTacToe.main()                   
                      quit = True                   
                   elif sprite == 1:
-                     self.comm.send ( 'join uno')
+                     #self.comm.send ( 'join uno')
                      uno = Uno(self.displaySurface,self.utilities,self.comm)
                      uno.iAmHost = False
                      uno.main()                                     
