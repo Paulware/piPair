@@ -193,12 +193,19 @@ class Pages():
        elif selection == 'TicTacToe': 
           ticTacToe = TicTacToe(self.displaySurface,self.utilities,self.comm)
           ticTacToe.iAmHost = False
-          ticTacToe.main()      
+          ticTacToe.main()    
+       elif selection == 'Uno': 
+          uno = Uno(self.displaySurface,self.utilities,self.comm)
+          uno.iAmHost = False
+          uno.main() 
+          print ( 'Done in uno.main....returning...' )                            
        else:       
           while not self.utilities.quit and not showOnly: 
              ev = pygame.event.get()
              for event in ev:
                # Check if an ssid is clicked on
+               print ( '***err...labels not defined yet***' )
+               exit(1)
                sprite = self.utilities.getSpriteClick (event, labels )
          
                if sprite != -1:
@@ -213,7 +220,8 @@ class Pages():
                      #self.comm.send ( 'join uno')
                      uno = Uno(self.displaySurface,self.utilities,self.comm)
                      uno.iAmHost = False
-                     uno.main()                                     
+                     uno.main() 
+                     print ( 'Done in uno.main....returning...' )                     
           '''
           if self.comm.isReady():
              print ( 'in joinGame, comm is ready' ) 
@@ -379,7 +387,7 @@ class Pages():
                   elif sprite == 5: # Host Game
                      self.hostGamePage()
        except Exception as ex:
-          print ( 'call self.comm.stop' )
+          print ( 'call self.comm.stop due to exception: ' + str(ex) )
           self.comm.stop()
           print ( 'call self.utilities.stop ' )
           self.utilities.stop() 

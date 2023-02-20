@@ -12,7 +12,7 @@ class SubDeck ():
    #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
    #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
       print ( 'SubDeck.init' )
       if displaySurface is None: 
          print ( 'You should specify displaySurface when subdeck is created' )
@@ -40,7 +40,14 @@ class SubDeck ():
       else:
          self.deck = deckBasis
          if not (self.deck is None): 
-            dealtCards = self.deck.deal (numCards)
+            if len(cards) > 0:
+               dealtCards = self.deck.dealList (cards) 
+               numCards = len(cards)
+            else:             
+               if numCards == 0: # Deal all remaining cards 
+                  numCards = self.deck.length()         
+         
+               dealtCards = self.deck.deal (numCards)
                
             self.data = dealtCards
             xOffset = self.xMultiplier * width
@@ -76,7 +83,16 @@ class SubDeck ():
       
    def bottomSheetIndex(self):   
       return self.data[0].sheetIndex
-      
+   
+   def cardsToStr (self):
+      message = ''
+      for card in self.data: 
+         if message != '': 
+            message = message + ' '
+         message = message + str(card.sheetIndex)
+      print ( 'cardsToStr got: ' + message )
+      return message 
+          
    # shift cards and place top card at the bottom of the deck    
    def cycleTopCard (self):
       print ( 'cycle top card, length of deck: ' + str(len(self.data)))
@@ -171,7 +187,6 @@ class SubDeck ():
       for card in self.data: 
          print ( 'self.data[' + str(count) + '].index: ' + str(card.sheetIndex))  
          count = count + 1
-         
    def move (self,index,pos): 
       # self.displaySurface.fill ((0,0,0))   
    

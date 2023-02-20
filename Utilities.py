@@ -30,11 +30,63 @@ class Utilities ():
 
    def fileExists (self, filename): 
       exists = os.path.exists ( filename )   
-      return exists
+      return exists      
+      
+   def findSpriteClick (self, pos, sprites ): 
+      print ( 'findSpriteClick' )
+      found = -1
+     
+      clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
+      if len(clicked_sprite) == 0: 
+         print ( 'len(clicked_sprite) == 0' ) 
+      else: 
+         for i in range (len(sprites)): 
+            print ( 'i: ' + str(i) + ' len(sprites): ' + str(len(sprites)) )
+            if clicked_sprite[0] == sprites [i]: 
+               found = i
+               break
+               
+      return found      
       
    def flip(self):
       pygame.display.flip()
       pygame.event.pump()
+                     
+   def getInput (self, x,y):
+     line = ''
+     quit = False
+     while not quit:
+        (typeInput,data,addr) = self.getKeyOrMqtt()
+        if typeInput == 'key': 
+           if data == chr(13):
+              quit = True
+           else:
+              if data == chr(8):
+                 print ( "backspace detected")
+                 if len(line) > 0:
+                    lastCh = line[len(line)-1]
+                    x = x - self.chOffset (lastCh) #Todo need to get lastCh from 
+                    self.showCh (' ', x, y)
+                    self.showCh (' ', x+4, y)
+                    self.showCh (' ', x+8, y)
+                    line = line[:len(line)-1] 
+              else:
+                 line = line + data
+                 ch = data
+                 self.showCh (ch, x, y)           
+                 x = x + self.chOffset(ch)
+        elif typeInput == 'mqtt':
+           print ( 'get_input, handle mqtt' )
+           exit(1)
+           line = data
+           quit = True
+        elif typeInput == 'tcp':
+           line = data
+           print ( 'got some tcp data yo: ' + data)
+           quit = True
+           
+     print ( "getInput: " + line)
+     return (typeInput,line,addr)        
       
    def getKeyOrMqtt(self, blocking=True):
      shiftKeys = { '\\':'|', ']':'}', '[':'{', '/':'?', '.':'>', ',':'<', '-':'_', '=':'+', \
@@ -91,54 +143,6 @@ class Utilities ():
           break  
      print ( 'getKeyOrMqtt[typeInput,data,addr]: [' + str(typeInput) + ',' + str(data) + ',' + str(addr) + ']' )           
      return (typeInput,data,addr)
-
-      
-   def findSpriteClick (self, pos, sprites ): 
-      print ( 'findSpriteClick' )
-      found = -1
-      clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
-      for i in range (len(sprites)): 
-         if clicked_sprite[0] == sprites [i]: 
-            found = i
-            break
-      return found
-               
-   def getInput (self, x,y):
-     line = ''
-     quit = False
-     while not quit:
-        (typeInput,data,addr) = self.getKeyOrMqtt()
-        if typeInput == 'key': 
-           if data == chr(13):
-              quit = True
-           else:
-              if data == chr(8):
-                 print ( "backspace detected")
-                 if len(line) > 0:
-                    lastCh = line[len(line)-1]
-                    x = x - self.chOffset (lastCh) #Todo need to get lastCh from 
-                    self.showCh (' ', x, y)
-                    self.showCh (' ', x+4, y)
-                    self.showCh (' ', x+8, y)
-                    line = line[:len(line)-1] 
-              else:
-                 line = line + data
-                 ch = data
-                 self.showCh (ch, x, y)           
-                 x = x + self.chOffset(ch)
-        elif typeInput == 'mqtt':
-           print ( 'get_input, handle mqtt' )
-           exit(1)
-           line = data
-           quit = True
-        elif typeInput == 'tcp':
-           line = data
-           print ( 'got some tcp data yo: ' + data)
-           quit = True
-           
-     print ( "getInput: " + line)
-     return (typeInput,line,addr)  
-
       
    def getSpriteClick (self, event, sprites): 
        # print ( 'getSpriteClick event: ' + str(event)  )
@@ -179,7 +183,8 @@ class Utilities ():
        self.message    = ''  
        self.msg        = '' 
        self.quit       = False
-       self.debugIt    = False        
+       self.debugIt    = False
+       self.debugIt1   = True       
        
    def isMouseClick (self,event): 
        isClick = False 
@@ -218,22 +223,22 @@ class Utilities ():
             else:
                if hasattr(event, 'button'): 
                   if event.button == 1: 
-                     if self.debugIt:
+                     if self.debugIt1:
                         print ( 'drag' )
                      if event.type == 1025: # button down 
                         typeInput = 'drag'
                         data = event.pos 
                         if self.lastType != 1025: 
-                           if self.debugIt:
+                           if self.debugIt1:
                               print ('drag: ' + str(event)) 
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
-                        if self.debugIt:
+                        if self.debugIt1:
                            print ( 'drop event' )
                         typeInput = 'drop'              
                         data = event.pos                                    
                         if self.lastType != 1026: 
-                           if self.debugIt:
+                           if self.debugIt1:
                               print ('drop: ' + str(event)) 
                            self.lastType = 1026
                   elif event.button == 3: 
@@ -241,7 +246,7 @@ class Utilities ():
                         typeInput = 'select'
                         data = event.pos 
                         if self.lastType != 1025: 
-                           if self.debugIt:
+                           if self.debugIt1:
                               print ('select ' + str(event)) 
                            self.lastType = 1025
                      elif event.type == 1026: # button up 
@@ -250,7 +255,7 @@ class Utilities ():
                elif event.type == 769: # keyup 
                   typeInput = 'keypress'
                   data = event.unicode
-                  if self.debugIt:
+                  if self.debugIt1:
                      print ( 'events: ' + str(events) ) 
                   if data == ' ': 
                      self.debugIt = not self.debugIt
@@ -275,6 +280,7 @@ class Utilities ():
      pygame.display.update()
          
    def showLabels (self, labels, locations):
+       print ( 'Utilities.showLabels, len(labels): ' + str(len(labels)) ) 
        sprites = []
        i = 0
        for label in labels: 

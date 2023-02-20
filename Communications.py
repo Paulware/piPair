@@ -71,8 +71,15 @@ class Communications:
       return self.message != ''   
       
    def peek (self):
+      message = ''
       print ( ' in peek, self.tail: ' + str(self.tail) )
-      return '' if self.empty() else self.buffer [self.tail]
+      if self.empty(): 
+         print ( 'Nothing to return in peek' );
+      else:
+         message = self.buffer[self.tail]
+         print ( 'in peek, return [' + message + ']' )
+         
+      return message
   
    def pop (self):
       value = self.peek()        
@@ -173,8 +180,7 @@ class Communications:
          if ack:         
             print ( 'ACK Received' )
          else:
-            print ( 'ERR No ack received' ) 
-            exit()         
+            print ( '***ERR No ack received ***' ) 
       return ack
       
    def waitConnected (self):
@@ -193,15 +199,21 @@ class Communications:
                break
       print ( 'Received: [' + message + ']' ) 
       
+   def gotPeek (self,message): 
+      peeked = False
+      if not self.empty(): 
+         msg = self.peek()
+         if msg.find (message) > -1: 
+            print ( 'comm.waitFor found: ' + message + ' in ' + msg)
+            peeked = True 
+         else:
+            print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
+      return peeked 
+      
    def waitForPeek ( self, message):    
       while True: 
-         if not self.empty(): 
-            msg = self.peek()
-            if msg.find (message) > -1: 
-               print ( 'comm.waitFor found: ' + message + ' in ' + msg)
-               break
-            else:
-               print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
+         if gotPeek (message):
+            break         
                
 if __name__ == "__main__":
    import time

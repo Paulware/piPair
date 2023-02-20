@@ -20,16 +20,40 @@ from SpriteSheet import SpriteSheet
 '''
 class Deck (SpriteSheet): 
 
+   def dealList (self, cards): 
+      numCards = len(cards)
+      print ( 'Deck.dealList ' + str(numCards) ) 
+      hand = []
+      print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
+      for index in cards:
+         try: 
+            obj = self.data[index]
+         except IndexError:
+            print ( 'This index of out of range: ' + str(index) )
+            exit(1)
+         obj.tapped = False
+         print ( str(index) + ') just dealt card with index: ' + str(obj.sheetIndex)  ) 
+         hand.append (obj) # TODO: Do I need a copy?
+         # self.data.pop (index)
+            
+      return hand
+   
+
    def deal (self, numCards): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
       print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
       for i in range (numCards):
          # obj = type ('Object', (object,), {})
+            
          index = self.getRandomIndex (len(self.data))
-         obj = self.data[index]
+         try: 
+            obj = self.data[index]
+         except IndexError:
+            print ( 'This index of out of range: ' + str(index) )
+            exit(1)
          obj.tapped = False
-         print ( 'just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
+         print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
          hand.append (obj) # TODO: Do I need a copy?
          self.data.pop (index)
             
@@ -37,6 +61,9 @@ class Deck (SpriteSheet):
       
    def getRandomIndex (self,listLength):         
       index = -1
+      if listLength == 0: 
+         print ( '***ERR Deck.getRandomIndex cannot get a random index of a list that is empty***' )
+         exit(1)
       if listLength > 0:
          index = int ( random.random() * listLength)
       # print ( 'Got a random index: ' + str(index))

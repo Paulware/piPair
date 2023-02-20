@@ -8,6 +8,9 @@ import pygame
 #    data is a list, each element has an image, and an index attribute at this level
 #       subsequent levels will add attributes to each data element such as x,y,width,height,name
 class SpriteSheet:  
+   def length(self):
+      return len(self.data)
+
    def loadSpriteImages (self): 
       x = 0 
       y = 0 
