@@ -324,6 +324,8 @@ class Utilities ():
           pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
           #pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
           #self.showLine (self.statusMessage, 1, height+4) # Show status message
+          line1 = TextBox ( '                                                           ')
+          line1.draw ( (0,600,30) ) 
           line1 = TextBox ( status )
           line1.draw ( (0,600,30) )
           print ( 'pygame.update')
