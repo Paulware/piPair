@@ -26,6 +26,7 @@ class SubDeck ():
       self.displaySurface = displaySurface
       self.xMultiplier = xMultiplier
       self.yMultiplier = yMultiplier
+      self.showLength = False
       if deckBasis is None: 
          self.coverImage = None
       else:
@@ -71,8 +72,14 @@ class SubDeck ():
       
    def addCard (self,deck,index): 
       print ( 'addCard from deck with index: ' + str(index) + ' and tapped value: ' + str(deck.data[index].tapped)) 
+      ind = len(self.data)-1
+      if ind >= 0:
+         x = self.data[ind].x + self.width
+         y = self.data[ind].y
+         deck.data[index].x = x
+         deck.data[index].y = y
       self.data.append (deck.data[index])
-      print ( 'addCard, self.data: ' + str(self.data)) 
+      print ( 'addCard, len(self.data): ' + str(len(self.data))) 
 
    def append (self, element): 
       self.data.append (element)
@@ -120,9 +127,13 @@ class SubDeck ():
       if debugIt:         
          print ('draw, self.data: ' + str(self.data)) 
 
-      index = 0      
+
+      count = 0      
       for sprite in self.data:
+         count = count + 1
          image = self.getImage (sprite)
+         if self.showLength and (count == 8): 
+            print ( '[x,y] of card 8 [: ' + str(sprite.x) + ',' + str(sprite.y) + ']' ) 
          self.displaySurface.blit (image, (sprite.x,sprite.y)) 
          # Update location so it can be found later          
                
@@ -187,12 +198,13 @@ class SubDeck ():
       for card in self.data: 
          print ( 'self.data[' + str(count) + '].index: ' + str(card.sheetIndex))  
          count = count + 1
+         
    def move (self,index,pos): 
-      # self.displaySurface.fill ((0,0,0))   
-   
-      # print ( 'deck.data[' + str(index) + '].x = ' + str(x) + '\ndeck.data[' + str(index) + '].y = ' + str(y) )      
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]    
+                  
+   def pos (self,index): 
+      return ( self.data[index].x, self.data[index].y )    
                   
    def remove (self,index): 
       self.data.pop (index)

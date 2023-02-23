@@ -8,45 +8,7 @@ import pygame
 #    data is a list, each element has an image, and an index attribute at this level
 #       subsequent levels will add attributes to each data element such as x,y,width,height,name
 class SpriteSheet:  
-   def length(self):
-      return len(self.data)
 
-   def loadSpriteImages (self): 
-      x = 0 
-      y = 0 
-      h = 0
-      data = [] 
-      maxImages = self.numColumns * self.numRows
-      print ( 'maxImages: ' + str(maxImages) + ' coverIndex: ' + str(self.coverIndex)) 
-      for i in range (maxImages):
-         obj = type ('Object', (object,), {})
-         rect = pygame.Rect(( x,y,self.spriteWidth,self.spriteHeight))
-         image = pygame.Surface(rect.size).convert()
-         image.blit(self.image, (0, 0), rect)
-         obj.image = image
-         obj.sheetIndex = i
-         obj.canDealCard = True
-         obj.tapped = False
-         obj.hide = False
-         obj.drag = False 
-         obj.deleted = False
-         if i < self.numImages:
-            data.append (obj)
-         if i == self.coverIndex:
-            print ( 'Setting self.coverImage' )
-            self.coverImage = image 
-            
-         # Find the next x/y for the next sprite 
-         h = h + 1
-         if h == self.numColumns:
-            x = 0
-            y = y + self.spriteHeight
-            h = 0
-         else:
-            x = x + self.spriteWidth
-      print ( 'loaded ' + str(len(data)) + ' images' )
-      return data
-   
    # Get the image of a specific index such as cover image 
    def getIndexImage (self,index): 
       image = None 
@@ -95,6 +57,46 @@ class SpriteSheet:
       else:
          print( 'This filename does not exist: ' + filename)
          exit(1)   
+         
+   def length(self):
+      return len(self.data)
+
+   def loadSpriteImages (self): 
+      x = 0 
+      y = 0 
+      h = 0
+      data = [] 
+      maxImages = self.numColumns * self.numRows
+      print ( 'maxImages: ' + str(maxImages) + ' coverIndex: ' + str(self.coverIndex)) 
+      for i in range (maxImages):
+         obj = type ('Object', (object,), {})
+         rect = pygame.Rect(( x,y,self.spriteWidth,self.spriteHeight))
+         image = pygame.Surface(rect.size).convert()
+         image.blit(self.image, (0, 0), rect)
+         obj.image = image
+         obj.sheetIndex = i
+         obj.canDealCard = True
+         obj.tapped = False
+         obj.hide = False
+         obj.drag = False 
+         obj.deleted = False
+         if i < self.numImages:
+            data.append (obj)
+         if i == self.coverIndex:
+            print ( 'Setting self.coverImage' )
+            self.coverImage = image 
+            
+         # Find the next x/y for the next sprite 
+         h = h + 1
+         if h == self.numColumns:
+            x = 0
+            y = y + self.spriteHeight
+            h = 0
+         else:
+            x = x + self.spriteWidth
+      print ( 'loaded ' + str(len(data)) + ' images' )
+      return data
+   
    
 def showCard (sheet, index, displaySurface): 
   image = sheet.data[index].image

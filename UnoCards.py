@@ -6,45 +6,15 @@ from SubDeck import SubDeck
    This contains 4 suits of 13 cards each.   
 '''
 class UnoCards (SubDeck):  
-   # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(0,0), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
-      print ( 'UnoCards.init' )
-      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
-                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier)
-      print ('UnoCards, total number of cards: ' + str(self.numImages)) 
-      
-   def sheetIndex (self,index): 
-      ind = self.data[index].sheetIndex
-      
-   def isNumber (self,index): 
-      isNum = False
-      if index < 39: 
-         if (index % 10) != 9: 
-            isNum = True 
-      return isNum
-
-   def getColor (self,index): 
-      if (index == 9) or (index == 19) or (index == 29) or (index == 39):
-         color = 'All'       
-      elif (index < 10) or (index == 40) or (index == 44) or (index == 48):
-         color = 'Red'
-      elif (index < 20) or (index == 41) or (index == 45) or (index == 49):
-         color = 'Orange'
-      elif (index < 30) or (index == 42) or (index == 46) or (index == 50): 
-         color = 'Blue'
-      elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
-         color = 'Green'        
-      return color
-      
-
-   def getNumber (self,index): 
-      value = 0
-      if self.isNumber (index): 
-         value = (index % 10) + 1
-      return value      
-     
+   def canDrop (self,topIndex,bottomIndex): 
+      ok = False 
+      if (self.getColor (topIndex) == self.getColor(bottomIndex)) or \
+         (self.getNumber(topIndex) == self.getNumber(bottomIndex)) or \
+         (self.cardName(topIndex).find ( 'Joker') > -1):
+            ok = True
+            print ( 'canDrop is ok...' )
+      return ok
+           
    def cardName (self,index): 
       name = 'unknown' + str(index)
       if self.isNumber (index):
@@ -62,19 +32,48 @@ class UnoCards (SubDeck):
                
       return name 
    
-   def canDrop (self,topIndex,bottomIndex): 
-      ok = False 
-      if (self.getColor (topIndex) == self.getColor(bottomIndex)) or \
-         (self.getNumber(topIndex) == self.getNumber(bottomIndex)) or \
-         (self.cardName(topIndex).find ( 'Joker') > -1):
-            ok = True
-            print ( 'canDrop is ok...' )
-      return ok
+   def getColor (self,index): 
+      if (index == 9) or (index == 19) or (index == 29) or (index == 39):
+         color = 'All'       
+      elif (index < 10) or (index == 40) or (index == 44) or (index == 48):
+         color = 'Red'
+      elif (index < 20) or (index == 41) or (index == 45) or (index == 49):
+         color = 'Orange'
+      elif (index < 30) or (index == 42) or (index == 46) or (index == 50): 
+         color = 'Blue'
+      elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
+         color = 'Green'        
+      return color
+      
+   def getNumber (self,index): 
+      value = 0
+      if self.isNumber (index): 
+         value = (index % 10) + 1
+      return value      
+      
+   # data is a list of objects that have an image and index attribute
+   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(0,0), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
+      print ( 'UnoCards.init' )
+      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
+                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
+                        yMultiplier=yMultiplier)
+      print ('UnoCards, total number of cards: ' + str(self.numImages)) 
+      
+   def isNumber (self,index): 
+      isNum = False
+      if index < 39: 
+         if (index % 10) != 9: 
+            isNum = True 
+      return isNum
       
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
               self.cardName(sheetIndex))      
+   def sheetIndex (self,index): 
+      ind = self.data[index].sheetIndex
+      
     
 if __name__ == '__main__':
    from Deck      import Deck

@@ -46,7 +46,7 @@ class TextBox():
         surf = pygame.display.get_surface()
         msg = self.font.render(self.text, 1, (0, 0, 0))
         width,height = self.font.size(self.text)
-        print ( 'size(self.text), [width,height]: [' + str(width) + ',' + str(height) + ']' )
+        # print ( 'size(self.text), [width,height]: [' + str(width) + ',' + str(height) + ']' )
         
         if pos is not None:            
            self.x = pos[0]

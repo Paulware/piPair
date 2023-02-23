@@ -39,10 +39,8 @@ class Solitaire ():
        hand = PlayingCards (self.deck, len(self.deck.data), 80, 120, (900,400), DISPLAYSURF, xMultiplier=0.0, yMultiplier=0.0)
        hand.showAll()
        decks.append (hand)                
-       self.drawPile = hand 
-       
-       self.decks = SubDecks (decks) 
-       
+       self.drawPile = hand      
+       self.decks = SubDecks (decks)       
     
     def draw(self,dragDeck):
        window = pygame.display.get_surface()    

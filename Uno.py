@@ -88,7 +88,10 @@ class Uno ():
        joinTimeout = 0    
        quit = False 
        # Get/Send Decks        
-       self.utilities.showStatus ( "Get/Give Cards")
+       if state == 1: 
+          self.utilities.showStatus ( "Give Cards")
+       else:
+          self.utilities.showStatus ( "Get Cards" )
        while True:
           if state == 1: # host 
              if self.comm.gotPeek ( 'join uno' ):
@@ -131,12 +134,13 @@ class Uno ():
        print ( 'Start while loop state: ')
        myMove = self.iAmHost 
        if myMove: 
-          self.utilities.showStatus ( "Play")
+          self.utilities.showStatus ( "Your Turn")
        else:
           self.utilities.showStatus ( 'Waiting for opponents move' )
        dragging   = None
        dragDeck   = None
        sourceDeck = None
+       offset     = None
        while not self.utilities.quit and not self.gameOver() and not quit:
           window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
@@ -146,6 +150,7 @@ class Uno ():
           TextBox('Hand',     x=100, y=375).draw()                    
           decks.draw() # Show and set their x/y locations 
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
+          self.utilities.showLastStatus()
           self.utilities.flip() 
                  
           # pygame.display.update()
@@ -160,7 +165,7 @@ class Uno ():
                    quit = True    
                         
                 elif event == 'mqtt':
-                   if data.find ( 'move tictactoe') > -1: # Opponent has moved 
+                   if data.find ( 'move uno') > -1: # Opponent has moved 
                       move = data.split ( ' ' )
                       print ( 'move : ' + str(move) ) 
                       x = int (move[2])
@@ -177,25 +182,39 @@ class Uno ():
                       self.utilities.showStatus ( 'Nice move: ' + typeInput )                   
                    else: 
                       self.utilities.showStatus ('Err, not your move' )
-                   if dragDeck is None: 
-                      print ( '\n\n***DRAG***\n\n' )
-                      (deck,index) = decks.findSprite (data) # Returns index in list 
-                   
+                      
+                   print ( '\n\n***DRAG***\n\n' )
+                   (deck,index) = decks.findSprite (data) # Returns index in list 
+                   if deck == opponent: 
+                      self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
+                   elif deck == discardPile: 
+                      self.utilities.showStatus ( 'ERR this is where you drop cards' )
+                   elif deck == drawPile:                                         
+                      self.utilities.showStatus ( 'Drawing a card with index: ' + str(index) )
+                      deck.data[index].hide = False
+                      hand.addCard (deck,index)
+                      deck.remove (index)                   
+                   else:                          
                       sourceDeck = deck
                       mousePos = data
                       self.utilities.showStatus ( 'Got an index of: ' + str(index)) 
                       dragging = index                    
-                      
+ 
              elif typeInput == 'move':
-                self.utilities.showStatus ( 'Moving...')
                 if not dragging is None: 
-                  deck.move (dragging,data)               
-                mousePos = data  
+                   if offset is None: 
+                      pos = deck.pos (dragging)
+                      offset = ( pos[0] - data[0], pos[1] - data[1])
+                      print ( 'Starting pos: ' + str(pos) + ' mouse: ' + str(data) + ' offset: ' + str(offset))
+                   newPos = ( data[0] + offset[0], data[1] + offset[1] );
+                   deck.move (dragging,newPos)
+                mousePos = data
              elif typeInput == 'drop':
-                dragging = None             
+                dragging = None
+                offset = None
              else:
                 self.utilities.showStatus ( 'Unknown event: [' + str(event) + ']' )
-                                         
+ 
           if self.utilities.quit:
              print ( 'self.utilities.quit' )
           elif self.gameOver(): 
@@ -227,63 +246,6 @@ if __name__ == '__main__':
       uno.iAmHost = True
       uno.main()       
       
-      '''
-      deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
-      hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
-      discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-      drawPile    = SubDeck (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-      drawPile.hideAll () 
-      
-      # creates decks array 
-      cards=[]
-      cards.append (hand)
-      cards.append (drawPile)   
-      cards.append (discardPile)
-      decks = SubDecks (cards)
-      
-      TextBox('Opponent', x=100, y=  5).draw()
-      TextBox('Discard',  x=100, y=175).draw()
-      TextBox('Draw',     x=310, y=175).draw()
-      TextBox('Hand',     x=100, y=375).draw()   
-      window = displaySurface # pygame.display.get_surface()   
-      quit = False
-      
-      comm.send ( 'join uno')   
-      comm.waitFor ( 'deal uno')      
-      
-      print ( 'Got deal uno')
-      print ( 'Waiting for cards' )
-      
-      while not quit: # len(deck.sprites) > 0:
-         decks.draw() # Show and set their x/y locations
-         pygame.display.update() 
-         
-         events = utilities.readOne()
-         for event in events:
-            (typeInput,data,addr) = event
-            # print ( 'typeInput: ' + str(typeInput))
-            if typeInput == 'select':
-               print ( '\n\n***Select***\n\ndata: ' + str(data)   )
-               index = hand.findSprite (data)  
-               if index != -1: 
-                   x = hand.data[index].x
-                   y = hand.data[index].y
-                   optionBox = OptionBox (['Play', 'Cancel'], x, y)
-                   selection = optionBox.getSelection()
-                   print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-                   if selection == 'Cancel': 
-                      quit = True
-                      print ( 'quit is now: ' + str(quit) )
-                      break
-                   elif selection == 'Play':
-                      discardPile.addCard (hand,index)
-                      hand.data[index].deleted = True 
-                      # hand.discard (index) 
-                      hand.addCard (drawPile, drawPile.topCard())
-
-                   window.fill ((0,0,0))
-               
-      print ( 'Done yo' )
-      '''
+     
    finally: 
       comm.disconnect()

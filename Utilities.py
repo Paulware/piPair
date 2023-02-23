@@ -316,6 +316,15 @@ class Utilities ():
            i = i + 1
        return sprites
        
+   def showLastStatus (self):
+       if self.statusMessage != "":
+          height = self.DISPLAYHEIGHT - 23
+          pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
+          line1 = TextBox ( '                                                           ')
+          line1.draw ( (0,600,30) ) 
+          line1 = TextBox ( self.statusMessage )
+          line1.draw ( (0,600,30) )
+       
    def showStatus (self,status):
        self.statusMessage = status 
        if self.statusMessage != "":

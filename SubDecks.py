@@ -17,6 +17,10 @@ class SubDecks():
    def addElements (self,targetDeckIndex, deck):
       for element in deck.data:
          self.addElement (targetDeckIndex, element )      
+         
+   def draw (self):      
+      for deck in self.decks:          
+         deck.draw ()
       
    def emptyColumn(self):
       found = -1 
@@ -58,9 +62,6 @@ class SubDecks():
          
       return (found,index)
    
-   def draw (self):      
-      for deck in self.decks:          
-         deck.draw ()
    '''            
    def updateDisplay(self, dragDeck, pos):
       if time.time() > self.showTime:
