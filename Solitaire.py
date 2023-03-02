@@ -85,8 +85,7 @@ class Solitaire ():
                    mousePos = data
                    print ( 'Got an index of: ' + str(index)) 
                    dragging = index                    
-                   if not index is None:
-                     
+                   if not index is None:                     
                       print ( 'Create a sub deck' )
                       dragDeck = PlayingCards (width=80,height=120,displaySurface=self.DISPLAYSURF,\
                                                xMultiplier=0.0, yMultiplier=0.25)

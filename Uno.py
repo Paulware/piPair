@@ -35,13 +35,16 @@ class Uno ():
              for c in cardsStr: 
                 cards.append (int(c))             
              if name == 'hand': 
+                print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
                 d = SubDeck (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards)             
              elif name == 'opponent': 
                 d = SubDeck (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards) 
              elif name == 'discardPile': 
+                print ( 'Creating a discardPile with xMultiplier = 0.0' );
                 d = SubDeck (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
              elif name == 'drawPile': 
                 d = SubDeck (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
+             d.name = name 
              return d
              
        print ( 'Uno.main' )
@@ -69,10 +72,10 @@ class Uno ():
           
           # creates decks array 
           cards=[]
-          cards.append (hand)
           cards.append (opponent)
           cards.append (drawPile)   
           cards.append (discardPile)
+          cards.append (hand)
           decks = SubDecks (cards)    
           
         
@@ -95,11 +98,11 @@ class Uno ():
        while True:
           if state == 1: # host 
              if self.comm.gotPeek ( 'join uno' ):
-                self.utilities.showStatus ( 'TBD: send cards to opponent' )
+                self.utilities.showStatus ( 'Sending cards to opponent' )
                 self.comm.send ( 'subdeck uno opponent '    + hand.cardsToStr () )
-                self.comm.send ( 'subdeck uno hand '        + opponent.cardsToStr () )
                 self.comm.send ( 'subdeck uno drawPile '    + drawPile.cardsToStr () )                 
                 self.comm.send ( 'subdeck uno discardPile ' + discardPile.cardsToStr() )
+                self.comm.send ( 'subdeck uno hand '        + opponent.cardsToStr () )
                 break
           elif state == 2: # player 
              if self.comm.gotPeek ('subdeck uno'): 
@@ -120,13 +123,13 @@ class Uno ():
                    drawPile.hideAll () 
                    
                 # creates decks array 
-                if name == 'discardPile': 
+                if name == 'hand': 
                    cards=[]
-                   cards.append (hand)
                    cards.append (opponent)
                    cards.append (drawPile)   
                    cards.append (discardPile)
-                   decks = SubDecks (cards)    
+                   cards.append (hand)
+                   decks = SubDecks (cards)  
                    decks.draw()
                    break
 
@@ -147,7 +150,7 @@ class Uno ():
           TextBox('Opponent', x=100, y=  5).draw()
           TextBox('Discard',  x=100, y=175).draw()
           TextBox('Draw',     x=310, y=175).draw()
-          TextBox('Hand',     x=100, y=375).draw()                    
+          TextBox('Hand',     x=100, y=375).draw()        
           decks.draw() # Show and set their x/y locations 
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
           self.utilities.showLastStatus()
@@ -163,28 +166,32 @@ class Uno ():
                 if sprite != -1: # Quit is the only other option           
                    print ("Selected command: " + str(sprite))
                    quit = True    
-                        
-                elif event == 'mqtt':
-                   if data.find ( 'move uno') > -1: # Opponent has moved 
-                      move = data.split ( ' ' )
-                      print ( 'move : ' + str(move) ) 
-                      x = int (move[2])
-                      y = int (move[3])
-                      print ( 'x,y: ' + str(x) + ',' + str(y) ) 
-                      if self.drawingX: 
-                         self.drawX (x,y)
-                      else:
-                         self.drawO (x,y)
-                      self.drawingX = not self.drawingX     
-                   myMove = True 
-                elif typeInput == 'drag':
+                   '''                  
+                   elif event == 'mqtt': # How is this possible in a drag typeinput ???TODO
+                      if data.find ( 'move uno') > -1: # Opponent has moved 
+                         move = data.split ( ' ' )
+                         print ( 'move : ' + str(move) ) 
+                         x = int (move[2])
+                         y = int (move[3])
+                         print ( 'x,y: ' + str(x) + ',' + str(y) ) 
+                         if self.drawingX: 
+                            self.drawX (x,y)
+                         else:
+                            self.drawO (x,y)
+                         self.drawingX = not self.drawingX     
+                      myMove = True
+                   '''    
+                
+                elif typeInput == 'drag':  ## ? necessary if statement? 
                    if myMove:
-                      self.utilities.showStatus ( 'Nice move: ' + typeInput )                   
+                      self.utilities.showStatus ( 'Nice move: ' + typeInput )
                    else: 
                       self.utilities.showStatus ('Err, not your move' )
                       
                    print ( '\n\n***DRAG***\n\n' )
                    (deck,index) = decks.findSprite (data) # Returns index in list 
+                   startPos = (deck.data[index].x,deck.data[index].y)                      
+
                    if deck == opponent: 
                       self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
                    elif deck == discardPile: 
@@ -194,11 +201,13 @@ class Uno ():
                       deck.data[index].hide = False
                       hand.addCard (deck,index)
                       deck.remove (index)                   
-                   else:                          
-                      sourceDeck = deck
+                   elif deck == hand:                           
+                      sourceDeck = hand
                       mousePos = data
-                      self.utilities.showStatus ( 'Got an index of: ' + str(index)) 
+                      self.utilities.showStatus ( 'Hand card: ' + str(index)) 
                       dragging = index                    
+                   else:
+                      self.utilities.showStatus ( 'Unknown deck' )
  
              elif typeInput == 'move':
                 if not dragging is None: 
@@ -210,6 +219,15 @@ class Uno ():
                    deck.move (dragging,newPos)
                 mousePos = data
              elif typeInput == 'drop':
+                (deck,index) = decks.findOtherDeck (hand,data) # Where are we dropping
+                if deck != discardPile:
+                   self.utilities.showStatus ( 'ERR, you can only drop on the discard pile' )                   
+                   hand.data[dragging].x = startPos[0]
+                   hand.data[dragging].y = startPos[1]
+                else:
+                   discardPile.addCard (hand,dragging)                
+                   hand.remove (dragging)                   
+                   print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
                 dragging = None
                 offset = None
              else:

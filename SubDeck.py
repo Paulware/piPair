@@ -74,9 +74,16 @@ class SubDeck ():
       print ( 'addCard from deck with index: ' + str(index) + ' and tapped value: ' + str(deck.data[index].tapped)) 
       ind = len(self.data)-1
       if ind >= 0:
-         x = self.data[ind].x + self.width
+         if self.xMultiplier == 0.0: 
+            x = self.data[ind].x
+         else: 
+            x = self.data[ind].x + self.width
          y = self.data[ind].y
-         deck.data[index].x = x
+         print ( 'xMultiplier: ' + str(self.xMultiplier) ) 
+         if self.xMultiplier == 0.0: 
+            deck.data[index].x = x
+         else:
+            deck.data[index].x = x * self.xMultiplier
          deck.data[index].y = y
       self.data.append (deck.data[index])
       print ( 'addCard, len(self.data): ' + str(len(self.data))) 
@@ -122,11 +129,10 @@ class SubDeck ():
       self.selected = index 
       
    # Show the sprites at specified start position and update the location of each   
-   def draw (self): 
+   def draw (self):
       debugIt = False
       if debugIt:         
          print ('draw, self.data: ' + str(self.data)) 
-
 
       count = 0      
       for sprite in self.data:

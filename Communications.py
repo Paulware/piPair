@@ -114,7 +114,8 @@ class Communications:
        msg      = info['message']
        
        if (toName != self.name) and (toName != '*') :
-          print ( 'This message (' + msg + ') is for: ' + toName + ' not me (' + self.name + ')') 
+          if False:
+             print ( 'This message (' + msg + ') is for: ' + toName + ' not me (' + self.name + ')') 
        else:
           if msg == 'ACK': 
              self.ack = True 

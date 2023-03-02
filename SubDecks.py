@@ -18,7 +18,7 @@ class SubDecks():
       for element in deck.data:
          self.addElement (targetDeckIndex, element )      
          
-   def draw (self):      
+   def draw (self):   
       for deck in self.decks:          
          deck.draw ()
       
@@ -36,6 +36,33 @@ class SubDecks():
       else:
          print ( 'Found an empty column in deck: ' + str(count) )
       return found       
+
+   # Return deck not specified that occupies the given position       
+   def findOtherDeck (self, skipDeck, pos):
+      debugIt = True
+      if debugIt: 
+         print ( 'SubDecks.findSprite (' + str(pos) + ')' )
+      found = None
+      if pos is None: 
+         print ( 'SubDecks.findSprite, pos == None' )
+      elif len(pos) != 2: 
+         print ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
+      else:    
+         for deck in self.decks:           
+            if deck != skipDeck: 
+               index = deck.findSprite (pos)
+               if not index is None:
+                  found = deck
+                  break
+            
+      if found is None:
+         print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
+      else:
+         print ( 'SubDecks.findSprite, found: ' + str(found) ) 
+         print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
+         
+      return (found,index)
+      
             
    def findSprite (self, pos):
       debugIt = True
@@ -46,8 +73,7 @@ class SubDecks():
          print ( 'SubDecks.findSprite, pos == None' )
       elif len(pos) != 2: 
          print ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
-      else:
-      
+      else:    
          for deck in self.decks:           
             index = deck.findSprite (pos)
             if not index is None:
@@ -61,19 +87,6 @@ class SubDecks():
          print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
          
       return (found,index)
-   
-   '''            
-   def updateDisplay(self, dragDeck, pos):
-      if time.time() > self.showTime:
-         self.displaySurface.fill ((0,0,0))
-         self.draw()
-         if dragDeck != None: 
-            dragDeck.startX = pos[0]
-            dragDeck.startY = pos[1]
-            dragDeck.draw()
-         self.showTime = time.time() + 0.05
-         pygame.display.update()
-   '''
    
 if __name__ == '__main__':
    import pygame
