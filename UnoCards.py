@@ -2,8 +2,8 @@ import pygame
 from SubDeck import SubDeck
 
 '''
-   PlayingCards is based on SubDeck but customized to the standard 52 card deck of French style playing cards.
-   This contains 4 suits of 13 cards each.   
+   UnoCards is based on SubDeck but customized to the standard uno deck   
+   Wherever SubDeck is used, UnoCards can be used instead.  
 '''
 class UnoCards (SubDeck):  
    def canDrop (self,topIndex,bottomIndex): 
@@ -52,12 +52,12 @@ class UnoCards (SubDeck):
       return value      
       
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(0,0), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0 ):
+   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
       print ( 'UnoCards.init' )
       SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier)
+                        yMultiplier=yMultiplier, cards=cards)
       print ('UnoCards, total number of cards: ' + str(self.numImages)) 
       
    def isNumber (self,index): 

@@ -6,9 +6,10 @@ from Communications import Communications
 from Deck      import Deck
 from Utilities import Utilities
 from OptionBox import OptionBox
-from SubDeck   import SubDeck
+# from SubDeck   import SubDeck
 from SubDecks  import SubDecks
 from TextBox   import TextBox
+from UnoCards  import UnoCards
  
 BLACK = (  0,  0,  0)
 RED   = (255,  0,  0)
@@ -36,14 +37,14 @@ class Uno ():
                 cards.append (int(c))             
              if name == 'hand': 
                 print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
-                d = SubDeck (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards)             
+                d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards)             
              elif name == 'opponent': 
-                d = SubDeck (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards) 
+                d = UnoCards (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards) 
              elif name == 'discardPile': 
                 print ( 'Creating a discardPile with xMultiplier = 0.0' );
-                d = SubDeck (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
+                d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
              elif name == 'drawPile': 
-                d = SubDeck (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
+                d = UnoCards (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
              d.name = name 
              return d
              
@@ -63,11 +64,11 @@ class Uno ():
        if self.iAmHost: 
           state = 1   
           self.utilities.showStatus ( "Host, Waiting for player to join")
-          hand        = SubDeck (deck,  7, startXY=(100,400), displaySurface=displaySurface)
-          opponent    = SubDeck (deck,  7, startXY=(100,50),  displaySurface=displaySurface)
-          discardPile = SubDeck (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+          hand        = UnoCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)
+          opponent    = UnoCards (deck,  7, startXY=(100,50),  displaySurface=displaySurface)
+          discardPile = UnoCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
           # All remaining cards go into the draw pile 
-          drawPile    = SubDeck (deck,  0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+          drawPile    = UnoCards (deck,  0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
           drawPile.hideAll () 
           
           # creates decks array 
