@@ -6,7 +6,6 @@ from Communications import Communications
 from Deck      import Deck
 from Utilities import Utilities
 from OptionBox import OptionBox
-# from SubDeck   import SubDeck
 from SubDecks  import SubDecks
 from TextBox   import TextBox
 from UnoCards  import UnoCards
@@ -191,6 +190,8 @@ class Uno ():
                       
                    print ( '\n\n***DRAG***\n\n' )
                    (deck,index) = decks.findSprite (data) # Returns index in list 
+                   name = deck.cardName ( deck.data[index].sheetIndex)
+                   print ( 'CardName: ' + name )
                    startPos = (deck.data[index].x,deck.data[index].y)                      
 
                    if deck == opponent: 
@@ -226,9 +227,15 @@ class Uno ():
                    hand.data[dragging].x = startPos[0]
                    hand.data[dragging].y = startPos[1]
                 else:
-                   discardPile.addCard (hand,dragging)                
-                   hand.remove (dragging)                   
-                   print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
+                   if hand.canDrop (hand.data[dragging].sheetIndex, deck.data[index].sheetIndex): 
+                      discardPile.addCard (hand,dragging)                
+                      hand.remove (dragging)                   
+                      print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
+                   else:
+                      print ( 'Oops you cannot drop this card here' )
+                      hand.data[dragging].x = startPos[0]
+                      hand.data[dragging].y = startPos[1]
+                    
                 dragging = None
                 offset = None
              else:

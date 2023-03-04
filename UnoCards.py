@@ -10,7 +10,8 @@ class UnoCards (SubDeck):
       ok = False 
       if (self.getColor (topIndex) == self.getColor(bottomIndex)) or \
          (self.getNumber(topIndex) == self.getNumber(bottomIndex)) or \
-         (self.cardName(topIndex).find ( 'Joker') > -1):
+         (self.cardName(topIndex).find ( 'Joker') > -1) or \
+         (self.cardName(bottomIndex).find ('Joker') > -1):
             ok = True
             print ( 'canDrop is ok...' )
       return ok
