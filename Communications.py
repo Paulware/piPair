@@ -41,6 +41,17 @@ class Communications:
 
    def empty (self): 
       return (self.head == self.tail)
+            
+   def gotPeek (self,message): 
+      peeked = False
+      if not self.empty(): 
+         msg = self.peek()
+         if msg.find (message) > -1: 
+            print ( 'comm.waitFor found: ' + message + ' in ' + msg)
+            peeked = True 
+         else:
+            print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
+      return peeked       
 
    def __init__ (self,topic,broker,name):
       ok = True 
@@ -199,17 +210,6 @@ class Communications:
                print ( 'comm.waitFor found: ' + message + ' in ' + msg)
                break
       print ( 'Received: [' + message + ']' ) 
-      
-   def gotPeek (self,message): 
-      peeked = False
-      if not self.empty(): 
-         msg = self.peek()
-         if msg.find (message) > -1: 
-            print ( 'comm.waitFor found: ' + message + ' in ' + msg)
-            peeked = True 
-         else:
-            print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
-      return peeked 
       
    def waitForPeek ( self, message):    
       while True: 

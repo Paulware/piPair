@@ -2,12 +2,7 @@ from SubDeck import SubDeck
 import pygame
 import time
 class SubDecks():
-   def __init__(self, decks):
-      self.decks = decks 
-      self.selected = None
-      self.displaySurface = pygame.display.get_surface()
-      self.showTime = 0
-      
+
    def addDeck (self,deck):
       self.decks.append (deck)   
       
@@ -19,7 +14,12 @@ class SubDecks():
          self.addElement (targetDeckIndex, element )      
          
    def draw (self):   
+      count = 0
       for deck in self.decks:          
+         count = count + 1
+         if deck is None: 
+            print ( 'In SubDecks.draw, deck (' + str(count) + ') is None' )
+            exit()
          deck.draw ()
       
    def emptyColumn(self):
@@ -87,7 +87,17 @@ class SubDecks():
          print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
          
       return (found,index)
-   
+      
+   def __init__(self, decks):
+      if (len(decks) > 0) and (decks[0] is None): 
+         print ( 'Oops creating decks with a None deck!' )
+         exit()
+      self.decks = decks 
+      self.selected = None
+      self.displaySurface = pygame.display.get_surface()
+      self.showTime = 0
+      print ( 'SubDecks created' )
+         
 if __name__ == '__main__':
    import pygame
    from Deck import Deck
