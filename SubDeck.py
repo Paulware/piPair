@@ -289,7 +289,12 @@ class SubDeck ():
    def topSheetIndex (self): 
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex
-      
+   
+   def topToDeck (self,deck): 
+      index = self.length() -1
+      deck.addCard (self,index)
+      self.remove (index)  
+   
    def unhide (self,index):
       self.data[index].hide = False 
       

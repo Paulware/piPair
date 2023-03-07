@@ -175,15 +175,56 @@ class Uno ():
           self.utilities.showLastStatus()
           self.utilities.flip() 
           
-          if not myMove and self.comm.gotPeek ('uno move'): 
+          if not myMove and self.comm.gotPeek ('move'): 
              message = self.comm.pop() # consume the message
-             if message.find ( 'hand discard') > -1: 
+             if message.find ( 'uno move skip' ) > -1: 
+                myMove = True # opponent skipping their turn
+                self.utilities.showStatus ('Move again')
+             elif message.find ( 'hand discard') > -1: 
                 data = message.split ( ' ' )
                 index = int ( data [2] )                
-                sheetIndex = opponent.data[index].sheetIndex                
-                self.utilities.showStatus ('Opponent discarded ' + opponent.cardName (sheetIndex) )
+                sheetIndex = opponent.data[index].sheetIndex             
+                cardName = opponent.cardName (sheetIndex)                
+                self.utilities.showStatus ('Opponent discarded ' + cardName )
+                
                 discardPile.addTopCard (opponent,index)                
-                opponent.remove (index) 
+                opponent.remove (index)
+                # TODO tell opponent which card was drawn? or draw from same pile....
+                if cardName == 'Joker+4':
+                   for i in range(4): 
+                      drawPile.revealTopCard()
+                      drawPile.topToDeck (hand)                      
+                   self.comm.send ( 'uno move skip' ) 
+                   self.utilities.showStatus ('Skipping my turn')
+                elif cardName.find ( '+2' ) > -1: 
+                   for i in range(2):
+                      drawPile.revealTopCard()
+                      drawPile.topToDeck (hand)                      
+                   self.comm.send ( 'uno move skip' ) 
+                   self.utilities.showStatus ('Skipping my turn')
+                elif cardName.find ( 'reverse') > -1: 
+                   self.comm.send ( 'uno move skip' )                
+                   self.utilities.showStatus ('Skipping my turn')
+                elif cardName.find ( 'replay') > -1: 
+                   self.comm.send ( 'uno move skip' )
+                   self.utilities.showStatus ('Skipping my turn')
+                else:
+                   myMove = True   
+                '''                   
+                elif message.find ( 'draw joker' ) > -1: 
+                   print ( 'split data [' + message + ']' )
+                   data = message.split ( ' ' )
+                   print ( 'data after split: ' + str(data ) ) 
+                   index = int ( data [2] )  
+                   print ( 'draw hand[' + str(index) )                 
+                   sheetIndex = drawPile.data[index].sheetIndex                
+                   print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
+                   self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
+                   drawPile.data[index].hide = False 
+                   opponent.addTopCard (drawPile,index)                
+                   drawPile.remove (index)
+                '''   
+                      
              elif message.find ( 'draw hand') > -1:
                 print ( 'split data [' + message + ']' )
                 data = message.split ( ' ' )
@@ -195,10 +236,11 @@ class Uno ():
                 self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
                 drawPile.data[index].hide = False 
                 opponent.addTopCard (drawPile,index)                
-                drawPile.remove (index) 
+                drawPile.remove (index)
+                myMove = True                 
              else:
                 self.utilities.showStatus ( "Opponent moved, Your Turn")
-             myMove = True          
+                myMove = True          
                  
           # pygame.display.update()
           events = self.utilities.readOne()
