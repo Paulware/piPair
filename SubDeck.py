@@ -87,6 +87,30 @@ class SubDeck ():
          deck.data[index].y = y
       self.data.append (deck.data[index])
       print ( 'addCard, len(self.data): ' + str(len(self.data))) 
+      
+   def addTopCard (self,deck,index): 
+      print ( 'addTopCard [index,sheetIndex,tapped]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ',' + \
+              str(deck.data[index].tapped) + ']') 
+      ind = len(self.data)-1
+      if ind >= 0:
+         if self.xMultiplier == 0.0: 
+            x = self.data[ind].x
+         else: 
+            x = self.data[ind].x + self.width
+         y = self.data[ind].y
+         print ( 'xMultiplier: ' + str(self.xMultiplier) ) 
+         if self.xMultiplier == 0.0: 
+            deck.data[index].x = x
+         else:
+            deck.data[index].x = x * self.xMultiplier
+         deck.data[index].y = y
+      #self.data.insert (0,deck.data[index])
+      self.data.append (deck.data[index]) 
+      count = 0 
+      print ( 'addTopCard, new self.data: ' )
+      for d in self.data: 
+         count = count + 1
+         print ( 'self.data[' + str(count) + '].sheetIndex:' + str(d.sheetIndex) ) 
 
    def append (self, element): 
       self.data.append (element)
@@ -129,8 +153,7 @@ class SubDeck ():
       self.selected = index 
       
    # Show the sprites at specified start position and update the location of each   
-   def draw (self):
-      debugIt = False
+   def draw (self, debugIt=False):
       if debugIt:         
          print ('draw, self.data: ' + str(self.data)) 
 
@@ -140,8 +163,9 @@ class SubDeck ():
          image = self.getImage (sprite)
          if self.showLength and (count == 8): 
             print ( '[x,y] of card 8 [: ' + str(sprite.x) + ',' + str(sprite.y) + ']' ) 
+         if debugIt: 
+            print ( 'card (' + str(count) + ').sheetIndex: ' + str (sprite.sheetIndex) ) 
          self.displaySurface.blit (image, (sprite.x,sprite.y)) 
-         # Update location so it can be found later          
                
    def dropAll (self):
       print ( 'Dropping all cards')

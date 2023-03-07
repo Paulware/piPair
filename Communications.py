@@ -49,8 +49,8 @@ class Communications:
          if msg.find (message) > -1: 
             print ( 'comm.waitFor found: ' + message + ' in ' + msg)
             peeked = True 
-         else:
-            print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
+         #else:
+         #   print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
       return peeked       
 
    def __init__ (self,topic,broker,name):
@@ -83,12 +83,12 @@ class Communications:
       
    def peek (self):
       message = ''
-      print ( ' in peek, self.tail: ' + str(self.tail) )
+      # print ( ' in peek, self.tail: ' + str(self.tail) )
       if self.empty(): 
          print ( 'Nothing to return in peek' );
       else:
          message = self.buffer[self.tail]
-         print ( 'in peek, return [' + message + ']' )
+         # print ( 'in peek, return [' + message + ']' )
          
       return message
   

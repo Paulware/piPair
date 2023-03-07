@@ -13,14 +13,14 @@ class SubDecks():
       for element in deck.data:
          self.addElement (targetDeckIndex, element )      
          
-   def draw (self):   
+   def draw (self, debugIt=False):   
       count = 0
       for deck in self.decks:          
          count = count + 1
          if deck is None: 
             print ( 'In SubDecks.draw, deck (' + str(count) + ') is None' )
             exit()
-         deck.draw ()
+         deck.draw (debugIt)
       
    def emptyColumn(self):
       found = -1 

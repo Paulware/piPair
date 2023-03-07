@@ -176,8 +176,28 @@ class Uno ():
           self.utilities.flip() 
           
           if not myMove and self.comm.gotPeek ('uno move'): 
-             message = self.comm.pop()
-             self.utilities.showStatus ( "Opponent moved, Your Turn")
+             message = self.comm.pop() # consume the message
+             if message.find ( 'hand discard') > -1: 
+                data = message.split ( ' ' )
+                index = int ( data [2] )                
+                sheetIndex = opponent.data[index].sheetIndex                
+                self.utilities.showStatus ('Opponent discarded ' + opponent.cardName (sheetIndex) )
+                discardPile.addTopCard (opponent,index)                
+                opponent.remove (index) 
+             elif message.find ( 'draw hand') > -1:
+                print ( 'split data [' + message + ']' )
+                data = message.split ( ' ' )
+                print ( 'data after split: ' + str(data ) ) 
+                index = int ( data [2] )  
+                print ( 'draw hand[' + str(index) )                 
+                sheetIndex = drawPile.data[index].sheetIndex                
+                print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
+                self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
+                drawPile.data[index].hide = False 
+                opponent.addTopCard (drawPile,index)                
+                drawPile.remove (index) 
+             else:
+                self.utilities.showStatus ( "Opponent moved, Your Turn")
              myMove = True          
                  
           # pygame.display.update()
@@ -202,15 +222,17 @@ class Uno ():
                          self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
                       elif deck == discardPile: 
                          self.utilities.showStatus ( 'ERR this is where you drop cards' )
-                      elif deck == drawPile:                                         
-                         self.utilities.showStatus ( 'Drawing a card with index: ' + str(index) )
+                      elif deck == drawPile:
+                         # self.utilities.showStatus ( 'Drawing a card with index: ' + str(index) )
                          deck.data[index].hide = False
                          hand.addCard (deck,index)
-                         deck.remove (index)                   
-                      elif deck == hand:                           
+                         deck.remove (index)
+                         myMove = False
+                         self.utilities.showStatus ( 'Waiting for opponent to move' )
+                         self.comm.send ( 'uno move ' + str(index) + ' draw hand' )
+                      elif deck == hand:
                          sourceDeck = hand
                          mousePos = data
-                         self.utilities.showStatus ( 'Hand card: ' + str(index)) 
                          dragging = index                    
                       else:
                          self.utilities.showStatus ( 'Unknown deck' )
@@ -226,28 +248,34 @@ class Uno ():
                    newPos = ( data[0] + offset[0], data[1] + offset[1] );
                    deck.move (dragging,newPos)
                 mousePos = data
+                
              elif typeInput == 'drop':
-                (deck,index) = decks.findOtherDeck (hand,data) # Where are we dropping
-                if deck != discardPile:
-                   self.utilities.showStatus ( 'ERR, you can only drop on the discard pile' )                   
-                   hand.data[dragging].x = startPos[0]
-                   hand.data[dragging].y = startPos[1]
-                else:
-                   if hand.canDrop (hand.data[dragging].sheetIndex, deck.data[index].sheetIndex): 
-                      discardPile.addCard (hand,dragging)                
-                      hand.remove (dragging)                   
-                      print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
-                      self.comm.send ( 'uno move' )                                      
-                      myMove = False 
-                      self.utilities.showStatus ( 'Waiting for opponents move' )
+                if not dragging is None: 
+                   print ( 'dragging: ' + str(dragging) )
+                   (deck,index) = decks.findOtherDeck (hand,data) # Where are we dropping
+                   if deck != discardPile:
+                      self.utilities.showStatus ( 'ERR, you can only drop on the discard pile' )                   
+                      if not startPos is None: 
+                         hand.data[dragging].x = startPos[0]
+                         hand.data[dragging].y = startPos[1]
                    else:
-                      print ( 'Oops you cannot drop this card here' )
-                      # Return card to origin position 
-                      hand.data[dragging].x = startPos[0]
-                      hand.data[dragging].y = startPos[1]
-                    
-                dragging = None
-                offset = None
+                      if hand.canDrop (hand.data[dragging].sheetIndex, deck.data[index].sheetIndex): 
+                         self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
+                         discardPile.addCard (hand,dragging)                
+                         hand.remove (dragging)                   
+                         print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
+                         myMove = False 
+                         self.utilities.showStatus ( 'Waiting for opponents move' )
+                         startPos = None
+                      else:
+                         self.utilities.showStatus ( 'Illegal move' )
+                         print ( 'Oops you cannot drop this card here' )
+                         # Return card to origin position 
+                         hand.data[dragging].x = startPos[0]
+                         hand.data[dragging].y = startPos[1]
+                         startPos = None               
+                   dragging = None
+                   offset = None
              else:
                 self.utilities.showStatus ( 'Unknown event: [' + str(event) + ']' )
  
