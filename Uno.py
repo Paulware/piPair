@@ -39,6 +39,7 @@ class Uno ():
                 d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards)             
              elif name == 'opponent': 
                 d = UnoCards (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards) 
+                d.hideAll()
              elif name == 'discardPile': 
                 print ( 'Creating a discardPile with xMultiplier = 0.0' );
                 d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
@@ -66,6 +67,7 @@ class Uno ():
           self.utilities.showStatus ( "Host, Waiting for player to join")
           hand        = UnoCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)
           opponent    = UnoCards (deck,  7, startXY=(100,50),  displaySurface=displaySurface)
+          opponent.hideAll ()
           discardPile = UnoCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
           # All remaining cards go into the draw pile 
           drawPile    = UnoCards (deck,  0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
@@ -83,8 +85,8 @@ class Uno ():
         
           pygame.display.update()
        else: # Host goes first...
-          hand = type('SubDeck', (object,), {})()       
-          opponent = type('SubDeck', (object,), {})()       
+          #hand = type('SubDeck', (object,), {})()       
+          #opponent = type('SubDeck', (object,), {})()       
           state = 2
           self.comm.send ( 'join uno' )
           self.utilities.showStatus ( "Waiting for host to deal")
@@ -118,13 +120,13 @@ class Uno ():
                 
                 if name == 'opponent': 
                    opponent    = handleSubdeck (name, cardsStr)                 
+                   opponent.hideAll()
                 elif name == 'hand': 
                    hand        = handleSubdeck (name, cardsStr )
                 elif name == 'discardPile': 
                    discardPile = handleSubdeck (name, cardsStr )
                 elif name == 'drawPile': 
                    drawPile    = handleSubdeck (name, cardsStr )
-                   print ( 'line 127, drawPile.hideAll' )
                    drawPile.hideAll () 
                    
                 message = self.comm.pop ()
@@ -132,26 +134,14 @@ class Uno ():
                 # creates decks array 
                 if name == 'hand': 
                    cards=[]
-                   if opponent is None: 
-                      print ( 'line 134, Cannot create decks with a None opponent deck' )
-                      exit()
                    cards.append (opponent)
                    cards.append (drawPile)   
                    cards.append (discardPile)
-                   cards.append (hand)
-                   
+                   cards.append (hand)                   
                    decks = SubDecks (cards)  
-                   print ( 'decks.draw, line 138' )
-                   decks.draw()
-               
+                   decks.draw()               
                    break
-
  
-       if discardPile is None: 
-          print ( 'ERR discardpile should not be None!' )
-          exit()
- 
-       print ( 'Start while loop state: ')
        myMove = self.iAmHost 
        if myMove: 
           self.utilities.showStatus ( "Your Turn")
@@ -198,9 +188,9 @@ class Uno ():
                 cardName = opponent.cardName (sheetIndex)                
                 self.utilities.showStatus ('Opponent discarded ' + cardName )
                 
-                discardPile.addTopCard (opponent,index)                
+                discardPile.addTopCard (opponent,index)
+                discardPile.showAll()
                 opponent.remove (index, True)
-                # TODO tell opponent which card was drawn? or draw from same pile....
                 if cardName == 'Joker+4':
                    for i in range(4): 
                       drawPile.topToDeck (hand, True)                      
@@ -230,7 +220,8 @@ class Uno ():
                 print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
                 self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
                 drawPile.data[index].hide = False 
-                opponent.addTopCard (drawPile,index)                
+                opponent.addTopCard (drawPile,index)
+                opponent.hideAll()
                 drawPile.remove (index)
                 myMove = True                 
              else:
@@ -314,6 +305,7 @@ class Uno ():
                             count = 4
                          for i in range(count): 
                             drawPile.topToDeck (opponent, True)                          
+                         opponent.hideAll()
                       else:
                          self.utilities.showStatus ( 'Illegal move' )
                          print ( 'Oops you cannot drop this card here' )

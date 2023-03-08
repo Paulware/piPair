@@ -247,9 +247,6 @@ class SubDeck ():
       y = self.startY            
       for card in self.data: # Set the width/height of each image 
          card.image = pygame.transform.scale(card.image, (self.width, self.height))                                     
-         card.angle = 0
-         card.hide  = False
-         card.tapped = False
          card.x = x
          card.y = y
          x = x + xOffset
