@@ -47,7 +47,7 @@ class Communications:
       if not self.empty(): 
          msg = self.peek()
          if msg.find (message) > -1: 
-            print ( 'comm.waitFor found: ' + message + ' in ' + msg)
+            print ( 'comm.gotPeek found: ' + msg)
             peeked = True 
          #else:
          #   print ( 'Got message: [' + msg + '] looking for: [' + message + ']')

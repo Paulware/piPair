@@ -161,8 +161,8 @@ class Uno ():
        dragDeck   = None
        sourceDeck = None
        offset     = None
-       print ( 'line 155, start while loop' )
        while not self.utilities.quit and not self.gameOver() and not quit:
+          
           window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
           TextBox('Opponent', x=100, y=  5).draw()
@@ -174,6 +174,17 @@ class Uno ():
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
           self.utilities.showLastStatus()
           self.utilities.flip() 
+          
+          if drawPile.length() == 1: 
+             self.utilities.showStatus ( 'Need to shuffle the discardPile back into the draw pile' )
+             break
+          
+          if (opponent.length() == 0) or (hand.length() == 0): 
+             if opponent.length() == 0: 
+                self.utilities.showStatus ( 'You have lost :(')
+             else:
+                self.utilities.showStatus ( 'You have won! :)' )
+             myMove = False 
           
           if not myMove and self.comm.gotPeek ('move'): 
              message = self.comm.pop() # consume the message
@@ -188,18 +199,16 @@ class Uno ():
                 self.utilities.showStatus ('Opponent discarded ' + cardName )
                 
                 discardPile.addTopCard (opponent,index)                
-                opponent.remove (index)
+                opponent.remove (index, True)
                 # TODO tell opponent which card was drawn? or draw from same pile....
                 if cardName == 'Joker+4':
                    for i in range(4): 
-                      drawPile.revealTopCard()
-                      drawPile.topToDeck (hand)                      
+                      drawPile.topToDeck (hand, True)                      
                    self.comm.send ( 'uno move skip' ) 
                    self.utilities.showStatus ('Skipping my turn')
                 elif cardName.find ( '+2' ) > -1: 
-                   for i in range(2):
-                      drawPile.revealTopCard()
-                      drawPile.topToDeck (hand)                      
+                   drawPile.topToDeck (hand, True)                      
+                   drawPile.topToDeck (hand, True)                      
                    self.comm.send ( 'uno move skip' ) 
                    self.utilities.showStatus ('Skipping my turn')
                 elif cardName.find ( 'reverse') > -1: 
@@ -210,20 +219,6 @@ class Uno ():
                    self.utilities.showStatus ('Skipping my turn')
                 else:
                    myMove = True   
-                '''                   
-                elif message.find ( 'draw joker' ) > -1: 
-                   print ( 'split data [' + message + ']' )
-                   data = message.split ( ' ' )
-                   print ( 'data after split: ' + str(data ) ) 
-                   index = int ( data [2] )  
-                   print ( 'draw hand[' + str(index) )                 
-                   sheetIndex = drawPile.data[index].sheetIndex                
-                   print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
-                   self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
-                   drawPile.data[index].hide = False 
-                   opponent.addTopCard (drawPile,index)                
-                   drawPile.remove (index)
-                '''   
                       
              elif message.find ( 'draw hand') > -1:
                 print ( 'split data [' + message + ']' )
@@ -301,14 +296,24 @@ class Uno ():
                          hand.data[dragging].x = startPos[0]
                          hand.data[dragging].y = startPos[1]
                    else:
-                      if hand.canDrop (hand.data[dragging].sheetIndex, deck.data[index].sheetIndex): 
+                      sheetIndex = hand.data[dragging].sheetIndex
+                      if hand.canDrop (sheetIndex, deck.data[index].sheetIndex): 
                          self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
                          discardPile.addCard (hand,dragging)                
-                         hand.remove (dragging)                   
+                         hand.remove (dragging) 
+                         hand.redeal()                         
                          print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
                          myMove = False 
                          self.utilities.showStatus ( 'Waiting for opponents move' )
                          startPos = None
+                         cardName = hand.cardName (sheetIndex)
+                         count = 0 
+                         if cardName.find ( '+2' ) > -1: 
+                            count = 2
+                         elif cardName.find ( '+4' ) > -1: 
+                            count = 4
+                         for i in range(count): 
+                            drawPile.topToDeck (opponent, True)                          
                       else:
                          self.utilities.showStatus ( 'Illegal move' )
                          print ( 'Oops you cannot drop this card here' )

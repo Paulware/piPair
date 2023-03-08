@@ -8,67 +8,6 @@ import pygame
 # SubDeck cannot be inherited from Deck because it is really just a piece of Deck 
 # plus display capability
 class SubDeck (): 
-   # data is a list of objects that have an image and index attribute
-   #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
-   #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
-   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
-      print ( 'SubDeck.init' )
-      if displaySurface is None: 
-         print ( 'You should specify displaySurface when subdeck is created' )
-         exit (1)
-      self.width = width
-      self.height = height 
-      self.selected = -1
-      print ( 'startXY: ' + str(startXY) ) 
-      self.startX = startXY [0]
-      self.startY = startXY [1]      
-      self.displaySurface = displaySurface
-      self.xMultiplier = xMultiplier
-      self.yMultiplier = yMultiplier
-      self.showLength = False
-      if deckBasis is None: 
-         self.coverImage = None
-      else:
-         self.coverImage = deckBasis.coverImage
-      if self.coverImage is None: 
-         print ( 'SubDeck has a None cover image' )
-      
-      print ( 'Deal cards' )
-      if deckBasis is None: 
-         self.data = [] 
-         self.numImages = 0
-      else:
-         self.deck = deckBasis
-         if not (self.deck is None): 
-            if len(cards) > 0:
-               dealtCards = self.deck.dealList (cards) 
-               numCards = len(cards)
-            else:             
-               if numCards == 0: # Deal all remaining cards 
-                  numCards = self.deck.length()         
-         
-               dealtCards = self.deck.deal (numCards)
-               
-            self.data = dealtCards
-            xOffset = self.xMultiplier * width
-            yOffset = self.yMultiplier * height  
-            x = self.startX
-            y = self.startY 
-            first = True             
-            for card in self.data: # Set the width/height of each image 
-               card.image = pygame.transform.scale(card.image, (width, height))                                     
-               card.angle = 0
-               card.hide  = False
-               card.tapped = False
-               card.x = x
-               card.y = y
-               x = x + xOffset
-               y = y + yOffset 
-                                  
-            self.numImages = len(self.data)
-         
-      print ('Total number of cards: ' + str(self.numImages)) 
       
    def addCard (self,deck,index): 
       print ( 'addCard from deck with index: ' + str(index) + ' and tapped value: ' + str(deck.data[index].tapped)) 
@@ -212,6 +151,71 @@ class SubDeck ():
          image = self.rotate (image,90) 
       return image 
       
+   # data is a list of objects that have an image and index attribute
+   #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
+   #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
+   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
+      print ( 'SubDeck.init' )
+      if displaySurface is None: 
+         print ( 'You should specify displaySurface when subdeck is created' )
+         exit (1)
+      self.width = width
+      self.height = height 
+      self.selected = -1
+      print ( 'startXY: ' + str(startXY) ) 
+      self.startX = startXY [0]
+      self.startY = startXY [1]      
+      self.displaySurface = displaySurface
+      self.xMultiplier = xMultiplier
+      self.yMultiplier = yMultiplier
+      self.showLength = False
+      if deckBasis is None: 
+         self.coverImage = None
+      else:
+         self.coverImage = deckBasis.coverImage
+      if self.coverImage is None: 
+         print ( 'SubDeck has a None cover image' )
+      
+      print ( 'Deal cards' )
+      if deckBasis is None: 
+         self.data = [] 
+         self.numImages = 0
+      else:
+         self.deck = deckBasis
+         if not (self.deck is None): 
+            if len(cards) > 0:
+               dealtCards = self.deck.dealList (cards) 
+               numCards = len(cards)
+            else:             
+               if numCards == 0: # Deal all remaining cards 
+                  numCards = self.deck.length()         
+         
+               dealtCards = self.deck.deal (numCards)
+               
+            self.data = dealtCards
+            
+            self.redeal ()
+            '''
+            xOffset = self.xMultiplier * width
+            yOffset = self.yMultiplier * height  
+            x = self.startX
+            y = self.startY 
+            first = True             
+            for card in self.data: # Set the width/height of each image 
+               card.image = pygame.transform.scale(card.image, (width, height))                                     
+               card.angle = 0
+               card.hide  = False
+               card.tapped = False
+               card.x = x
+               card.y = y
+               x = x + xOffset
+               y = y + yOffset 
+            '''                                  
+            self.numImages = len(self.data)
+         
+      print ('Total number of cards: ' + str(self.numImages)) 
+            
    def hide (self,index):
       self.data[index].hide = True 
       
@@ -220,7 +224,7 @@ class SubDeck ():
          card.hide = True 
    
    def length (self):
-      print ( 'Length of deck: ' + str(len(self.data)))       
+      # print ( 'Length of deck: ' + str(len(self.data)))       
       return len(self.data)
          
    def listCards (self):
@@ -235,9 +239,26 @@ class SubDeck ():
                   
    def pos (self,index): 
       return ( self.data[index].x, self.data[index].y )    
-                  
-   def remove (self,index): 
+   
+   def redeal (self): 
+      xOffset = self.xMultiplier * self.width
+      yOffset = self.yMultiplier * self.height  
+      x = self.startX
+      y = self.startY            
+      for card in self.data: # Set the width/height of each image 
+         card.image = pygame.transform.scale(card.image, (self.width, self.height))                                     
+         card.angle = 0
+         card.hide  = False
+         card.tapped = False
+         card.x = x
+         card.y = y
+         x = x + xOffset
+         y = y + yOffset    
+         
+   def remove (self,index,redealCards=False): 
       self.data.pop (index)
+      if redealCards: 
+         self.redeal()
       
    def removeHidden (self, hide): 
       found = True 
@@ -290,7 +311,10 @@ class SubDeck ():
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex
    
-   def topToDeck (self,deck): 
+   def topToDeck (self,deck,reveal=False): 
+      if reveal: 
+         self.revealTopCard()
+
       index = self.length() -1
       deck.addCard (self,index)
       self.remove (index)  
