@@ -32,6 +32,20 @@
         </ul>
         <li>Install python library glob: pip install glob</li>
      </ul>
-     <li><a href="http://paulware.github.io/piPair/raspberryPiSetup.html">Pi Setup</a></li> 
+     <li>(optional-not needed for testing) <a href="http://paulware.github.io/piPair/raspberryPiSetup.html">Pi Setup</a></li> 
+     <li>MQTT-Used for communication there is a mosquitto directory which has a windows version.  When you double click runMosquitto.bat from windows explorer, mosquitto.exe is run</li>
+  </ul>
+  <h2>Testing</h2>
+  <ul>
+      <li>Current project under test: uno</li>
+      <li>To test (in windows only): 
+         <ul>
+            <li>From windows explorer, double runMosquitto.bat.  This will run MQTT server</li>
+            <li>Open a cmd window (windows-r, cmd), navigate to pipair, type command: python uno.py</li>
+            <li>Open a cmd window (windows-r, cmd), navigate to pipair, type command: python runMain.py</li>
+            <li>From the runMain gui, select Join, Uno</li>
+            <li>Separate the 2 pygame screens and play head to head</li>
+         </ul>
+      </li>
   </ul>
   

@@ -251,7 +251,6 @@ class Uno ():
                       elif deck == discardPile: 
                          self.utilities.showStatus ( 'ERR this is where you drop cards' )
                       elif deck == drawPile:
-                         # self.utilities.showStatus ( 'Drawing a card with index: ' + str(index) )
                          deck.data[index].hide = False
                          hand.addCard (deck,index)
                          deck.remove (index)
@@ -290,12 +289,19 @@ class Uno ():
                       sheetIndex = hand.data[dragging].sheetIndex
                       if hand.canDrop (sheetIndex, deck.data[index].sheetIndex): 
                          self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
-                         discardPile.addCard (hand,dragging)                
+                         self.utilities.showStatus ( 'Waiting for opponents move' )
+
+                         discardPile.addCard (hand,dragging)  
+                         if discardPile.length() == 5:   # test for discardPile shuffle  
+                            self.utilities.showStatus ( 'Need to shuffle discard into draw pile' )
+                            discardPile.shuffleTo ( drawPile )
+                         else: 
+                            self.utilities.showStatus ( 'discardPile.length(): ' + str(discardPile.length()) )
+                         
                          hand.remove (dragging) 
                          hand.redeal()                         
                          print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
                          myMove = False 
-                         self.utilities.showStatus ( 'Waiting for opponents move' )
                          startPos = None
                          cardName = hand.cardName (sheetIndex)
                          count = 0 

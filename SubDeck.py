@@ -5,8 +5,8 @@ import pygame
    It will use Decks ability to deal and will add the attributes x,y,width,height to each element in the dealt hand.
    There is no descriptive name on each element, that will be added based on id in the particular game class.   
 '''
-# SubDeck cannot be inherited from Deck because it is really just a piece of Deck 
-# plus display capability
+# SubDeck cannot be inherited from Deck because it is not a complete Deck, just part of one,  
+# and focuses primarily on display capability
 class SubDeck (): 
       
    def addCard (self,deck,index): 
@@ -26,11 +26,12 @@ class SubDeck ():
          deck.data[index].y = y
       self.data.append (deck.data[index])
       print ( 'addCard, len(self.data): ' + str(len(self.data))) 
-      
+
+   # add a card from the specified deck.data[index] to the top card of this deck       
    def addTopCard (self,deck,index): 
       print ( 'addTopCard [index,sheetIndex,tapped]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ',' + \
               str(deck.data[index].tapped) + ']') 
-      ind = len(self.data)-1
+      ind = len(self.data)-1 # Get new location from the top card of this deck 
       if ind >= 0:
          if self.xMultiplier == 0.0: 
             x = self.data[ind].x
@@ -298,7 +299,12 @@ class SubDeck ():
    def showAll (self):
       for card in self.data:
          card.hide = False
-      
+         
+   def shuffleTo (self, destinationDeck): 
+      while self.length() > 0: 
+         self.topToDeck (destinationDeck, False)
+      #TODO: Need to actually shuffle the cards 
+             
    # Note: Tap should be for a specific game.   
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
