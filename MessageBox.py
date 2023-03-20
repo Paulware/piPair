@@ -23,11 +23,20 @@ class MessageBox:
       window.fill((100,100,100), borderRectangle)
       # Draw the border 
       pygame.draw.rect ( window, (255,0,0), borderRectangle, width=1 )
+      
       if self.borderText != '': # Draw the border text
          window.fill((50,50,50),borderTextRectangle)
          window.blit(borderText, borderTextRectangle)
       # Draw the message 
       window.blit(text_surf, rectangle)
+      
+      # Draw Ok message 
+      okSurf = font.render ('Ok', True, (0,255,0)) 
+      okTextRect = pygame.Rect ( x+20, y+90, 50, 30) 
+      window.blit ( okSurf, okTextRect)
+      # Draw the border on ok button 
+      okRect = pygame.Rect ( x+10, y+85, 50, 30) 
+      pygame.draw.rect ( window, (255,0,0), okRect, width=1 )      
       pygame.display.flip()
       
       # Wait for user to click or press a key 
@@ -38,6 +47,7 @@ class MessageBox:
             if event.type == pygame.QUIT:
                run = False
             elif event.type == pygame.MOUSEBUTTONUP:
+               #TODO: Get position of mouse down...
                run = False 
             elif event.type == pygame.KEYDOWN:
                run = False 

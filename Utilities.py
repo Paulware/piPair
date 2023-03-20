@@ -445,6 +445,8 @@ if __name__ == "__main__":
    utilities = Utilities(DISPLAYSURF, BIGFONT)
    from Communications import Communications
    
+   
+   
    comm = Communications ('messages', 'localhost', 'laptop')
    if comm.connectBroker():
       comm.setTarget ( 'pi7' )

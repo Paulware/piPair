@@ -1,4 +1,5 @@
 import pygame
+from ViewImage import ViewImage
 
 '''
    SubDeck is like a hand or a discard pile 
@@ -325,6 +326,10 @@ class SubDeck ():
    def unhide (self,index):
       self.data[index].hide = False 
       
+   def view (self,index, name ):
+      ViewImage (name)
+      print ( 'view card: ' + name + '[' + str(index) + ']') 
+      
 if __name__ == '__main__':
    from Deck import Deck
    from Utilities import Utilities
@@ -345,9 +350,10 @@ if __name__ == '__main__':
    dragCard = None
    quit = False    
    while not quit:
-      window.fill ((0,0,0))
+      displaySurface.fill ((0,0,0))
       hand.draw()
       utilities.flip()
+      pygame.display.update()
       
       events = utilities.readOne()
       for event in events:

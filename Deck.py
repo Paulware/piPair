@@ -34,8 +34,7 @@ class Deck (SpriteSheet):
          obj.tapped = False
          print ( str(index) + ') just dealt card with index: ' + str(obj.sheetIndex)  ) 
          hand.append (obj) # TODO: Do I need a copy?
-         # self.data.pop (index)
-            
+         # self.data.pop (index)            
       return hand
    
 
