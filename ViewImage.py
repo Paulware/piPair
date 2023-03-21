@@ -14,8 +14,8 @@ class ViewImage:
          width = surfaceRect[2]
          
       height = image.get_height()
-      if height > surfaceRect[3]:
-         height = surfaceRect[3]
+      if (height +50)> surfaceRect[3]:
+         height = surfaceRect[3] - 50
          
       image = pygame.transform.scale(image, (width,height))
              
@@ -52,6 +52,8 @@ class ViewImage:
                      index = buttonRects.index (rect)
                      selection = buttons[index]
       print ( 'Got selection: ' + selection )
+      surface.fill ((0,0,0))
+
 if __name__ == '__main__':     
    # os.environ['SDL_VIDEO_WINDOW_POS'] = "0,0"
    pygame.init()

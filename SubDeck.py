@@ -306,7 +306,7 @@ class SubDeck ():
          self.topToDeck (destinationDeck, False)
       #TODO: Need to actually shuffle the cards 
              
-   # Note: Tap should be for a specific game.   
+   # Note: Tap should be just for the MTG game for a specific game.   
    def tap (self,index,value): 
       print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
       self.data[index].tapped = value
