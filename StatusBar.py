@@ -12,7 +12,7 @@ class StatusBar:
       surfaceRect = self.surface.get_rect()      
       print ( 'Surface info: ' + str(self.surface.get_rect()) ) 
       height = self.surface.get_rect()[3]
-      self.y = height - 30
+      self.y = height - 50
       self.x = x       
       self.selection = ''
       

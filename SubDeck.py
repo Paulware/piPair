@@ -157,7 +157,7 @@ class SubDeck ():
    #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
    #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False ):
       print ( 'SubDeck.init' )
       if displaySurface is None: 
          print ( 'You should specify displaySurface when subdeck is created' )
@@ -180,7 +180,7 @@ class SubDeck ():
          print ( 'SubDeck has a None cover image' )
       
       print ( 'Deal cards' )
-      if deckBasis is None: 
+      if (deckBasis is None) or empty: 
          self.data = [] 
          self.numImages = 0
       else:
@@ -243,7 +243,6 @@ class SubDeck ():
       return ( self.data[index].x, self.data[index].y )    
    
    def redeal (self): 
-      xOffset = self.xMultiplier * self.width
       yOffset = self.yMultiplier * self.height  
       x = self.startX
       y = self.startY            
@@ -251,6 +250,10 @@ class SubDeck ():
          card.image = pygame.transform.scale(card.image, (self.width, self.height))                                     
          card.x = x
          card.y = y
+         if card.tapped: 
+            xOffset = card.image.get_height() * self.xMultiplier
+         else:
+            xOffset = card.image.get_width() * self.xMultiplier
          x = x + xOffset
          y = y + yOffset    
          

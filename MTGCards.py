@@ -5,35 +5,22 @@ from Utilities    import Utilities
 from SelectButton import SelectButton 
 from ViewImage    import ViewImage 
 from StatusBar    import StatusBar
+from Labels       import Labels 
 
 '''
    MTGCards is based on SubDeck but customized to an MTG deck   
    Wherever SubDeck is used, MTGCards can be used instead.  
 '''
 class MTGCards (SubDeck):  
-   
-   def getColor (self,index): 
-      if (index == 9) or (index == 19) or (index == 29) or (index == 39):
-         color = 'All'       
-      elif (index < 10) or (index == 40) or (index == 44) or (index == 48):
-         color = 'Red'
-      elif (index < 20) or (index == 41) or (index == 45) or (index == 49):
-         color = 'Orange'
-      elif (index < 30) or (index == 42) or (index == 46) or (index == 50): 
-         color = 'Blue'
-      elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
-         color = 'Green'        
-      return color
-      
-      
+
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis=None, numCards=0, width=100, height=150, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False ):
       self.mtgNames = MTGNames()
       print ( 'UnoCards.init' )
       SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier, cards=cards)
+                        yMultiplier=yMultiplier, cards=cards, empty=empty)
       print ('UnoCards, total number of cards: ' + str(self.numImages)) 
       
       
@@ -69,8 +56,16 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   deck        = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)      
-   hand        = MTGCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
+   buttons = ['Black life', 'Blue Counter', 'White Life', 'Red/Black bizarro' ]
+   selection = ''
+   while selection == '': 
+      selection = SelectButton ('Game start').go(100,50,'Select a deck', buttons)
+   
+   cards       = ['black.jpg','red.jpg','fireSwamp.jpg']
+   deck        = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290, cards=cards)
+      
+   inplay      = MTGCards (deck,  0, startXY=(100,400), displaySurface=displaySurface, empty=True)   
+   hand        = MTGCards (deck,  7, startXY=(100,600), displaySurface=displaySurface)   
    discardPile = MTGCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
    drawPile    = MTGCards (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
    drawPile.hideAll () 
@@ -79,21 +74,28 @@ if __name__ == '__main__':
    cards.append (hand)
    cards.append (drawPile)   
    cards.append (discardPile)
+   cards.append (inplay)
    decks = SubDecks (cards)    
    
-   TextBox('Opponent', x=100, y=  5).draw()
-   TextBox('Discard',  x=100, y=175).draw()
-   TextBox('Draw',     x=310, y=175).draw()
-   TextBox('Hand',     x=100, y=375).draw() 
+
    window = pygame.display.get_surface()
    
    quit = False
    dragCard = None   
    bar = StatusBar ()
    
+   labels = Labels()
+   labels.addLabel ('Opponent', 100, 5)
+   labels.addLabel ('Discard' , 100, 175)
+   labels.addLabel ('Draw'    , 310, 175)
+   labels.addLabel ('In Play' , 100, 375)
+   labels.addLabel ('Hand'    , 100, 575)
+   
    while not quit:
       pygame.time.Clock().tick(60)   
       window.fill ((0,0,0))   
+      labels.show ()
+      pygame.time.Clock().tick(60)   
       decks.draw() # Show and set their x/y locations
       bar.show (['Quit', 'Message'] )
       pygame.display.update() 
@@ -142,7 +144,7 @@ if __name__ == '__main__':
                y = deck.data[index].y
                sheetIndex = deck.data[index].sheetIndex
                if deck == hand: 
-                  optionBox = OptionBox (['Play', 'Cast', 'View', 'Tap'], x, y)
+                  optionBox = OptionBox (['Cast', 'View', 'Tap'], x, y)
                else:
                   optionBox = OptionBox (['View', 'Tap'], x, y)
                   
@@ -151,11 +153,14 @@ if __name__ == '__main__':
                if selection == 'Cancel': 
                   quit = True
                   print ( 'quit is now: ' + str(quit) )
-                  break
-               elif selection == 'Info':
-                  print ( deck.getInfo (sheetIndex))
+               elif selection == 'Cast': 
+                  inplay.addCard (hand, index)
+                  inplay.redeal()
+                  hand.remove (index) 
+                  hand.redeal()                                      
                elif selection == 'Tap': 
                   deck.tap(index,None)               
+                  deck.redeal()
                elif selection == 'View':
                   name = deck.mtgNames.names[sheetIndex]
                   deck.view (sheetIndex, 'images/mtg/' + name)               

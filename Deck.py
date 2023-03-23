@@ -38,6 +38,11 @@ class Deck (SpriteSheet):
       return hand
    
 
+   # colors is a list of colors that cards must include 
+   def limitDeck ( self, colors): 
+      colors = []
+      
+
    def deal (self, numCards): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
@@ -70,7 +75,7 @@ class Deck (SpriteSheet):
 
    
    # numImages is the number of images in the deck that is dealt to a player 
-   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None):
+   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None, cards=[]):
       if coverIndex is None: 
          raise Exception("ERR coverIndex not specified in deck creation")
          
