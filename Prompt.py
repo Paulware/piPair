@@ -26,6 +26,16 @@ class Prompt:
       
       while run:
          clock.tick(60)
+         
+         window.fill(0)
+         pygame.draw.rect ( window, (255,0,0), borderRectangle, width=1 )
+         if borderPrompt != '':
+            window.fill(0,borderTextRectangle)
+            window.blit(borderText, borderTextRectangle)
+         text_surf = font.render(text, True, (255, 0, 0))
+         window.blit(text_surf, rectangle) # text_surf.get_rect(center = window.get_rect().center))
+         pygame.display.flip()
+         
          for event in pygame.event.get():
             if event.type == pygame.QUIT:
                run = False
@@ -43,14 +53,6 @@ class Prompt:
                else:
                   text += event.unicode
 
-            window.fill(0)
-            pygame.draw.rect ( window, (255,0,0), borderRectangle, width=1 )
-            if borderPrompt != '':
-               window.fill(0,borderTextRectangle)
-               window.blit(borderText, borderTextRectangle)
-            text_surf = font.render(text, True, (255, 0, 0))
-            window.blit(text_surf, rectangle) # text_surf.get_rect(center = window.get_rect().center))
-            pygame.display.flip()
             
       return text      
 
