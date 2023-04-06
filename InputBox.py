@@ -2,7 +2,7 @@ import pygame
 from Prompt import Prompt
 
 class InputBox():
-   def __init__(self, prompt, x=40, y=40 ): 
+   def __init__(self, prompt, x=40, y=40, text='' ): 
       self.window          = pygame.display.get_surface()   
       self.color           = (150, 150, 150)
       self.highlight_color = (100, 200, 255)
@@ -10,7 +10,7 @@ class InputBox():
       self.prompt          = prompt         
       self.x               = x
       self.y               = y
-      self.value           = ''
+      self.value           = text
       promptWidth,promptHeight = self.font.size(self.prompt)
       self.width = promptWidth
       self.height = promptHeight
@@ -31,6 +31,13 @@ class InputBox():
          self.window.blit(msg, self.valueRect)          
                            
       pygame.draw.rect (self.window, (255,0,0), self.valueRect, width=1)       
+      
+   def getValue ( self, text): 
+      value = ''
+      if self.prompt.find ( text ) > -1: 
+         if self.value != '':
+            value = self.value          
+      return value
         
    def update (self, pos):
       if self.valueRect.collidepoint (pos): 
