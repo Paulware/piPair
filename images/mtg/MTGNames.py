@@ -26,20 +26,20 @@ class MTGNames:
    def __init__(self):
       self.names = []
       self.names.append ( 'artifacts/The Machine.jpg')
-      self.names.append ( 'artifacts/ak47_2c.png')
-      self.names.append ( 'artifacts/beeBeeBun_6c.jpg')
-      self.names.append ( 'artifacts/bfg_4c.jpg')
-      self.names.append ( 'artifacts/blackerLotus_0c.jpg')
-      self.names.append ( 'artifacts/blurryBeeble_1l.jpg')
-      self.names.append ( 'artifacts/captainAmericasShield_c.png')
-      self.names.append ( 'artifacts/chaosConfetti_4c.jpg')
-      self.names.append ( 'artifacts/doItYourselfSeraph_4c2w.png')
-      self.names.append ( 'artifacts/doge_1c.jpg')
-      self.names.append ( 'artifacts/dragonBalls_7c.jpg')
-      self.names.append ( 'artifacts/eagleFiveWinnebago_6c.jpg')
-      self.names.append ( 'artifacts/fluxCapacitor_2c.jpg')
-      self.names.append ( 'artifacts/fodderCannon_4c.jpg')
-      self.names.append ( 'artifacts/galactus_10c.jpg')
+      self.names.append ( 'artifacts/ak47.png')
+      self.names.append ( 'artifacts/beeBeeBun.jpg')
+      self.names.append ( 'artifacts/bfg.jpg')
+      self.names.append ( 'artifacts/blackerLotus.jpg')
+      self.names.append ( 'artifacts/blurryBeeble.jpg')
+      self.names.append ( 'artifacts/captainAmericasShield.png')
+      self.names.append ( 'artifacts/chaosConfetti.jpg')
+      self.names.append ( 'artifacts/doItYourselfSeraph.png')
+      self.names.append ( 'artifacts/doge.jpg')
+      self.names.append ( 'artifacts/dragonBalls.jpg')
+      self.names.append ( 'artifacts/eagleFiveWinnebago.jpg')
+      self.names.append ( 'artifacts/fluxCapacitor.jpg')
+      self.names.append ( 'artifacts/fodderCannon.jpg')
+      self.names.append ( 'artifacts/galactus.jpg')
       self.names.append ( 'artifacts/gatlingGun.png')
       self.names.append ( 'artifacts/infinityGauntlet.png')
       self.names.append ( 'artifacts/letterBomb.jpg')
@@ -283,7 +283,6 @@ class MTGNames:
       self.names.append ( 'instants/swiftDeath.jpg')
       self.names.append ( 'instants/unplug.jpg')
       self.names.append ( 'instants/veryCrypticCommand.jpg')
-      self.names.append ( 'instants/whoWhatWhenWhereWhy.jpg')
       self.names.append ( 'lands/Island.jpg')
       self.names.append ( 'lands/cliffsOfInsanity.jpg')
       self.names.append ( 'lands/deathStar.jpg')
@@ -318,20 +317,20 @@ class MTGNames:
       self.names.append ( 'mtg.jpg')
       self.info = {\
          'artifacts/The Machine.jpg': 'bblll'\
-         'artifacts/ak47_2c.png': 'bblll'\
-         'artifacts/beeBeeBun_6c.jpg': 'bblll'\
-         'artifacts/bfg_4c.jpg': 'bblll'\
-         'artifacts/blackerLotus_0c.jpg': 'bblll'\
-         'artifacts/blurryBeeble_1l.jpg': 'bblll'\
-         'artifacts/captainAmericasShield_c.png': 'bblll'\
-         'artifacts/chaosConfetti_4c.jpg': 'bblll'\
-         'artifacts/doItYourselfSeraph_4c2w.png': 'bblll'\
-         'artifacts/doge_1c.jpg': 'bblll'\
-         'artifacts/dragonBalls_7c.jpg': 'bblll'\
-         'artifacts/eagleFiveWinnebago_6c.jpg': 'bblll'\
-         'artifacts/fluxCapacitor_2c.jpg': 'bblll'\
-         'artifacts/fodderCannon_4c.jpg': 'bblll'\
-         'artifacts/galactus_10c.jpg': 'bblll'\
+         'artifacts/ak47.png': 'bblll'\
+         'artifacts/beeBeeBun.jpg': 'bblll'\
+         'artifacts/bfg.jpg': 'bblll'\
+         'artifacts/blackerLotus.jpg': 'bblll'\
+         'artifacts/blurryBeeble.jpg': 'bblll'\
+         'artifacts/captainAmericasShield.png': 'bblll'\
+         'artifacts/chaosConfetti.jpg': 'bblll'\
+         'artifacts/doItYourselfSeraph.png': 'bblll'\
+         'artifacts/doge.jpg': 'bblll'\
+         'artifacts/dragonBalls.jpg': 'bblll'\
+         'artifacts/eagleFiveWinnebago.jpg': 'bblll'\
+         'artifacts/fluxCapacitor.jpg': 'bblll'\
+         'artifacts/fodderCannon.jpg': 'bblll'\
+         'artifacts/galactus.jpg': 'bblll'\
          'artifacts/gatlingGun.png': 'bblll'\
          'artifacts/infinityGauntlet.png': 'bblll'\
          'artifacts/letterBomb.jpg': 'bblll'\
@@ -575,7 +574,6 @@ class MTGNames:
          'instants/swiftDeath.jpg': 'bblll'\
          'instants/unplug.jpg': 'bblll'\
          'instants/veryCrypticCommand.jpg': 'bblll'\
-         'instants/whoWhatWhenWhereWhy.jpg': 'bblll'\
          'lands/Island.jpg': 'bblll'\
          'lands/cliffsOfInsanity.jpg': 'bblll'\
          'lands/deathStar.jpg': 'bblll'\
