@@ -42,6 +42,7 @@ Currently the games that are supported are:
   <ul>
      <li>sudo bash</li>
      <li>cd /boot</li>
+     <li>pip install pygame_widgets</li>
      <li>./setup.sh</li>
      <li>Let the setup.sh complete (this will take a few minutes)</li>
      <li>Turn on wifi (via desktop icon)</li>

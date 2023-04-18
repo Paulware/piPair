@@ -213,7 +213,9 @@ class Utilities ():
       for event in ev:       
          typeInput = ''
          try: 
-            if event.type == 1024: # Mouse Motion                
+            if event.type == pygame.QUIT:
+               typeInput = 'quit'
+            elif event.type == 1024: # Mouse Motion                
                typeInput = 'move'
                data = event.pos
                if self.lastType != 1024: 

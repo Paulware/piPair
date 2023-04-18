@@ -1,42 +1,274 @@
-class ManaCost (): 
+class ManaCost ():
+   def complexity (self,filename):
+      baseColors = ['colorless', 'white', 'black', 'red', 'blue', 'green' ]
+      cost = self.cost[filename] 
+      totalComplexity = 0
+      totalCost = self.totalCastingCost ( filename )
+      for c in cost: 
+         if cost[c] > 0:       
+            if c in baseColors: 
+               totalComplexity = totalComplexity + 1
+            else:
+               totalComplexity = totalComplexity + 0.5
+         
+      # Creatures bigger than 3 casting cost are more difficult to cast          
+      if totalCost > 3: 
+         totalComplexity = totalComplexity + (totalCost - 3)
+         
+      return totalComplexity
+      
+   def getTypes ( self, typeName ): 
+      types = {} 
+      print ( 'getTypes [' + typeName + ']' )
+      for c in self.cost: 
+         if c.find (typeName) > -1: 
+            types[c] = self.cost[c]         
+      print ( 'Found ' + str(len(types)) + ' ' + typeName + ' in manacost' ) 
+      return types
+      
+   def doubleInMana (self,double,mana): 
+      exists = False 
+      count = 0
+      doubles = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
+      for d in doubles: 
+         if double.find (d) > -1: 
+            color = doubles[d]
+            if color in mana: 
+               exists = True 
+               break
+         
+      if exists: 
+         print ( double + ' found in ' + str(mana) ) 
+      else:
+         print ( double + ' not found in ' + str(mana) )       
+         
+      return exists
+   
+   def colorInMana (self,color,mana):
+      exists = False 
+      colors = ['colorless', 'white', 'red', 'blue', 'black', 'green']
+      if color in colors: 
+         if color in mana: 
+            exists = True 
+      else:
+         exists = doubleInMana ( color, mana )         
+         
+      if exists:
+         print ( color + ' found in ' + mana )
+      else:
+         print ( color + ' NOT found in ' + mana )
+         
+      return exists 
+      
+   def totalCastingCost (self,filename): 
+      total = 0
+      mana = self.cost[filename]
+      for color in mana: 
+         total = total + mana[color]
+      return total
+
    def totalMana (self,mana):
       total = 0
       for color in self.colors: 
-         total = total + mana[color]
+         if color in mana: 
+            total = total + mana[color]
       return total 
       
+   def zeroesExist (self,cost): 
+      exist = False 
+      for color in cost: 
+         if cost[color] == 0: 
+            exist = True 
+            break
+      return exist            
+      
+   def removeZeroes (self,cost): 
+      newCost = {}      
+      for color in cost:
+         if cost[color] != 0: 
+            newCost[color] = cost[color]            
+      return newCost
+      
+   def removeCost (self, pool, color, number): 
+      success = True       
+      print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
+      if color in pool: 
+         if pool[color] >= number:
+            pool[color] = pool[color] - number
+            print ( 'pool[' + color + '] is now: ' + str(pool[color]) ) 
+         else:
+            success = False          
+      return (success,pool)      
+      
+   def removeDouble (self, pool, color, number): 
+      startPool = pool.copy()
+      success = True      
+      colors = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
+      print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
+      for i in range(number):
+         found = False 
+         for colorIndex in colors: 
+            if color.find (colorIndex) > -1: 
+               lookupColor = colors[colorIndex]
+               if pool[lookupColor] > 0: 
+                  pool[lookupColor] = pool[lookupColor] - 1
+                  found = True 
+                  break
+         if not found: 
+            print ( 'removeDouble could not find ' + color + ' in ' + str(pool) )          
+            success = False         
+            break
+
+      if not success: 
+         pool = startPool.copy()       
+      print ( 'pool after removeDouble: ' + str (pool) )       
+      return (success,pool)    
+
+   
+   def doubleToList (self,color):
+      values = {'red':'red','white':'white','blue':'blue','black':'black','green':'green','wht':'white','blk':'black','blu':'blue','grn':'green'}
+      manaList = []
+      for value in values: 
+         if color.find (value) > -1: 
+            manaList.append (values[value])
+      return manaList
+   
+   def colorInMana (self, color, mana ): 
+      inMana = False                   
+      for checkColor in self.doubleToList(color): 
+         if checkColor in mana: 
+            if mana[checkColor] > 0: 
+               inMana = True 
+               break
+
+      return inMana         
+   
+   def idToInfo (self,id): 
+      return list(self.cost)[id]
+   
+   # For land should be checking if any mana color found in self.cost[filename] 
+   def colorsMatch (self,mana,filename): 
+      doubles = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
+      if filename.find ( 'lands') > -1: # If any land color equals any color in deck color 
+         match = False 
+         for color in self.cost[filename]:
+            if self.cost[filename][color] > 0: 
+               if self.colorInMana (color,mana):           
+                  match = True 
+                  break
+      else:
+         match = True 
+         cost = self.cost[filename]
+         for color in cost: 
+            if color != 'colorless': # Colorless is always a match 
+               if cost[color] > 0: 
+                  if self.colorInMana ( color, mana ): 
+                     continue
+                  match = False 
+                  print ( 'Could not find color: ' + color + ' in ' + str(mana) ) 
+                  break
+                  
+      return match 
+      
+   def isBasicLand (self,filename): 
+      isBasic = False 
+
+      for land in ['forest', 'Island', 'mountain','plains','swamp']:
+         if filename.find (land) > -1: 
+            isBasic = True
+            print ( filename + ' is a basic land' )
+            break     
+      return isBasic
+      
+   def matchCards (self,mana,howComplex,number,searchString):
+      print ( 'match ' + str(number) + ' cards with complexity <= ' + str(howComplex) )    
+      creatures = []
+      count = 0 
+      lastCount = 0 
+      while len(creatures) < number: 
+         for filename in self.cost: 
+            if filename.find ( searchString ) > -1: 
+               if self.colorsMatch (mana, filename): 
+                  complexity = self.complexity (filename)
+                  # 6 = maximum complexity specified
+                  if howComplex == self.MAXIMUM_COMPLEXITY:
+                     print ( 'Ok...specified complexity is maximum: ' + str(howComplex) + ' for: ' + filename )
+                     if count < number: 
+                        if (creatures.count (filename) < 4) or self.isBasicLand (filename): 
+                           count = count + 1                           
+                           creatures.append (list(self.cost.keys()).index(filename)) # load the sheetIndex 
+                        else:
+                           print ( 'Cannot add ' + filename + ' because there are already 4 in the deck' )
+                  elif (complexity <= howComplex) : 
+                     print ( 'Ok...specified complexity: ' + str(howComplex) + ' > ' + str(complexity) + ' for: ' + filename )
+                     if count < number: 
+                        if (creatures.count(filename) < 4) or self.isBasicLand (filename): 
+                           count = count + 1
+                           creatures.append (list(self.cost.keys()).index(filename))
+                        else:
+                           print ( 'Cannot add ' + filename + ' because there are already 4 in the deck' )
+                  else:
+                     print ( 'Complexity of ' + filename + ':' + str(complexity) + ' > specified complexity: ' + str(howComplex) ) 
+            if len(creatures) == number:
+               break
+         if lastCount == count: 
+            print ( 'No progress on count: ' + str(count) ) 
+            exit()
+         lastCount = count
+         
+      print ( str(len(creatures)) + ' ' + searchString + ' matched: ' + str(creatures)) 
+      return creatures 
+      
+                
    def enoughMana (self,mana,filename):
+      manaCopy = mana.copy()
+      doubles = ['blkred', 'blured', 'grnblu', 'whtblu', 'whtblk', 'redgrn', 'redwht', 'blublk']
       enough = False
       cost = self.cost[filename]
-      if self.totalMana (mana) < self.totalMana (cost): 
+      cost = self.removeZeroes (cost)
+      cost['red'] = 3 # For testing TODO: remove
+      print ( 'Cost: ' + str(cost) )
+      print ( 'Provided mana: ' + str(mana) )
+      manaTotal = self.totalMana (mana)
+      costTotal = self.totalMana (cost)
+      if manaTotal < costTotal:
          print ( 'You do not have enough total mana to handle this cost: ' + str(self.totalMana (cost)) )
-      else: # This is sufficient total mana....
-         if mana['colorless'] >= cost ['colorless']: 
-            if mana['red'] >= cost ['red']:
-               if mana ['black'] >= cost ['black']:
-                  if mana ['blue'] >= cost ['blue']:
-                     if mana ['white'] >= cost ['white']:
-                        if mana ['green'] >= cost ['green']:
-                           enough = True
-                        else:
-                           print ( 'Not enough green' )
-                     else:
-                        print ( 'Not enough white' )
+      else: # There is sufficient total mana....
+         enough = True 
+         for color in cost:
+            if cost[color] > 0:
+               if not color in mana: 
+                  if color in doubles: 
+                     print ( 'This is a double: ' + color )
+                     (success,mana) = self.removeDouble (mana, color, cost[color]) 
+                     if not success: 
+                        enough = False 
+                        break
                   else:
-                     print ( 'Not enough blue' )
+                     print ( 'This color is missing from provided mana: ' + color )               
+               elif mana[color] < cost [color]:
+                  print ( 'Not enough ' + color )
+                  enough = False 
+                  break
                else:
-                  print ( 'Not enough black' )
-            else:
-               print ( 'Not enough red' )
-         else:
-            print ( 'Not enough colorless' )
-            
-      if not enough:
+                  (success,mana) = self.removeCost (mana, color, cost[color])
+                  if success: 
+                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
+                  else:
+                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
+                     enough = False 
+                     break
+      if not enough:      
          print ( 'Cannot cast: ' + filename )
-      return enough 
+         mana = manaCopy.copy()
+      return (enough,mana) 
       
-   def __init__(self):    
+      
+      
+   def __init__(self):  
+      self.MAXIMUM_COMPLEXITY = 5.95   
       self.colors = ['colorless','red','black','blue','white','green']
+      self.columns = 10
       self.cost = {\
          'artifacts/The Machine.jpg':               {'colorless':4, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
          'artifacts/ak47.png':                      {'colorless':2, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
@@ -73,43 +305,43 @@ class ManaCost ():
          'artifacts/tigerTank.png':                 {'colorless':8, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
          'artifacts/tinman.png':                    {'colorless':3, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
          'artifacts/urzasContactLenses.jpg':        {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/agentSmith.jpg':                {'colorless':4, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
-         'creatures/alGore.jpg':                    {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':2},\
-         'creatures/americanEagle.jpg':             {'colorless':3, 'red':1, 'black':0,'blue':1, 'white':1, 'green':0},\
-         'creatures/android17.png':                 {'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/android18.png':                 {'colorless':2, 'red':1, 'black':0,'blue':0, 'white':1, 'green':0},\
-         'creatures/annoyingOrange.jpg':            {'colorless':0, 'red':1, 'black':0,'blue':1, 'white':0, 'green':1},\
-         'creatures/arrgh.jpg':                     {'colorless':0, 'red':0, 'black':3,'blue':0, 'white':0, 'green':0},\
-         'creatures/arthurKingOfTheBritains.jpg':   {'colorless':3, 'red':0, 'black':0,'blue':0, 'white':2, 'green':0},\
-         'creatures/barackHObama.jpg':              {'colorless':1, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/barackObama.jpg':               {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'grnblu':3, 'whtblu':3},\
-         'creatures/barackObamaII.jpg':             {'colorless':3, 'red':0, 'black':1,'blue':0, 'white':0, 'green':0},\
-         'creatures/barfEagleFiveNavigator.jpg':    {'colorless':1, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/batman.jpg':                    {'colorless':3, 'red':0, 'black':0,'blue':1, 'white':1, 'green':0},\
-         'creatures/batmanII.jpg':                  {'colorless':3, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'whtblk':3},\
-         'creatures/berneyStinson.jpg':             {'colorless':0, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/bernieSanders.jpg':             {'colorless':2, 'red':0, 'black':0,'blue':0, 'white':2, 'green':0},\
-         'creatures/bernieSandersII.jpg':           {'colorless':0, 'red':1, 'black':1,'blue':1, 'white':1, 'green':1},\
-         'creatures/bickeringGiant.jpg':            {'colorless':0, 'red':1, 'black':1,'blue':0, 'white':0, 'green':1},\
-         'creatures/biffTannen.jpg':                {'colorless':4, 'red':1, 'black':1,'blue':0, 'white':0, 'green':0},\
-         'creatures/blackKnight.jpg':               {'colorless':1, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
-         'creatures/borgCube.jpg':                  {'colorless':4, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
-         'creatures/borgQueen.jpg':                 {'colorless':0, 'red':0, 'black':3,'blue':3, 'white':2, 'green':0},\
-         'creatures/bruceLee.jpg':                  {'colorless':0, 'red':1, 'black':1,'blue':1, 'white':1, 'green':1},\
-         'creatures/burninator.jpg':                {'colorless':9, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/cantinaBand.jpg':               {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':1, 'green':0},\
-         'creatures/captainAmerica.jfif':           {'colorless':2, 'red':1, 'black':0,'blue':1, 'white':1, 'green':0},\
-         'creatures/charlesXavier.jpg':             {'colorless':2, 'red':0, 'black':0,'blue':2, 'white':1, 'green':0},\
-         'creatures/cheatyFace.jpg':                {'colorless':0, 'red':0, 'black':0,'blue':2, 'white':0, 'green':0},\
-         'creatures/chivalrousChevalier.jpg':       {'colorless':4, 'red':0, 'black':0,'blue':0, 'white':1, 'green':0},\
-         'creatures/chuckNorris.jpg':               {'colorless':9, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
-         'creatures/conanTheBarbarian.png':         {'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/conanTheLibrarian.png':         {'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'creatures/countTyroneRugen.jpg':          {'colorless':0, 'red':1, 'black':2,'blue':0, 'white':0, 'green':0},\
-         'creatures/cowardlyLion.png':              {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
-         'creatures/daenerysStormborn.jpg':         {'colorless':1, 'red':1, 'black':1,'blue':0, 'white':1, 'green':1},\
-         'creatures/darkHelmet.jpg':                {'colorless':3, 'red':0, 'black':2,'blue':1, 'white':0, 'green':0},\
-         'creatures/darthSidious.jpg':              {'colorless':4, 'red':1, 'black':1,'blue':1, 'white':0, 'green':0},\
+         'creatures/agentSmith.jpg':                {'power':6, 'toughness':6, 'colorless':4, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
+         'creatures/alGore.jpg':                    {'power':1, 'toughness':1, 'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':2},\
+         'creatures/americanEagle.jpg':             {'flying':True, 'power':2, 'toughness':2,'colorless':3, 'red':1, 'black':0,'blue':1, 'white':1, 'green':0},\
+         'creatures/android17.png':                 {'power':2, 'toughness':2, 'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/android18.png':                 {'power':2, 'toughness':2, 'colorless':2, 'red':1, 'black':0,'blue':0, 'white':1, 'green':0},\
+         'creatures/annoyingOrange.jpg':            {'haste':True, 'power':1, 'toughness':1, 'colorless':0, 'red':1, 'black':0,'blue':1, 'white':0, 'green':1},\
+         'creatures/arrgh.jpg':                     {'haste':True, 'power':5, 'toughness':5,'colorless':0, 'red':0, 'black':3,'blue':0, 'white':0, 'green':0},\
+         'creatures/arthurKingOfTheBritains.jpg':   {'power':4, 'toughness':5,'colorless':3, 'red':0, 'black':0,'blue':0, 'white':2, 'green':0},\
+         'creatures/barackHObama.jpg':              {'power':3, 'toughness':7,'power':0, 'toughness':6,'colorless':1, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/barackObama.jpg':               {'power':3, 'toughness':7,'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'grnblu':3, 'whtblu':3},\
+         'creatures/barackObamaII.jpg':             {'power':1, 'toughness':1,'colorless':3, 'red':0, 'black':1,'blue':0, 'white':0, 'green':0},\
+         'creatures/barfEagleFiveNavigator.jpg':    {'power':3, 'toughness':4,'colorless':1, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/batman.jpg':                    {'power':5, 'toughness':5,'colorless':3, 'red':0, 'black':0,'blue':1, 'white':1, 'green':0},\
+         'creatures/batmanII.jpg':                  {'power':5, 'toughness':4,'colorless':3, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'whtblk':3},\
+         'creatures/berneyStinson.jpg':             {'power':4, 'toughness':1,'colorless':0, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/bernieSanders.jpg':             {'power':5, 'toughness':8,'colorless':2, 'red':0, 'black':0,'blue':0, 'white':2, 'green':0},\
+         'creatures/bernieSandersII.jpg':           {'haste':True, 'power':20, 'toughness':20,'colorless':0, 'red':1, 'black':1,'blue':1, 'white':1, 'green':1},\
+         'creatures/bickeringGiant.jpg':            {'power':3, 'toughness':3,'colorless':0, 'red':1, 'black':1,'blue':0, 'white':0, 'green':1},\
+         'creatures/biffTannen.jpg':                {'power':5, 'toughness':5,'colorless':4, 'red':1, 'black':1,'blue':0, 'white':0, 'green':0},\
+         'creatures/blackKnight.jpg':               {'power':5, 'toughness':5,'colorless':1, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
+         'creatures/borgCube.jpg':                  {'flying':True, 'power':1, 'toughness':1,'colorless':4, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
+         'creatures/borgQueen.jpg':                 {'power':5, 'toughness':5,'colorless':0, 'red':0, 'black':3,'blue':3, 'white':2, 'green':0},\
+         'creatures/bruceLee.jpg':                  {'power':99, 'toughness':99,'colorless':0, 'red':1, 'black':1,'blue':1, 'white':1, 'green':1},\
+         'creatures/burninator.jpg':                {'power':9, 'toughness':9,'colorless':9, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/cantinaBand.jpg':               {'power':1, 'toughness':1,'colorless':0, 'red':0, 'black':0,'blue':0, 'white':1, 'green':0},\
+         'creatures/captainAmerica.jfif':           {'power':2, 'toughness':2,'colorless':2, 'red':1, 'black':0,'blue':1, 'white':1, 'green':0},\
+         'creatures/charlesXavier.jpg':             {'power':2, 'toughness':4,'colorless':2, 'red':0, 'black':0,'blue':2, 'white':1, 'green':0},\
+         'creatures/cheatyFace.jpg':                {'flying':True, 'power':2, 'toughness':2, 'colorless':0, 'red':0, 'black':0,'blue':2, 'white':0, 'green':0},\
+         'creatures/chivalrousChevalier.jpg':       {'flying':True, 'power':3, 'toughness':3,'colorless':4, 'red':0, 'black':0,'blue':0, 'white':1, 'green':0},\
+         'creatures/chuckNorris.jpg':               {'power':99, 'toughness':99,'colorless':9, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
+         'creatures/conanTheBarbarian.png':         {'power':3, 'toughness':3,'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/conanTheLibrarian.png':         {'power':4, 'toughness':5,'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/countTyroneRugen.jpg':          {'power':3, 'toughness':4,'colorless':0, 'red':1, 'black':2,'blue':0, 'white':0, 'green':0},\
+         'creatures/cowardlyLion.png':              {'power':1, 'toughness':5,'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
+         'creatures/daenerysStormborn.jpg':         {'power':2, 'toughness':2,'colorless':1, 'red':1, 'black':1,'blue':0, 'white':1, 'green':1},\
+         'creatures/darkHelmet.jpg':                {'power':4, 'toughness':5,'colorless':3, 'red':0, 'black':2,'blue':1, 'white':0, 'green':0},\
+         'creatures/darthSidious.jpg':              {'power':5, 'toughness':5,'colorless':4, 'red':1, 'black':1,'blue':1, 'white':0, 'green':0},\
          'creatures/darthVader.jpg':                {'colorless':5, 'red':0, 'black':5,'blue':0, 'white':0, 'green':0},\
          'creatures/darylDixon.jpg':                {'colorless':0, 'red':5, 'black':0,'blue':0, 'white':0, 'green':0},\
          'creatures/deadPool.png':                  {'colorless':2, 'red':2, 'black':1,'blue':0, 'white':0, 'green':0},\
@@ -132,7 +364,7 @@ class ManaCost ():
          'creatures/generalGrievous.jpg':           {'colorless':0, 'red':0, 'black':1,'blue':1, 'white':1, 'green':0},\
          'creatures/georgeBushII.jpg':              {'colorless':0, 'red':1, 'black':0,'blue':1, 'white':1, 'green':0},\
          'creatures/georgeMcfly.jpg':               {'colorless':1, 'red':0, 'black':0,'blue':1, 'white':1, 'green':0},\
-         'creatures/georgeWBush.jpg':               {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
+         'creatures/georgeWBush.jpg':               {'colorless':0, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
          'creatures/gilligan.png':                  {'colorless':2, 'red':0, 'black':0,'blue':0, 'white':2, 'green':0},\
          'creatures/god.png':                       {'colorless':0, 'red':1, 'black':1,'blue':1, 'white':1, 'green':1},\
          'creatures/godzilla.jpg':                  {'colorless':5, 'red':1, 'black':0,'blue':1, 'white':0, 'green':1},\
@@ -299,14 +531,15 @@ class ManaCost ():
          'lands/Island.jpg':                        {'colorless':0, 'red':0, 'black':0,'blue':1, 'white':0, 'green':0,},\
          'lands/cliffsOfInsanity.jpg':              {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'redwht':1},\
          'lands/deathStar.jpg':                     {'chargeCounter':1, 'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
-         'lands/fireSwamp.jpg':                     {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'blkred':1},\
+         'lands/fireSwamp.jpg':                     {'colorless':0, 'red':1, 'black':1,'blue':0, 'white':0, 'green':0},\
          'lands/forest.jpg':                        {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
-         'lands/mountain.jpg':                      {'colorless':0, 'red':1, 'black':0,'blue':1, 'white':0, 'green':0},\
+         'lands/mountain.jpg':                      {'colorless':0, 'red':1, 'black':0,'blue':0, 'white':0, 'green':0},\
          'lands/pitOfDespair.jpg':                  {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0, 'redgrn':1},\
          'lands/plains.jpg':                        {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':1, 'green':0},\
          'lands/swamp.jpg':                         {'colorless':0, 'red':0, 'black':1,'blue':0, 'white':0, 'green':0},\
          'sorcery/Visage of the Dread Pirate.jpg':  {'colorless':0, 'red':1, 'black':1,'blue':0, 'white':0, 'green':0},\
          'sorcery/assWhuppin.png':                  {'colorless':1, 'red':0, 'black':1,'blue':0, 'white':1, 'green':0},\
+         'sorcery/batheInDragonbreath.png':         {'colorless':2, 'red':2, 'black':0,'blue':0, 'white':0, 'green':0},\
          'sorcery/combTheDesert.jpg':               {'colorless':2, 'red':0, 'black':1,'blue':0, 'white':0, 'green':0},\
          'sorcery/damnation.jpg':                   {'colorless':2, 'red':0, 'black':2,'blue':0, 'white':0, 'green':0},\
          'sorcery/fiveFingerDiscount.jpg':          {'colorless':4, 'red':0, 'black':0,'blue':2, 'white':0, 'green':0},\
@@ -328,11 +561,18 @@ class ManaCost ():
          'sorcery/scoutThePerimeter.jpg':           {'colorless':2, 'red':0, 'black':0,'blue':0, 'white':0, 'green':1},\
          'sorcery/timeWalk.jpg':                    {'colorless':1, 'red':0, 'black':0,'blue':1, 'white':0, 'green':0},\
          'mtg.jpg':                                 {'colorless':0, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0},\
-       }
+      }
+      self.rows = int(len(self.cost) / 10) + 1
+      print ( '[rows,columns.length]: [' + str(self.rows) + ',' + str(self.columns) + ',' + str(len(self.cost)) + ']' ) 
        
-if __name__ == '__main__':  
+if __name__ == '__main__':
    manaCost = ManaCost()
-   if manaCost.enoughMana ( {'colorless':2, 'red':0, 'black':0,'blue':0, 'white':0, 'green':0}, 'creatures/cowardlyLion.png'):
-      print ( 'Cast it' )
+   mana = {'colorless':2, 'red':4, 'black':4,'blue':2, 'white':2, 'green':2}
+   (success,newMana) = manaCost.enoughMana (mana, 'creatures/barackObama.jpg')
+   if success: 
+      print ( 'Casting...' )
+      mana = newMana         
    else:
       print ( 'Cannot cast it' )
+   print ( 'Final mana: ' + str(mana))
+   

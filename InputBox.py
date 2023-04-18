@@ -11,6 +11,8 @@ class InputBox():
       self.x               = x
       self.y               = y
       self.value           = text
+      print ( 'Text: ' + text )
+      print ( 'prompt: ' + prompt )
       promptWidth,promptHeight = self.font.size(self.prompt)
       self.width = promptWidth
       self.height = promptHeight
@@ -38,11 +40,18 @@ class InputBox():
          if self.value != '':
             value = self.value          
       return value
-        
+    
+   def getNumber (self): 
+      try: 
+         num = int (self.value)
+      except Exception as ex:
+         print ( 'Could not get number of ' + self.value + ' because: ' + str(ex) ) 
+         num = 0 
+      return num
+    
    def update (self, pos):
       if self.valueRect.collidepoint (pos): 
-         print ( 'Call prompt' )
-         self.value = Prompt ().go(100,50,'Please enter your value') 
+         self.value = Prompt().go(100,50,'Please enter your value',self.value) 
          
 if __name__ == '__main__':
    from Utilities import Utilities

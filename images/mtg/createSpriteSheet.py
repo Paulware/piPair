@@ -115,6 +115,5 @@ else:
    spritesheet_height = tile_height
     
 spritesheet = Image.new("RGBA",(int(spritesheet_width), int(spritesheet_height)))
-
    
-#populateSpreadsheet ()
+populateSpreadsheet ()

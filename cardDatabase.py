@@ -2,6 +2,12 @@ import random
 import copy
 class cardDatabase: 
    data = { \
+      'images/mtg/artifacts/blurryBeeble.jpg':{'power':1, 'toughness':1}, \
+      'images/mtg/artifacts/doge.jpg':{'power':0, 'toughness':1}, \
+      'images/mtg/artifacts/doItYourselfSeraph.png':{'power':4, 'toughness': 4}, \
+      'images/mtg/artifacts/eagleFiveWinnebago.jpg':{'power':4, 'toughness':4}, \
+      'images/mtg/artifacts/tigerTank.png':{'power':9, 'toughness':9}, \
+      'images/mtg/artifacts/tinman.png':{'power':1, 'toughness':2}, \
       'images/mtg/creatures/agentSmith.jpg':{'power':6, 'toughness':6,'toCast':['4','black','black']}, \
       'images/mtg/creatures/alGore.jpg':{'power':1, 'toughness':1,'toCast':['green','green']}, \
       'images/mtg/creatures/americanEagle.jpg':{'flying':True, 'power':2, 'toughness':2,'toCast':['3','white','blue','red']}, \
@@ -114,12 +120,14 @@ class cardDatabase:
       'images/mtg/creatures/mythBusters.jpg':{'power':6, 'toughness':4,'toCast':['3','red','red']}, \
       'images/mtg/creatures/nerdyPlayer.jpeg':{'power':4, 'toughness':6,'toCast':['3','black','black']}, \
       'images/mtg/creatures/noviceBountyHunter.jpg':{'power':2, 'toughness':1,'toCast':['1','red']}, \
+      'images/mtg/creatures/oldGuard.jpg':{'power':2, 'toughness':1}, \
       'images/mtg/creatures/obiWanKenobi.jpg':{'power':5, 'toughness':5,'toCast':['2','white','green','blue']}, \
       'images/mtg/creatures/patton.png':{'power':2, 'toughness':2,'toCast':['2','green','green']}, \
       'images/mtg/creatures/peeweeHerman.jpg':{'power':1, 'toughness':4,'toCast':['1','white','red']}, \
       'images/mtg/creatures/pepe.jpg':{'power':0, 'toughness':1,'toCast':['black']}, \
       'images/mtg/creatures/pikachu.png':{'power':1, 'toughness':2,'toCast':[['blue','red'], ['blue','red']]}, \
       'images/mtg/creatures/pizzaTheHutt.jpg':{'power':3, 'toughness':5,'toCast':['3','black','green']}, \
+      'images/mtg/creatures/predator.png':{'power':3, 'toughness':3}, \
       'images/mtg/creatures/princeHumperdinck.jpg':{'power':2, 'toughness':5,'toCast':['3','black','black']}, \
       'images/mtg/creatures/princessButtercup.jpg':{'power':2, 'toughness':6,'toCast':['white','white','green','green']}, \
       'images/mtg/creatures/princessLeia.jpg':{'power':2, 'toughness':2,'toCast':['3','white','green','blue']}, \
@@ -144,6 +152,7 @@ class cardDatabase:
       'images/mtg/creatures/sirRobin.png':{'power':2, 'toughness':2,'toCast':['white','blue']}, \
       'images/mtg/creatures/spaceMarineCaptain.png':{'power':4, 'toughness':3,'toCast':['3','white','red']}, \
       'images/mtg/creatures/spiderman.jpg':{'power':4, 'toughness':2,'toCast':['2',['blue','red'],['blue','red']]}, \
+      'images/mtg/creatures/spidermanII.png':{'power':4, 'toughness':4}, \
       'images/mtg/creatures/spidermanIII.png':{'flying':True, 'haste':True, 'power':4, 'toughness':4,'toCast':['3','blue','red']}, \
       'images/mtg/creatures/spock.png':{'power':4, 'toughness':4,'toCast':['2','white','blue']}, \
       'images/mtg/creatures/steveAustin.png':{'haste':True, 'power':5, 'toughness':6,'toCast':['1','white','black','red']}, \
@@ -151,7 +160,9 @@ class cardDatabase:
       'images/mtg/creatures/starLord.jpg':{'power':4, 'toughness':3, 'toCast':['2','white','red']}, \
       'images/mtg/creatures/superBattleDroid.jpg':{'power':4, 'toughness':5,'toCast':['5','blue']}, \
       'images/mtg/creatures/superman.gif':{'power':3, 'toughness':3,'toCast':['3','blue','blue']}, \
+      'images/mtg/creatures/superman.jpg':{'power':3, 'toughness':3}, \
       'images/mtg/creatures/supermanII.jpg':{'flying':True, 'haste':True, 'power':6, 'toughness':6,'toCast':['2','white','white','white','white']}, \
+      'images/mtg/creatures/supermanIII.png':{'flying':True, 'haste':True, 'power':1, 'toughness':1}, \
       'images/mtg/creatures/t34Tank.jpg':{'power':3, 'toughness':3,'toCast':['2','red']}, \
       'images/mtg/creatures/thanos.jpg':{'power':9, 'toughness':9,'toCast':['5','black','black']}, \
       'images/mtg/creatures/theCollector.jpeg':{'power':2, 'toughness':3,'toCast':['1','green','green']}, \
@@ -177,12 +188,6 @@ class cardDatabase:
       'images/mtg/creatures/westleyMasterofEverything.jpg':{'power':4, 'toughness':5,'toCast':['green','blue','red']}, \
       'images/mtg/creatures/vladimirPutin.jpg':{'power':4,'toughness':4,'toCast':['3','green','green']}, \
       'images/mtg/creatures/youngChild.jpeg':{'power':1, 'toughness':1,'toCast':['white']}, \
-      # Lands 
-      'images/mtg/lands/red.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
-      'images/mtg/lands/white.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
-      'images/mtg/lands/black.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
-      'images/mtg/lands/blue.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
-      'images/mtg/lands/green.jpg':{'power':0, 'toughness':0, 'toCast':['0']}, \
    }
    
    reverse = []

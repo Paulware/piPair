@@ -238,7 +238,7 @@ class Uno ():
                 if sprite != -1: # Quit is the only other option           
                    print ("Selected command: " + str(sprite))
                    quit = True    
-                elif typeInput == 'drag':  ## ? necessary if statement? 
+                else:
                    if myMove:
                       print ( '\n\n***DRAG***\n\n' )
                       (deck,index) = decks.findSprite (data) # Returns index in list 

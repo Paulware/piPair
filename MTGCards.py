@@ -1,11 +1,11 @@
 import pygame
 from SubDeck      import SubDeck
-from MTGNames     import MTGNames
 from Utilities    import Utilities
 from SelectButton import SelectButton 
 from ViewImage    import ViewImage 
 from StatusBar    import StatusBar
 from Labels       import Labels 
+from images.mtg.CardInfo import CardInfo 
 
 '''
    MTGCards is based on SubDeck but customized to an MTG deck   
@@ -14,14 +14,29 @@ from Labels       import Labels
 class MTGCards (SubDeck):  
 
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=100, height=150, startXY=(100,100), \
+   def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False ):
-      self.mtgNames = MTGNames()
-      print ( 'UnoCards.init' )
+      data = []
+      numCards = 0
+      self.cardInfo = CardInfo()
+      
+      if filename != '': 
+         f = open ( filename, 'r' )
+         line = f.readline()
+         f.close 
+         data = line.split ( ',' )
+         numCards = len(data) 
+         
+      cards = [] 
+      for d in data: 
+         cards.append ( int(d)) 
+         
+      print ( 'MTGCards.init' )
       SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
                         yMultiplier=yMultiplier, cards=cards, empty=empty)
-      print ('UnoCards, total number of cards: ' + str(self.numImages)) 
+                        
+      print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
       
       
    def printInfo (self,sheetIndex):
@@ -32,15 +47,15 @@ class MTGCards (SubDeck):
    def sheetIndex (self,index): 
       ind = self.data[index].sheetIndex
       
-   def tap (self,deckIndex,userInfo): 
-      name = self.mtgNames.names[index]
+   def tap (self,deckIndex,userInfo):       
+      name = self.cardInfo.idToName (deckIndex) 
       if (name == 'cliffsOfInsanity.jpg') or True: 
          buttons = ['Red', 'White']
          selection = SelectButton ('   Choose   ').go(100,50,'Please select mana color', buttons)
          if (selection == 'Red') or (selection == 'White'):
             print ( 'You selected the color: ' + selection )         
             # userInfo.mana.white = userInfo.mana.white + 1
-            self.data[index].tapped = True
+            self.data[deckIndex].tapped = True
          
     
 if __name__ == '__main__':
@@ -49,6 +64,7 @@ if __name__ == '__main__':
    from OptionBox import OptionBox
    from SubDecks  import SubDecks
    from TextBox   import TextBox
+   from MTGSetup  import MTGSetup
    import time   
    
    pygame.init()
@@ -56,28 +72,26 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
-   buttons = ['Black life', 'Blue Counter', 'White Life', 'Red/Black bizarro' ]
-   selection = ''
-   while selection == '': 
-      selection = SelectButton ('Game start').go(100,50,'Select a deck', buttons)
+   deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
+   filename     = MTGSetup(utilities).chooseDeckFilename('redDeck.txt')   
+   drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
    
-   cards       = ['black.jpg','red.jpg','fireSwamp.jpg']
-   deck        = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290, cards=cards)
-      
-   inplay      = MTGCards (deck,  0, startXY=(100,400), displaySurface=displaySurface, empty=True)   
-   hand        = MTGCards (deck,  7, startXY=(100,600), displaySurface=displaySurface)   
-   discardPile = MTGCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile    = MTGCards (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile.hideAll () 
+   drawPile.hideAll()
+   hand         = MTGCards (deck, 0, startXY=(100,600), displaySurface=displaySurface)
+   
+   for i in range (7):
+      drawPile.topToDeck (hand, True)
+   
+   #inplay      = MTGCards (deck,  0, startXY=(100,400), displaySurface=displaySurface, empty=True)   
+   discardPile = MTGCards (deck,  0, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
       
    cards=[]
-   cards.append (hand)
+   #cards.append (hand)
    cards.append (drawPile)   
    cards.append (discardPile)
-   cards.append (inplay)
+   #cards.append (inplay)
    decks = SubDecks (cards)    
    
-
    window = pygame.display.get_surface()
    
    quit = False
@@ -112,10 +126,15 @@ if __name__ == '__main__':
                   
          elif typeInput == 'drag':
             bar.update (data) 
+            (deck,index) = decks.findSprite (data) # Returns index in list             
             if bar.selection != '':
                if bar.selection == 'Quit': 
                   quit = True
                   bar.consumeSelection()
+            elif deck == drawPile:
+               deck.data[index].hide = False
+               hand.addCard (deck,index)
+               deck.remove (index)                     
             else: 
                if dragCard is None:
                   dragCard = hand.findSprite (data) 
@@ -124,6 +143,7 @@ if __name__ == '__main__':
                      sheetIndex = hand.data[dragCard].sheetIndex
                      hand.data[dragCard].drag = True 
                      print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
+                     
          elif typeInput == 'drop':
             (deck,index) = decks.findSprite (data) # Where are we dropping                                  
             if deck == discardPile: 
@@ -131,7 +151,7 @@ if __name__ == '__main__':
                if discardPile.canDrop ( sheetIndex, dropSheetIndex):                   
                   print ( 'Drop on discard Pile' ) 
                else:
-                  print ( 'Illegal Uno drop' )
+                  print ( 'Illegal MTG drop' )
             else: 
                print ( 'Illegal drop yo' )
             dragCard = None
@@ -144,7 +164,9 @@ if __name__ == '__main__':
                y = deck.data[index].y
                sheetIndex = deck.data[index].sheetIndex
                if deck == hand: 
-                  optionBox = OptionBox (['Cast', 'View', 'Tap'], x, y)
+                  optionBox = OptionBox (['Cast', 'View'], x, y)
+               elif deck == drawPile:
+                  optionBox = OptionBox ( ['Draw'], x, y)
                else:
                   optionBox = OptionBox (['View', 'Tap'], x, y)
                   
@@ -162,8 +184,8 @@ if __name__ == '__main__':
                   deck.tap(index,None)               
                   deck.redeal()
                elif selection == 'View':
-                  name = deck.mtgNames.names[sheetIndex]
+                  name = drawPile.cardInfo.idToName (sheetIndex)
+                  # name = deck.mtgNames.names[sheetIndex]
                   deck.view (sheetIndex, 'images/mtg/' + name)               
          else:
             print ( 'event: ' + typeInput)
-

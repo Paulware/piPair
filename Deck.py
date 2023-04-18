@@ -72,10 +72,9 @@ class Deck (SpriteSheet):
          index = int ( random.random() * listLength)
       # print ( 'Got a random index: ' + str(index))
       return index
-
    
    # numImages is the number of images in the deck that is dealt to a player 
-   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None, cards=[]):
+   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None):
       if coverIndex is None: 
          raise Exception("ERR coverIndex not specified in deck creation")
          

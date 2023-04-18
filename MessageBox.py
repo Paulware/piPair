@@ -5,6 +5,7 @@ class MessageBox:
       self.borderText = borderText
       
    def go (self, x, y, message):
+      
       font = pygame.font.SysFont(None, 30)
       
       text_surf = font.render(message, True, (255, 0, 0))
@@ -19,6 +20,7 @@ class MessageBox:
          borderTextRectangle = pygame.Rect (x+10,y-10,borderText.get_width(),borderText.get_height())
                      
       window = pygame.display.get_surface()
+      window.fill ( (0,0,0) )
       clock = pygame.time.Clock()
       window.fill((100,100,100), borderRectangle)
       # Draw the border 

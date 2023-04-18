@@ -158,20 +158,19 @@ class SubDeck ():
    #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False ):
-      print ( 'SubDeck.init' )
+      
       if displaySurface is None: 
          print ( 'You should specify displaySurface when subdeck is created' )
          exit (1)
-      self.width = width
-      self.height = height 
-      self.selected = -1
-      print ( 'startXY: ' + str(startXY) ) 
-      self.startX = startXY [0]
-      self.startY = startXY [1]      
+      self.width          = width
+      self.height         = height 
+      self.selected       = -1 
+      self.startX         = startXY [0]
+      self.startY         = startXY [1]      
       self.displaySurface = displaySurface
-      self.xMultiplier = xMultiplier
-      self.yMultiplier = yMultiplier
-      self.showLength = False
+      self.xMultiplier    = xMultiplier
+      self.yMultiplier    = yMultiplier
+      self.showLength     = False
       if deckBasis is None: 
          self.coverImage = None
       else:
@@ -197,23 +196,7 @@ class SubDeck ():
                
             self.data = dealtCards
             
-            self.redeal ()
-            '''
-            xOffset = self.xMultiplier * width
-            yOffset = self.yMultiplier * height  
-            x = self.startX
-            y = self.startY 
-            first = True             
-            for card in self.data: # Set the width/height of each image 
-               card.image = pygame.transform.scale(card.image, (width, height))                                     
-               card.angle = 0
-               card.hide  = False
-               card.tapped = False
-               card.x = x
-               card.y = y
-               x = x + xOffset
-               y = y + yOffset 
-            '''                                  
+            self.redeal ()                                 
             self.numImages = len(self.data)
          
       print ('Total number of cards: ' + str(self.numImages)) 
@@ -222,6 +205,7 @@ class SubDeck ():
       self.data[index].hide = True 
       
    def hideAll (self):
+      print ( 'hide ALL cards ' 
       for card in self.data:
          card.hide = True 
    

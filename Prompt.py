@@ -9,7 +9,8 @@ class Prompt:
       self.width = w
       self.height = h       
       
-   def go (self, x, y, borderPrompt=''):
+   def go (self, x, y, borderPrompt='',defaultValue=''):
+      print ( 'prompt user for input' )
       font = pygame.font.SysFont(None, 30)
       borderRectangle = pygame.Rect (x,y,self.width,self.height)
       if borderPrompt != '': 
@@ -20,7 +21,7 @@ class Prompt:
       window = pygame.display.get_surface()
       clock = pygame.time.Clock()
       
-      text = ""
+      text = defaultValue
       
       run = True
       
@@ -43,8 +44,8 @@ class Prompt:
                input_active = True
                text = ""
             elif event.type == pygame.KEYDOWN:
-               if event.key == pygame.K_RETURN:
-                  print ( 'Got a return' )
+               if (event.key == pygame.K_RETURN) or (event.key == pygame.K_KP_ENTER):
+                  print ( 'Prompt.go Carriage Return' )
                   return text 
                elif event.key == pygame.K_BACKSPACE:
                   text =  text[:-1]
