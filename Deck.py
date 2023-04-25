@@ -1,7 +1,12 @@
 import random
+import copy
 from SpriteSheet import SpriteSheet
 
 # import SubDeck is not required, but knowledge of Subdeck routines might be necessary
+
+class Object(object):
+    pass
+
 
 '''
    Responsibility of the deck is to read a sprite sheet and parse it into
@@ -19,30 +24,7 @@ from SpriteSheet import SpriteSheet
    This class will also have a coverImage attribute which is the image on the back of the card
 '''
 class Deck (SpriteSheet): 
-
-   def dealList (self, cards): 
-      numCards = len(cards)
-      print ( 'Deck.dealList ' + str(numCards) ) 
-      hand = []
-      print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
-      for index in cards:
-         try: 
-            obj = self.data[index]
-         except IndexError:
-            print ( 'This index of out of range: ' + str(index) )
-            exit(1)
-         obj.tapped = False
-         print ( str(index) + ') just dealt card with index: ' + str(obj.sheetIndex)  ) 
-         hand.append (obj) # TODO: Do I need a copy?
-         # self.data.pop (index)            
-      return hand
-   
-
-   # colors is a list of colors that cards must include 
-   def limitDeck ( self, colors): 
-      colors = []
       
-
    def deal (self, numCards): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
@@ -57,11 +39,54 @@ class Deck (SpriteSheet):
             print ( 'This index of out of range: ' + str(index) )
             exit(1)
          obj.tapped = False
+         obj.x = 0
+         obj.y = 0
          print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
          hand.append (obj) # TODO: Do I need a copy?
          self.data.pop (index)
             
       return hand
+      
+
+   def dealList (self, cards, x=0, y=0): 
+      numCards = len(cards)
+      print ( 'Deck.dealList ' + str(numCards) ) 
+      print ( 'Deck.dealList: ' + str(cards)) 
+      hand = []
+      print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
+      count = 0 
+      for ind in cards:
+         obj = Object()
+
+         try: 
+            obj.x          = x
+            obj.y          = y
+            obj.sheetIndex = self.data[ind].sheetIndex
+            obj.image      = self.data[ind].image 
+            # obj.unique = count
+            obj.tapped     = False 
+         except IndexError:
+            print ( 'This index of out of range: ' + str(ind) )
+            exit()
+           
+         count = count + 1
+         print ( str(count) + ') just dealt card with index: ' + str(obj.sheetIndex)  ) 
+         hand.append (obj)
+         
+      print ( 'show Cards: ' ) 
+      count = 0 
+      for card in hand:
+         print ( 'card (' + str(count) +  ' [x,y,sheetIndex]: [' + str(card.x) + ',' + \
+              str(card.y) + ',' + str(card.sheetIndex) +  ']' )
+         count = count + 1              
+        
+      return hand
+   
+
+   # colors is a list of colors that cards must include 
+   def limitDeck ( self, colors): 
+      colors = []
+      
       
    def getRandomIndex (self,listLength):         
       index = -1

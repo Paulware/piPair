@@ -247,8 +247,8 @@ if __name__ == '__main__':
    window = pygame.display.set_mode((1000, 600))
    utilities = Utilities (window, BIGFONT)   
    
-   setup = MTGSetup()
-   setup.mainPage  (utilities)   
+   setup = MTGSetup(utilities)
+   setup.mainPage  ()   
 
    filename = setup.chooseDeckFilename (utilities)
    if filename == '': 

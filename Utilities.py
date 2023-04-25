@@ -271,96 +271,6 @@ class Utilities ():
       if (len(events) > 0) and self.debugIt: 
          print ( 'events: ' + str(events) ) 
       return events
-        
-   def showCh (self, ch,x,y):
-     WHITE = (255,255,255) 
-     GREEN = (0,155,0)
-     surface = self.font.render(str(ch), True, WHITE, GREEN)
-     rect = surface.get_rect()
-     rect.topleft = (x,y)
-     self.displaySurface.blit(surface, rect)
-     pygame.display.update()
-         
-   def showLabels (self, labels, locations):
-       print ( 'Utilities.showLabels, len(labels): ' + str(len(labels)) ) 
-       sprites = []
-       i = 0
-       for label in labels: 
-           x = locations[i][0]
-           y = locations[i][1]
-           (surface, rect) = self.createLabel (label, x, y)    
-           sprites.append (self.displaySurface.blit(surface, rect))
-           i = i + 1
-       return sprites  
-     
-   def showLine ( self,line, x,y ):
-     height = self.DISPLAYHEIGHT - 23
-     BLACK = (0,0,0)
-     pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
-     pygame.display.update()
-     for ch in line:
-        self.showCh (ch, x, y)
-        x = x + self.chOffset (ch)       
-             
-   def showImages (self,filenames,locations):
-       images = [] 
-       for filename in filenames:
-           filename = 'images/' + filename 
-           if self.fileExists ( filename): 
-              images.append ( pygame.image.load (filename) )   
-           else:
-              print ( 'This file is missing: ' + filename )           
-
-       sprites = []
-       i = 0
-       for image in images: 
-           sprites.append (self.displaySurface.blit (image, locations[i]) )
-           i = i + 1
-       return sprites
-       
-   def showLastStatus (self):
-       if self.statusMessage != "":
-          height = self.DISPLAYHEIGHT - 23
-          pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
-          line1 = TextBox ( '                                                           ')
-          line1.draw ( (0,600,30) ) 
-          line1 = TextBox ( self.statusMessage )
-          line1.draw ( (0,600,30) )
-       
-   def showStatus (self,status):
-       self.statusMessage = status 
-       if self.statusMessage != "":
-          print ( 'Show status: ' + self.statusMessage )
-          height = self.DISPLAYHEIGHT - 23
-          pygame.draw.line(self.displaySurface, self.RED, (0, height), (self.DISPLAYWIDTH, height)) #status line
-          #pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
-          #self.showLine (self.statusMessage, 1, height+4) # Show status message
-          line1 = TextBox ( '                                                           ')
-          line1.draw ( (0,600,30) ) 
-          line1 = TextBox ( status )
-          line1.draw ( (0,600,30) )
-          print ( 'pygame.update')
-          pygame.display.update()
-          print ('Done showing Status: ' + self.statusMessage)
-          
-       
-   def showSsids(self,ssids):
-       BLACK      = (0,   0,   0)
-       self.displaySurface.fill((BLACK))
-       
-       i = 0    
-       y = 55 
-       locations = []
-       for ssid in ssids:
-          x = 150
-          locations.append ( (x,y)) 
-          y = y + 35
-          
-       labels = self.showLabels (ssids, locations)
-       (ssidSurf, ssidRect) = self.createLabel ('Click on SSID to join (password=\'ABCD1234\')', 50, 20)  
-    
-       pygame.display.update()
-       return labels
        
    def scanForSsids (self):
        ssids = []
@@ -383,10 +293,100 @@ class Utilities ():
           
        print (str(ssids)) 
        return ssids  
+        
+   def showCh (self, ch,x,y):
+     WHITE = (255,255,255) 
+     GREEN = (0,155,0)
+     surface = self.font.render(str(ch), True, WHITE, GREEN)
+     rect = surface.get_rect()
+     rect.topleft = (x,y)
+     self.displaySurface.blit(surface, rect)
+     pygame.display.update()
+         
+   def showLabels (self, labels, locations):
+       print ( 'Utilities.showLabels, len(labels): ' + str(len(labels)) ) 
+       sprites = []
+       i = 0
+       for label in labels: 
+           x = locations[i][0]
+           y = locations[i][1]
+           (surface, rect) = self.createLabel (label, x, y)    
+           sprites.append (self.displaySurface.blit(surface, rect))
+           i = i + 1
+       return sprites  
+     
+   def showImages (self,filenames,locations):
+       images = [] 
+       for filename in filenames:
+           filename = 'images/' + filename 
+           if self.fileExists ( filename): 
+              images.append ( pygame.image.load (filename) )   
+           else:
+              print ( 'This file is missing: ' + filename )           
+
+       sprites = []
+       i = 0
+       for image in images: 
+           sprites.append (self.displaySurface.blit (image, locations[i]) )
+           i = i + 1
+       return sprites
        
    def showLabel (self, msg, x, y):
        (surface, rect) = self.createLabel (msg, x, y)     
        self.displaySurface.blit(surface, rect)    
+              
+   def showLastStatus (self):
+       if self.statusMessage != "":
+          width, height = pygame.display.get_surface().get_size()
+          pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
+          line1 = TextBox ( '                                                           ')
+          line1.draw ( (0,height-35,30) ) 
+          line1 = TextBox ( self.statusMessage )
+          line1.draw ( (0,height-35,30) )
+          
+   def showLine ( self,line, x,y ):
+     height = self.DISPLAYHEIGHT - 23
+     BLACK = (0,0,0)
+     pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
+     pygame.display.update()
+     for ch in line:
+        self.showCh (ch, x, y)
+        x = x + self.chOffset (ch)       
+                    
+   def showSsids(self,ssids):
+       BLACK      = (0,   0,   0)
+       self.displaySurface.fill((BLACK))
+       
+       i = 0    
+       y = 55 
+       locations = []
+       for ssid in ssids:
+          x = 150
+          locations.append ( (x,y)) 
+          y = y + 35
+          
+       labels = self.showLabels (ssids, locations)
+       (ssidSurf, ssidRect) = self.createLabel ('Click on SSID to join (password=\'ABCD1234\')', 50, 20)  
+    
+       pygame.display.update()
+       return labels
+       
+   def showStatus (self,status):
+       self.statusMessage = status 
+       if self.statusMessage != "":
+          print ( 'Show status: ' + self.statusMessage )
+          width, height = pygame.display.get_surface().get_size()
+          pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
+          #pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
+          #self.showLine (self.statusMessage, 1, height+4) # Show status message
+          line1 = TextBox ( '                                                           ')
+          line1.draw ( (0,height-35,30) ) 
+          line1 = TextBox ( status )
+          line1.draw ( (0,height-35,30) )
+          print ( 'pygame.update')
+          pygame.display.update()
+          print ('Done showing Status: ' + self.statusMessage)
+          
        
    def stop (self):
        self.quit = True  

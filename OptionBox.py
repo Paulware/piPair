@@ -2,11 +2,11 @@ import pygame
 
 class OptionBox():
 
-    def __init__(self, options, x=40, y=40, w=160, h=40, selected = 0): 
+    def __init__(self, options, x=40, y=40, width=160, height=40, selected = 0): 
         self.window = pygame.display.get_surface()   
         self.color = (150, 150, 150)
         self.highlight_color = (100, 200, 255)
-        self.rect = pygame.Rect(x, y, w, h)
+        self.rect = pygame.Rect(x, y, width, height)
         self.font = pygame.font.SysFont(None, 30)
         self.option_list = options
         self.selected = selected
