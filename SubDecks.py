@@ -51,7 +51,7 @@ class SubDecks():
          for deck in self.decks:           
             if deck != skipDeck: 
                index = deck.findSprite (pos)
-               if not index is None:
+               if index > -1:
                   found = deck
                   break
             
@@ -64,8 +64,7 @@ class SubDecks():
       return (found,index)
       
             
-   def findSprite (self, pos):
-      debugIt = True
+   def findSprite (self, pos, debugIt = False):
       if debugIt: 
          print ( 'SubDecks.findSprite (' + str(pos) + ')' )
       found = None
@@ -76,7 +75,7 @@ class SubDecks():
       else:    
          for deck in self.decks:           
             index = deck.findSprite (pos)
-            if not index is None:
+            if index > -1:
                found = deck
                break
             

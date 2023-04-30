@@ -207,6 +207,7 @@ class Utilities ():
    # event.button == 3 for right button 
    # event.type == 769 for keyup 
    def readOne (self):
+      debugIt = True
       events = []       
       ev = pygame.event.get()
       data = '' 
@@ -219,7 +220,7 @@ class Utilities ():
                typeInput = 'move'
                data = event.pos
                if self.lastType != 1024: 
-                  if self.debugIt: 
+                  if debugIt: 
                      print ('[lastType,event.type]: [' + str(self.lastType) + ',' + str(event.type) + ']' + str(event)) 
                   self.lastType = 1024
             else:
@@ -257,11 +258,11 @@ class Utilities ():
                elif event.type == 769: # keyup 
                   typeInput = 'keypress'
                   data = event.unicode
-                  if self.debugIt1:
-                     print ( 'events: ' + str(events) ) 
-                  if data == ' ': 
-                     self.debugIt = not self.debugIt
-               elif self.debugIt: 
+                  if debugIt:
+                     print ( 'event: ' + str(event) ) 
+                  if event.key == 27: 
+                     typeInput = 'escape'
+               elif debugIt: 
                   print ( 'Not handled event: ' + str(event))
                                      
          except Exception as ex:

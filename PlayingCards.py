@@ -111,7 +111,7 @@ if __name__ == '__main__':
          x = pos[0]
          y = pos[1]
          index = hand.findSprite (x,y)
-         if index != -1: 
+         if index > -1: 
              optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
              selection = optionBox.getSelection()
              print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 

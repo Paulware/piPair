@@ -128,9 +128,10 @@ if __name__ == '__main__':
          elif typeInput == 'drag':
             if dragCard is None:
                dragCard = hand.findSprite (data) 
-               sheetIndex = hand.data[dragCard].sheetIndex
-               hand.data[dragCard].drag = True 
-               print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
+               if dragCard > -1: 
+                  sheetIndex = hand.data[dragCard].sheetIndex
+                  hand.data[dragCard].drag = True 
+                  print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
          elif typeInput == 'drop':
             (deck,index) = decks.findSprite (data) # Where are we dropping                                  
             if deck == discardPile: 
@@ -144,7 +145,7 @@ if __name__ == '__main__':
             dragCard = None
          elif typeInput == 'select':      
             index = hand.findSprite (data)  
-            if index != -1: 
+            if index > -1: 
                x = hand.data[index].x
                y = hand.data[index].y
                sheetIndex = hand.data[index].sheetIndex

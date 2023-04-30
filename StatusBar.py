@@ -21,11 +21,12 @@ class StatusBar:
       y = self.y
       font = pygame.font.SysFont(None, 30)
       self.buttons = buttons
+      # print ( 'StatusBar.show buttons at: [' + str(x) + ',' + str(y) + ']' )
       
       self.buttonRects = [] 
       for buttonText in buttons: 
          buttonSurf     = font.render (buttonText, True, (0,255,0)) # Color is final argument 
-         width          = buttonSurf.get_width()
+         width          = buttonSurf.get_width() 
          height         = buttonSurf.get_height()
          buttonTextRect = pygame.Rect ( x, y, width, height) 
          self.buttonRects.append (buttonTextRect)

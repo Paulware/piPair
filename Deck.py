@@ -63,6 +63,7 @@ class Deck (SpriteSheet):
             obj.y          = y
             obj.sheetIndex = self.data[ind].sheetIndex
             obj.image      = self.data[ind].image 
+            obj.hide       = False 
             # obj.unique = count
             obj.tapped     = False 
          except IndexError:

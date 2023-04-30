@@ -9,13 +9,14 @@ from images.mtg.CardInfo import CardInfo
 
 class MTGActions(): 
 
-   def __init__(self,utilities):
+   def __init__(self,utilities, cardInfo):
       self.utilities = utilities
+      self.cardInfo  = cardInfo
    
    def damageOpponent (self,amount):
       print ( 'Opponent takes ' + str(amount) + ' damage' )
    
-   def execute (self,mana,card):
+   def execute (self,mana,card,inplay,opponent):
       print ( 'card. [filename]: [' + card.filename + ']' ) 
       if card.filename == 'lands/pitOfDespair.jpg': 
          if (mana['red'] > 0) and (mana['green']  > 0):          
@@ -26,27 +27,67 @@ class MTGActions():
          selection = optionBox.getSelection()
          if selection == 'Tap For Red': 
             mana['red'] = mana['red'] + 1
+            card.tapped = True 
          elif selection == 'Tap For Green': 
             mana['green'] = mana['green'] + 1
+            card.tapped = True 
          elif selection == 'Force fight between 2 creatures (cost R/W)':             
-            self.fight(mana)  
+            if self.fight(inplay,opponent,mana):
+               print ( 'Reduce mana by 1 red, 1 green' )
+               mana['red'] = mana['red'] - 1
+               mana['green'] = mana ['green'] - 1
+               card.tapped = True 
+            else:
+               print ( 'Fight aborted' )
          elif selection == 'Cancel': 
             print ( 'Never mind') 
       else:
          print ( 'Did not find an action for: ' + filename )
          
-   def fight (self,mana): 
-      self.selectCreature(False)
-      print ( 'Select an opponents creature' )
-      print ( 'Assign damage between those creatures' )
-      print ( 'Reduce mana by 1 red, 1 green' )
-      mana['red'] = mana['red'] - 1
-      mana['green'] = mana ['green'] - 1
+   def fight (self,inplay,opponent,mana): 
+      success = False 
+      friendly = self.selectCreature(inplay)
+      if friendly != -1: 
+         enemy    = self.selectCreature(opponent)
+         if enemy != -1:  
+            print ( 'Assign damage between those creatures' )
+            success = True 
+         else:
+            print ( 'Enemy creature aborted' )
+      else:
+         print ( 'Friendly creature aborted' )
+      return success
       
-   def selectCreature (self, opponent): 
-      print ( 'Select a creature on your side' )
-      self.utilities.showStatus ('Click on Creature')
-      self.utilities.waitForClick()    
+   def selectCreature (self, deck):
+      index = -1   
+      ind = -1       
+      self.utilities.showStatus ('Select a creature in deck: ' + deck.name)
+      escape = False 
+      while (ind == -1) and not escape:   
+         events = utilities.readOne()
+         for event in events:
+            (typeInput,data,addr) = event
+            if typeInput == 'escape': 
+               escape = True 
+            elif typeInput == 'drag': 
+               # Determine which subdeck the card is in. 
+               ind = deck.findSprite (data)
+               if ind != -1: 
+                  id = deck.data[ind].sheetIndex
+                  if self.cardInfo.isCreature(id): 
+                     card = deck.data[ind]            
+                     print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')               
+                     index = ind
+                  else:
+                     self.utilities.showStatus ( 'That card is not a creature aborting... ' + deck.name )
+                  break
+                     
+      if index == -1:
+         print ( 'No creature selected' )
+      else:
+         print ( 'Selected creature with index: ' + str(index)) 
+         print ( '  Selected creature named: ' + deck.data[index].filename )
+      return index 
       
    def selectOption ( self, options): 
       x = 600
@@ -59,6 +100,11 @@ class MTGActions():
 '''
 class MTGCards (SubDeck):  
 
+   def cardName (self, sheetIndex):
+      name = drawPile.cardInfo.idToName (sheetIndex)
+      print ( 'cardName returning: [' + name + ']' )
+      return name
+      
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False, \
@@ -67,7 +113,7 @@ class MTGCards (SubDeck):
       numCards = 0
       self.cardInfo = CardInfo()
       self.utilities = utils
-      self.action  = MTGActions(self.utilities)
+      self.action  = MTGActions(self.utilities, self.cardInfo)
       
       if str(filename).isnumeric():  
          print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
@@ -121,6 +167,8 @@ if __name__ == '__main__':
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
                   yMultiplier=0.0, name='drawPile')   
    drawPile.hideAll()
+   opponent     = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
+                             displaySurface=displaySurface, name='opponent')
    hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, displaySurface=displaySurface, name='hand')
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
                    xMultiplier=1.0, yMultiplier=0.0, name='inplay', utils=utilities)   
@@ -137,6 +185,7 @@ if __name__ == '__main__':
    cards.append (discardPile)
    cards.append (hand)
    cards.append (inplay)
+   cards.append (opponent)
    decks = SubDecks (cards)    
    
    window = pygame.display.get_surface()
@@ -187,7 +236,7 @@ if __name__ == '__main__':
                if dragCard is None:
                   dragCard = hand.findSprite (data) 
                   print ( 'dragCard: ' + str(dragCard) ) 
-                  if not dragCard is None:
+                  if dragCard > -1:
                      sheetIndex = hand.data[dragCard].sheetIndex
                      hand.data[dragCard].drag = True 
                      print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
@@ -221,7 +270,10 @@ if __name__ == '__main__':
                if deck == hand: 
                   optionBox = hand.action.selectOption (['View', 'Cast'])
                elif deck == inplay: 
-                  optionBox = hand.action.selectOption (['View', 'Tap'])
+                  if card.tapped: 
+                     optionBox = hand.action.selectOption (['View', 'Untap'])
+                  else:
+                     optionBox = hand.action.selectOption (['View', 'Tap'])
                elif deck == drawPile:
                   optionBox = hand.action.selectOption  ( ['Draw'])
                   
@@ -235,13 +287,17 @@ if __name__ == '__main__':
                   inplay.addCard (hand, index)
                   inplay.redeal()
                   hand.remove (index) 
-                  hand.redeal()                                      
+                  hand.redeal()                                  
                elif selection == 'View':                 
                   deck.view (sheetIndex, 'images/mtg/' + name)               
+               elif selection == 'Untap': 
+                  card.tapped = False 
+                  utilities.showStatus ( 'Card is untapped' )
                elif selection == 'Tap':
                   name = drawPile.cardInfo.idToName (sheetIndex)
                   mana = {'red':1, 'green':2}
-                  inplay.action.execute (mana,card)               
+                  print ( 'Mana before execution: ' + str(mana) ) 
+                  inplay.action.execute (mana,card,inplay,opponent)               
                   print ( 'Mana is now: ' + str(mana) ) 
          else:
             print ( 'event: ' + typeInput)

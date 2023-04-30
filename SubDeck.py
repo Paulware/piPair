@@ -172,32 +172,36 @@ class SubDeck ():
       for card in self.data:
          card.drag = False 
    
-   def findSprite (self,pos):
-      debugIt = False
+   def findSprite (self,pos,debugIt=False):
    
-      found = None
+      found = -1
       if pos is None: 
          print ( 'ERR...SubDeck.findSprite, pos is None' )
+         exit()
       if len(pos) != 2: 
          print ( 'ERR...SubDeck.findSprite, pos is not correct [' + str(pos) + ']') 
+         exit()
       else:
          x = pos[0]
          y = pos[1]
-         index = 0 
+         index = -1 
          if debugIt: 
-            print ( 'findSprite (' + str(x) + ',' + str(y) + ')' ) 
+            print ( 'findSprite (' + str(x) + ',' + str(y) + '), len(self.data): ' + str(len(self.data)) + \
+                    ' sprite [x,y,width,height]: [' + str(self.data[0].x) + ',' + str(self.data[0].y) + \
+                    ',' + str(self.data[0].width) + ',' + str(self.data[0].height) + ']' ) 
          for sprite in self.data: 
             width  = sprite.width
             height = sprite.height
             rect = pygame.Rect (sprite.x, sprite.y, width,height)               
+            if debugIt:
+               print ( 'rect: ' + str(rect)) 
+            index = index + 1
             if rect.collidepoint (pos): 
                if debugIt:             
                   print ( 'Found sprite at index: ' + str(index) + ' pos: ' + str(pos))
                found = index 
-            index = index + 1
-         print ( 'Done in findSprite: ' + str(found) ) 
-         if found: 
-            print ( 'Deck: ' + self.name + ' was matched.' )
+         if found > -1: 
+            print ( self.name + '.findSprite found: ' + str(found) ) 
          return found 
       
    def getImage (self,sprite):
@@ -247,11 +251,10 @@ class SubDeck ():
       cnt = 0    
       for card in self.data: # Set the width/height of each image 
          newCard = copy.copy(card)
-         # card.image = pygame.transform.scale(card.image, (self.width, self.height))                                     
-         #ind = self.data.index(card) 
          ind = cnt
-         print ( 'self.data[' + str(ind) + '].x = ' + str(x) ) 
-         print ( 'self.data[' + str(ind) + '].y = ' + str(y) )          
+         if debugIt:
+            print ( 'self.data[' + str(ind) + '].x = ' + str(x) ) 
+            print ( 'self.data[' + str(ind) + '].y = ' + str(y) )          
          newCard.x = x
          newCard.y = y
          newCard.sheetIndex = card.sheetIndex
@@ -271,18 +274,18 @@ class SubDeck ():
          x = x + xOffset
          y = y + yOffset    
          cnt = cnt + 1
-         self.showInfo ()
+         # self.showInfo ()
 
-      print ( 'Recheck data...' )
-      count = 0      
-      self.data = newList
-      for card in self.data: # Set the width/height of each image 
-         c = self.data[count]
-         if debugIt: 
-            print ( 'card (' + str(count+1) + ') redeal [x,y,sheetIndex]: [' + str(c.x) + ',' + str(c.y) + ',' + str(c.sheetIndex) + ']' )
-         count = count + 1
-         
-         
+      if debugIt:
+         print ( 'Recheck data...' )
+         count = 0      
+         self.data = newList
+         for card in self.data: # Set the width/height of each image 
+            c = self.data[count]
+            if debugIt: 
+               print ( 'card (' + str(count+1) + ') redeal [x,y,sheetIndex]: [' + str(c.x) + ',' + str(c.y) + ',' + str(c.sheetIndex) + ']' )
+            count = count + 1
+                  
    def remove (self,index,redealCards=False): 
       self.data.pop (index)
       if redealCards: 
