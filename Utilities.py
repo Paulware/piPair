@@ -339,7 +339,7 @@ class Utilities ():
    def showLastStatus (self):
        if self.statusMessage != "":
           width, height = pygame.display.get_surface().get_size()
-          pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
+          # pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
           line1 = TextBox ( '                                                           ')
           line1.draw ( (0,height-35,30) ) 
           line1 = TextBox ( self.statusMessage )

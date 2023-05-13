@@ -309,3 +309,14 @@ class CardInfo():
       else:
          print ( 'This is NOT a creature: ' + name )
       return creature
+      
+   def isLand (self,id): 
+      match = False
+      name = self.idToName (id)
+      if name.find ( 'lands' ) > -1: 
+         match = True
+         print ( 'This is a land: ' + name )
+      else:
+         print ( 'This is NOT a land: ' + name )
+      return match
+      

@@ -7,13 +7,17 @@ class StatusBar:
    def consumeSelection (self):
       self.selection = ''
 
-   def __init__ (self, x=40):
+   def __init__ (self, x=40, y=None):
       self.surface = pygame.display.get_surface()   
       surfaceRect = self.surface.get_rect()      
       print ( 'Surface info: ' + str(self.surface.get_rect()) ) 
       height = self.surface.get_rect()[3]
-      self.y = height - 50
-      self.x = x       
+      width  = pygame.display.get_surface().get_width()
+      if y is None:
+         self.y = height - 30
+      else:
+         self.y = y
+      self.x = width - 350       
       self.selection = ''
       
    def show (self, buttons):
@@ -37,7 +41,7 @@ class StatusBar:
       pygame.display.flip()
          
    def update (self, mousePosition): 
-      print ( 'Got pos: ' + str(mousePosition))                
+      print ( 'StatusBar got mouse position [' + str(mousePosition) + ']')                
       for rect in self.buttonRects: 
          if rect.collidepoint(mousePosition): 
             index = self.buttonRects.index (rect)
@@ -45,7 +49,7 @@ class StatusBar:
             break
       
       if self.selection != '':       
-         print ( 'Got selection: ' + self.selection )
+         print ( 'Got selection: [' + self.selection + ']')
 
 
 if __name__ == '__main__':

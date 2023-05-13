@@ -7,8 +7,33 @@ from StatusBar    import StatusBar
 from Labels       import Labels 
 from images.mtg.CardInfo import CardInfo 
 
-class MTGActions(): 
+class MTGPhases (): 
+   def __init__ (self,inplay): 
+      self.phase = TextBox ('Upkeep', 500, 755)       
+      self.manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0}
+      self.inplay = inplay
+      
+   def next(self):
+      if self.phase.text == 'Upkeep':
+         self.phase.text = 'Draw'
+      elif self.phase.text == 'Draw':
+         self.phase.text = 'Cast'
+      elif self.phase.text == 'Cast':
+         self.phase.text = 'Attack'
+      elif self.phase.text == 'Attack':
+         self.phase.text = 'Assign Damage'
+      elif self.phase.text == 'Assign Damage':
+         self.phase.text = 'Upkeep'
 
+      print ( 'new phase.text: [' + self.phase.text + ']' )
+   
+   def text(self):
+      return self.phase.text
+      
+   def draw(self):
+      self.phase.draw()
+   
+class MTGActions(): 
    def __init__(self,utilities, cardInfo):
       self.utilities = utilities
       self.cardInfo  = cardInfo
@@ -89,11 +114,24 @@ class MTGActions():
          print ( '  Selected creature named: ' + deck.data[index].filename )
       return index 
       
-   def selectOption ( self, options): 
+   def selectOption ( self, options):
       x = 600
       y = 100 
       optionBox = OptionBox (options, x,y, width=300)                  
       return optionBox 
+ 
+class ManaBar (): 
+   def __init__ (self): 
+      self.manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0}
+      self.mana = TextBox ('Mana:' + str(self.manaLevel), 300, 5)             
+      
+   def draw(self):
+      self.mana.text = 'Mana: ' + str(self.manaLevel)
+      self.mana.draw()
+      
+   def change (self,color,delta):
+      self.manaLevel[color] = self.manaLevel[color] + delta 
+      
 '''
    MTGCards is based on SubDeck but customized to an MTG deck   
    Wherever SubDeck is used, MTGCards can be used instead.  
@@ -107,14 +145,13 @@ class MTGCards (SubDeck):
       
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False, \
-                 name='', utils=None):
-      data = []
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, empty=False, name='', utils=None):
       numCards = 0
       self.cardInfo = CardInfo()
       self.utilities = utils
       self.action  = MTGActions(self.utilities, self.cardInfo)
-      
+      self.name = name 
+      cards = []
       if str(filename).isnumeric():  
          print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
          exit ()
@@ -123,22 +160,31 @@ class MTGCards (SubDeck):
          f = open ( filename, 'r' )
          line = f.readline()
          f.close 
-         data = line.split ( ',' )
+         data = line.split ( ',' ) # Array of numeric strings
          numCards = len(data)
          print ( 'Got ' + str(numCards) + ' of cards read' )         
          
-      cards = [] 
-      for d in data: 
-         cards.append ( int(d)) 
-         
+         # Convert array of string to array of integers 
+         cards = [] 
+         for d in data: 
+            cards.append (int(d)) 
+            
       print ( 'MTGCards.init' )
       SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
                         yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
-                        
+                           
       print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
-    
-    
+        
+   def isLand (self,sheetIndex):
+      name = self.cardName(sheetIndex)
+      land = False 
+      if name.find ( 'lands' ) > -1: 
+         land = True 
+         print ( name + ' is a land' )
+      else:
+         print ( name + ' is NOT a land' )
+      return land
       
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
@@ -147,6 +193,12 @@ class MTGCards (SubDeck):
               
    def sheetIndex (self,index): 
       ind = self.data[index].sheetIndex
+      
+   def untap (self):
+      print ( 'Untap all cards in deck: ' + self.name )
+      for d in self.data: 
+         d.tapped = False
+ 
     
 if __name__ == '__main__':
    from Deck      import Deck
@@ -158,7 +210,7 @@ if __name__ == '__main__':
    import time   
    
    pygame.init()
-   displaySurface = pygame.display.set_mode((1200, 800))
+   displaySurface = pygame.display.set_mode((1200, 780))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
    
@@ -171,9 +223,9 @@ if __name__ == '__main__':
                              displaySurface=displaySurface, name='opponent')
    hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, displaySurface=displaySurface, name='hand')
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
-                   xMultiplier=1.0, yMultiplier=0.0, name='inplay', utils=utilities)   
+                   xMultiplier=1.0, yMultiplier=0.0, utils=utilities, name='inplay')   
    discardPile  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, name='discardPile')
-   for i in range (5):
+   for i in range (7):
       drawPile.topToDeck (hand, reveal=True)
     
    hand.showAll() 
@@ -193,6 +245,7 @@ if __name__ == '__main__':
    quit = False
    dragCard = None   
    bar = StatusBar ()
+   manaBar = ManaBar()
    
    labels = Labels()
    labels.addLabel ('Opponent', 100, 5)
@@ -200,15 +253,29 @@ if __name__ == '__main__':
    labels.addLabel ('Draw'    , 310, 175)
    labels.addLabel ('In Play' , 100, 375)
    labels.addLabel ('Hand'    , 100, 575)
+   phase = MTGPhases (inplay)
    
+   haveCastLand = False 
    while not quit:
       pygame.time.Clock().tick(60)   
       window.fill ((0,0,0))   
       labels.show ()   
+      phase.draw()
+      manaBar.draw()
       decks.draw() # Show and set their x/y locations
-
-      bar.show (['Quit', 'Message'] )
+      utilities.showLastStatus()
+      bar.show (['Quit', 'Message', 'Next Phase'] )
       pygame.display.update() 
+      
+      if phase.text() == 'Upkeep': 
+         manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level 
+         inplay.untap()
+         phase.next()
+         haveCastLand = False 
+      elif phase.text() == 'Draw':
+         drawPile.topToDeck (hand, reveal=True)
+         hand.redeal() 
+         phase.next()       
       
       events = utilities.readOne()
       for event in events:
@@ -222,24 +289,34 @@ if __name__ == '__main__':
                   
          elif typeInput == 'drag':
             bar.update (data) 
-            (deck,index) = decks.findSprite (data) # Returns index in list             
             if bar.selection != '':
                if bar.selection == 'Quit': 
                   quit = True
                   bar.consumeSelection()
-            elif deck == drawPile:
-               deck.data[index].hide = False
-               hand.addCard (deck,index)
-               hand.redeal() 
-               deck.remove (index)                     
+               elif bar.selection == 'Next Phase': 
+                  phase.next()
+               else:
+                  print ( 'bar.selection not handled: [' + bar.selection + ']' )
+               bar.selection = ''
             else: 
-               if dragCard is None:
-                  dragCard = hand.findSprite (data) 
-                  print ( 'dragCard: ' + str(dragCard) ) 
-                  if dragCard > -1:
-                     sheetIndex = hand.data[dragCard].sheetIndex
-                     hand.data[dragCard].drag = True 
-                     print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
+               (deck,index) = decks.findSprite (data) # Returns index in list                         
+               if deck == drawPile:
+                  if phase.text() == 'Draw':               
+                     deck.data[index].hide = False
+                     hand.addCard (deck,index)
+                     hand.redeal() 
+                     deck.remove (index)
+                     phase.next()
+                  else:
+                     utilities.showStatus ( 'You can only draw in draw phase')                  
+               else: 
+                  if dragCard is None:
+                     dragCard = hand.findSprite (data) 
+                     print ( 'dragCard: ' + str(dragCard) ) 
+                     if dragCard > -1:
+                        sheetIndex = hand.data[dragCard].sheetIndex
+                        hand.data[dragCard].drag = True 
+                        print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
                      
          elif typeInput == 'drop':
             (deck,index) = decks.findSprite (data) # Where are we dropping                                  
@@ -268,36 +345,44 @@ if __name__ == '__main__':
                
                optionBox = OptionBox ( ['Unknown'] )
                if deck == hand: 
-                  optionBox = hand.action.selectOption (['View', 'Cast'])
+                  if phase.text() == 'Cast': 
+                     if not haveCastLand and hand.isLand ( sheetIndex ): 
+                        optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
+                     else:
+                        optionBox = hand.action.selectOption (['View', 'Cancel'])
+                  else:
+                     optionBox = hand.action.selectOption (['View', 'Cancel'] ) 
                elif deck == inplay: 
                   if card.tapped: 
-                     optionBox = hand.action.selectOption (['View', 'Untap'])
+                     optionBox = hand.action.selectOption (['View', 'Untap', 'Cancel'])
                   else:
-                     optionBox = hand.action.selectOption (['View', 'Tap'])
-               elif deck == drawPile:
-                  optionBox = hand.action.selectOption  ( ['Draw'])
+                     optionBox = hand.action.selectOption (['View', 'Tap', 'Cancel'])
                   
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-               if selection == 'Cancel': 
-                  quit = True
-                  print ( 'quit is now: ' + str(quit) )
-               elif selection == 'Cast': 
+               if selection == 'Cast': 
+                  print ( 'Check enough mana is available for casting' ) 
+                  
                   hand.data[index].tapped = True 
                   inplay.addCard (hand, index)
                   inplay.redeal()
                   hand.remove (index) 
-                  hand.redeal()                                  
+                  hand.redeal()                           
+                  if hand.isLand (sheetIndex):                   
+                     haveCastLand = True                      
                elif selection == 'View':                 
                   deck.view (sheetIndex, 'images/mtg/' + name)               
                elif selection == 'Untap': 
                   card.tapped = False 
                   utilities.showStatus ( 'Card is untapped' )
                elif selection == 'Tap':
-                  name = drawPile.cardInfo.idToName (sheetIndex)
-                  mana = {'red':1, 'green':2}
-                  print ( 'Mana before execution: ' + str(mana) ) 
-                  inplay.action.execute (mana,card,inplay,opponent)               
-                  print ( 'Mana is now: ' + str(mana) ) 
+                  name = inplay.cardInfo.idToName (sheetIndex)
+                  if inplay.isLand (sheetIndex):
+                     manaBar.change ('red', 1)
+                     card.tapped = True                      
+                  
+                  #print ( 'Mana before execution: ' + str(mana) ) 
+                  #inplay.action.execute (mana,card,inplay,opponent)               
+                  #print ( 'Mana is now: ' + str(mana) ) 
          else:
             print ( 'event: ' + typeInput)

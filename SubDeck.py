@@ -16,7 +16,7 @@ class SubDeck ():
    #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
    #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False , name = ''):     
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False , name = ''):                    
       if displaySurface is None: 
          print ( 'You should specify displaySurface when subdeck is created' )
          exit (1)
@@ -29,6 +29,7 @@ class SubDeck ():
       self.xMultiplier    = xMultiplier
       self.yMultiplier    = yMultiplier
       self.showLength     = False
+      print ( 'Setting name : ' + name )
       self.name           = name 
       if deckBasis is None: 
          self.coverImage = None
@@ -37,10 +38,9 @@ class SubDeck ():
       if self.coverImage is None: 
          print ( 'SubDeck has a None cover image' )
       
+      self.data = [] 
       if (deckBasis is None) or empty:
          print ( 'SubDeck.init an empty deck' )      
-         self.data = [] 
-         self.numImages = 0
       else:
          print ( 'Deal cards' )
          self.deck = deckBasis
@@ -55,14 +55,13 @@ class SubDeck ():
                dealtCards = self.deck.deal (numCards)
                
             self.data = dealtCards
-            
-            # self.redeal ()                                 
-            self.numImages = len(self.data)
-         
-      print ('Total number of cards: ' + str(self.numImages)) 
+                      
+      print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
+      self.numImages = len(self.data)         
+      print (self.name + ' has ' + str(self.numImages) + ' cards ') 
                   
    def addCard (self,sourceDeck,index): 
-      print ( 'addCard from deck with index: ' + str(index) + ' and tapped value: ' + str(sourceDeck.data[index].tapped)) 
+      print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       ind = len(self.data)-1
       d = sourceDeck.data[index]
       if len(self.data) == 0: 
@@ -363,6 +362,7 @@ class SubDeck ():
 
       index = self.length()-1
       
+      print ( 'Add card to ' + destinationDeck.name )
       destinationDeck.addCard (self,index)
       
       self.remove (index)  
