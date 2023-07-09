@@ -41,10 +41,10 @@ class MTGActions():
    def damageOpponent (self,amount):
       print ( 'Opponent takes ' + str(amount) + ' damage' )
    
-   def execute (self,mana,card,inplay,opponent):
-      print ( 'card. [filename]: [' + card.filename + ']' ) 
+   def tap (self,mana,card,inplay,opponent):
+      print ( 'tap: card. [filename]: [' + card.filename + ']' ) 
       if card.filename == 'lands/pitOfDespair.jpg': 
-         if (mana['red'] > 0) and (mana['green']  > 0):          
+         if (mana['red'] > 0) and (mana['green']  > 0) and (inplay.countType ('creatures') > 0):          
             optionBox = self.selectOption (['Tap For Red', 'Tap For Green', 'Force fight between 2 creatures (cost R/W)', 'Cancel'])                  
          else:
             optionBox = self.selectOption (['Tap For Red', 'Tap For Green', 'Cancel'])                  
@@ -68,6 +68,7 @@ class MTGActions():
             print ( 'Never mind') 
       else:
          print ( 'Did not find an action for: ' + filename )
+         card.tapped = True 
          
    def fight (self,inplay,opponent,mana): 
       success = False 
@@ -119,18 +120,50 @@ class MTGActions():
       y = 100 
       optionBox = OptionBox (options, x,y, width=300)                  
       return optionBox 
- 
+
+class HealthBar(): 
+   def __init__ (self): 
+      self.health = 20
+      self.bar = TextBox ('Health:' + str(self.health), 250, 5)             
+   def draw(self):
+      self.bar.text = 'Health: ' + str(self.health)
+      self.bar.draw()
+
+from images.mtg.CardInfo import CardInfo  
+from images.mtg.ManaCost import ManaCost
 class ManaBar (): 
    def __init__ (self): 
-      self.manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0}
-      self.mana = TextBox ('Mana:' + str(self.manaLevel), 300, 5)             
+      self.manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0, 'colorless': 0}
+      self.mana = TextBox ('Mana:' + str(self.manaLevel), 400, 5)             
+      self.cardInfo = CardInfo()
+      self.manaCost = ManaCost()
+      
+   def addLand (self,name):
+      colors = ['colorless', 'white', 'red', 'blue', 'black', 'green']   
+      if name == '': 
+         pass 
+      else:
+         mana = self.cardInfo.cards[name]   
+         for color in colors: 
+            if color in mana:
+               value = mana[color]
+               print ( 'Got a value of: ' + str(value) )                
+               self.change (color, value)
+      
+      print ( 'Added this mana to pool: ' + str(mana) )    
+
+   def canCast (self, sheetIndex): 
+      name = deck.cardInfo.idToName (sheetIndex)       
+      requiredMana = self.cardInfo.cards[name]
+      (ok,mana) = self.manaCost.enoughMana ( self.manaLevel, name )
+      return ok
+      
+   def change (self,color,delta):
+      self.manaLevel[color] = self.manaLevel[color] + delta 
       
    def draw(self):
       self.mana.text = 'Mana: ' + str(self.manaLevel)
       self.mana.draw()
-      
-   def change (self,color,delta):
-      self.manaLevel[color] = self.manaLevel[color] + delta 
       
 '''
    MTGCards is based on SubDeck but customized to an MTG deck   
@@ -175,16 +208,12 @@ class MTGCards (SubDeck):
                         yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
                            
       print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
+
+   def isCreature (self,sheetIndex):
+      return self.cardInfo.isCreature (sheetIndex)
         
    def isLand (self,sheetIndex):
-      name = self.cardName(sheetIndex)
-      land = False 
-      if name.find ( 'lands' ) > -1: 
-         land = True 
-         print ( name + ' is a land' )
-      else:
-         print ( name + ' is NOT a land' )
-      return land
+      return self.cardInfo.isLand (sheetIndex)
       
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
@@ -198,6 +227,17 @@ class MTGCards (SubDeck):
       print ( 'Untap all cards in deck: ' + self.name )
       for d in self.data: 
          d.tapped = False
+         
+   # return the number of creatures in this deck.      
+   def countType (self,typeName):
+      count = 0 
+      for card in self.data: # Set the width/height of each image 
+         sheetIndex = card.sheetIndex
+         name = self.cardInfo.idToName (sheetIndex)            
+         if name.find ( typeName ) > -1: 
+            count = count + 1
+      print ( 'The number of ' + typeName + ' type cards in ' + self.name + ' = ' + str(count)) 
+      return count
  
     
 if __name__ == '__main__':
@@ -221,7 +261,8 @@ if __name__ == '__main__':
    drawPile.hideAll()
    opponent     = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
                              displaySurface=displaySurface, name='opponent')
-   hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, displaySurface=displaySurface, name='hand')
+   hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, \
+                             displaySurface=displaySurface, name='hand')
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
                    xMultiplier=1.0, yMultiplier=0.0, utils=utilities, name='inplay')   
    discardPile  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, name='discardPile')
@@ -240,13 +281,13 @@ if __name__ == '__main__':
    cards.append (opponent)
    decks = SubDecks (cards)    
    
-   window = pygame.display.get_surface()
-   
-   quit = False
+   window   = pygame.display.get_surface()
+   quit     = False
    dragCard = None   
-   bar = StatusBar ()
-   manaBar = ManaBar()
-   
+   bar      = StatusBar ()
+   manaBar  = ManaBar()
+   health   = HealthBar()
+  
    labels = Labels()
    labels.addLabel ('Opponent', 100, 5)
    labels.addLabel ('Discard' , 100, 175)
@@ -262,6 +303,7 @@ if __name__ == '__main__':
       labels.show ()   
       phase.draw()
       manaBar.draw()
+      health.draw()
       decks.draw() # Show and set their x/y locations
       utilities.showLastStatus()
       bar.show (['Quit', 'Message', 'Next Phase'] )
@@ -270,6 +312,7 @@ if __name__ == '__main__':
       if phase.text() == 'Upkeep': 
          manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level 
          inplay.untap()
+         inplay.redeal()
          phase.next()
          haveCastLand = False 
       elif phase.text() == 'Draw':
@@ -346,24 +389,61 @@ if __name__ == '__main__':
                optionBox = OptionBox ( ['Unknown'] )
                if deck == hand: 
                   if phase.text() == 'Cast': 
-                     if not haveCastLand and hand.isLand ( sheetIndex ): 
-                        optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
+                     if hand.isLand(sheetIndex): 
+                        if haveCastLand: 
+                           print ( 'Already cast a land this turn' )
+                           optionBox = hand.action.selectOption (['View', 'Cancel'])
+                        else: 
+                           optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
+                     elif manaBar.canCast (sheetIndex): 
+                        if hand.cardInfo.isEnchantCreature (sheetIndex):
+                           if (inplay.countType ('creatures') > 0) or (opponent.countType ('creatures') > 0): 
+                              optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
+                           else:
+                              optionBox = hand.action.selectOption (['View', 'Cancel'])
+                        elif hand.cardInfo.isEnchantPermanent(sheetIndex):
+                           if inplay.length() > 0: 
+                              optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
+                           else:
+                              optionBox = hand.action.selectOption (['View', 'Cancel'])
+                           
+                        else:
+                           optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
                      else:
                         optionBox = hand.action.selectOption (['View', 'Cancel'])
                   else:
                      optionBox = hand.action.selectOption (['View', 'Cancel'] ) 
                elif deck == inplay: 
                   if card.tapped: 
-                     optionBox = hand.action.selectOption (['View', 'Untap', 'Cancel'])
+                     optionBox = inplay.action.selectOption (['View', 'Untap', 'Cancel'])
                   else:
-                     optionBox = hand.action.selectOption (['View', 'Tap', 'Cancel'])
+                     if (inplay.isCreature (sheetIndex)) and (phase.text() == 'Attack'):                  
+                        optionBox = inplay.action.selectOption (['View', 'Attack', 'Cancel'])
+                     else:                     
+                        optionBox = inplay.action.selectOption (['View', 'Tap', 'Cancel'])
                   
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
                if selection == 'Cast': 
+                  '''
                   print ( 'Check enough mana is available for casting' ) 
-                  
-                  hand.data[index].tapped = True 
+                  (success,mana) = self.removeCost (mana, color, cost[color])
+                  if success: 
+                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
+                  else:
+                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
+                     enough = False 
+                     break
+                  (success,mana) = self.removeCost (mana, color, cost[color])
+                  if success: 
+                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
+                  else:
+                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
+                     enough = False 
+                     break
+                  '''   
+                  if hand.isCreature(sheetIndex): # Summoning sickness...
+                     hand.data[index].tapped = True 
                   inplay.addCard (hand, index)
                   inplay.redeal()
                   hand.remove (index) 
@@ -378,11 +458,10 @@ if __name__ == '__main__':
                elif selection == 'Tap':
                   name = inplay.cardInfo.idToName (sheetIndex)
                   if inplay.isLand (sheetIndex):
-                     manaBar.change ('red', 1)
-                     card.tapped = True                      
+                     manaBar.addLand (name)                     
                   
-                  #print ( 'Mana before execution: ' + str(mana) ) 
-                  #inplay.action.execute (mana,card,inplay,opponent)               
-                  #print ( 'Mana is now: ' + str(mana) ) 
+                  print ( 'Mana before execution: ' + str(manaBar.manaLevel) ) 
+                  inplay.action.tap (manaBar.manaLevel,card,inplay,opponent)               
+                  print ( 'Mana is now: ' + str(manaBar.manaLevel) ) 
          else:
             print ( 'event: ' + typeInput)

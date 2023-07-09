@@ -207,7 +207,7 @@ class Utilities ():
    # event.button == 3 for right button 
    # event.type == 769 for keyup 
    def readOne (self):
-      debugIt = True
+      debugIt = False
       events = []       
       ev = pygame.event.get()
       data = '' 

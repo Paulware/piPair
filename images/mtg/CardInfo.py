@@ -300,23 +300,40 @@ class CardInfo():
       print ( 'idToName, Got name: ' + name )
       return (name)
       
-   def isCreature (self,id): 
-      creature = False
+   def nameFind (self,typeName,id): 
       name = self.idToName (id)
-      if name.find ( 'creatures' ) > -1: 
-         creature = True
-         print ( 'This is a creature: ' + name )
+      found = False 
+      if name.find ( typeName ) > -1: 
+         found = True
+         print ( name + ' IS a ' + typeName )
       else:
-         print ( 'This is NOT a creature: ' + name )
-      return creature
+         print ( name + ' is NOT a ' + typeName )
+      return found
+      
+   def isCreature (self,id): 
+      return self.nameFind ('creatures', id)
       
    def isLand (self,id): 
-      match = False
-      name = self.idToName (id)
-      if name.find ( 'lands' ) > -1: 
-         match = True
-         print ( 'This is a land: ' + name )
+      return self.nameFind ( 'lands', id )
+      
+   def isEnchantment (self,id):
+      return self.nameFind ( 'enchantments', id )
+            
+   def isEnchantCreature (self,id):
+      names = ['enchantments/imposingVisage.jpg']
+      name  = self.idToName (id)
+      found = name in names
+         
+      if found:
+         print ( name + ' IS an enchant creature card' )
       else:
-         print ( 'This is NOT a land: ' + name )
-      return match
+         print ( name + ' is NOT an enchant creature card' )      
+            
+      return found
+      
+   def isEnchantPermanent (self,id):
+      names = ['enchantments/lethalResponse.png']
+      name  = self.idToName (id)
+      return name in names
+        
       

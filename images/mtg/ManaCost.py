@@ -218,22 +218,20 @@ class ManaCost ():
          
       print ( str(len(creatures)) + ' ' + searchString + ' matched: ' + str(creatures)) 
       return creatures 
-      
-                
+                      
    def enoughMana (self,mana,filename):
       manaCopy = mana.copy()
       doubles = ['blkred', 'blured', 'grnblu', 'whtblu', 'whtblk', 'redgrn', 'redwht', 'blublk']
       enough = False
       cost = self.cost[filename]
       cost = self.removeZeroes (cost)
-      cost['red'] = 3 # For testing TODO: remove
       print ( 'Cost: ' + str(cost) )
       print ( 'Provided mana: ' + str(mana) )
       manaTotal = self.totalMana (mana)
       costTotal = self.totalMana (cost)
       if manaTotal < costTotal:
          print ( 'You do not have enough total mana to handle this cost: ' + str(self.totalMana (cost)) )
-      else: # There is sufficient total mana....
+      else: # There is sufficient total mana, and enough colorless
          enough = True 
          for color in cost:
             if cost[color] > 0:
@@ -246,18 +244,10 @@ class ManaCost ():
                         break
                   else:
                      print ( 'This color is missing from provided mana: ' + color )               
-               elif mana[color] < cost [color]:
+               elif (mana[color] < cost [color]) and (color != 'colorless'):
                   print ( 'Not enough ' + color )
                   enough = False 
                   break
-               else:
-                  (success,mana) = self.removeCost (mana, color, cost[color])
-                  if success: 
-                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
-                  else:
-                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
-                     enough = False 
-                     break
       if not enough:      
          print ( 'Cannot cast: ' + filename )
          mana = manaCopy.copy()
