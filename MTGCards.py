@@ -6,6 +6,7 @@ from ViewImage    import ViewImage
 from StatusBar    import StatusBar
 from Labels       import Labels 
 from images.mtg.CardInfo import CardInfo 
+from images.mtg.Counter  import Counter
 
 class MTGPhases (): 
    def __init__ (self,inplay): 
@@ -24,7 +25,13 @@ class MTGPhases ():
          self.phase.text = 'Assign Damage'
       elif self.phase.text == 'Assign Damage':
          self.phase.text = 'Upkeep'
-
+         print ( 'Handle those Upkeep items...' ) 
+         for card in self.inplay.data: 
+            name = inplay.getName (card) 
+            print ( 'Upkeep, card in play: ' + name )
+            if name == 'enchantments/redRibbonArmy.png': 
+               print ( 'Place a red ribbon army token in play' )
+            
       print ( 'new phase.text: [' + self.phase.text + ']' )
    
    def text(self):
@@ -32,6 +39,17 @@ class MTGPhases ():
       
    def draw(self):
       self.phase.draw()
+      
+class MTGAction ():
+   def __init__(self,card,cardInfo): 
+      self.card = card 
+      self.name = cardInfo.idToName (card.sheetIndex)  
+      print ( "Action created for : " + self.name )      
+   def executePhase (self,phase):
+      if phase == "Upkeep": 
+         if self.name == 'enchantments/redRibbonArmy.png':
+            print ( 'Increment counter for redRibbonArmy' )
+            card.counter.increment()
    
 class MTGActions(): 
    def __init__(self,utilities, cardInfo):
@@ -152,11 +170,11 @@ class ManaBar ():
       
       print ( 'Added this mana to pool: ' + str(mana) )    
 
-   def canCast (self, sheetIndex): 
+   def canCast (self, deck, sheetIndex): 
       name = deck.cardInfo.idToName (sheetIndex)       
       requiredMana = self.cardInfo.cards[name]
       (ok,mana) = self.manaCost.enoughMana ( self.manaLevel, name )
-      return ok
+      return ok            
       
    def change (self,color,delta):
       self.manaLevel[color] = self.manaLevel[color] + delta 
@@ -165,9 +183,13 @@ class ManaBar ():
       self.mana.text = 'Mana: ' + str(self.manaLevel)
       self.mana.draw()
       
+   def payMana (self, deck, sheetIndex):     
+      name = deck.cardInfo.idToName (sheetIndex)       
+      requiredMana = self.cardInfo.cards[name]
+      self.manaCost.payMana (self.manaLevel, requiredMana)
+                
 '''
    MTGCards is based on SubDeck but customized to an MTG deck   
-   Wherever SubDeck is used, MTGCards can be used instead.  
 '''
 class MTGCards (SubDeck):  
 
@@ -175,6 +197,38 @@ class MTGCards (SubDeck):
       name = drawPile.cardInfo.idToName (sheetIndex)
       print ( 'cardName returning: [' + name + ']' )
       return name
+
+   # return the number of creatures in this deck.      
+   def countType (self,typeName):
+      count = 0 
+      for card in self.data: # Set the width/height of each image 
+         sheetIndex = card.sheetIndex
+         name = self.cardInfo.idToName (sheetIndex)            
+         if name.find ( typeName ) > -1: 
+            count = count + 1
+      print ( 'The number of ' + typeName + ' type cards in ' + self.name + ' = ' + str(count)) 
+      return count
+      
+   def executePhase (self,phase): 
+      for card in self.data:  
+         sheetIndex = card.sheetIndex
+         name = self.cardInfo.idToName (sheetIndex)            
+         print ( '[phase,name]: [' + phase + ',' + name + ']' )
+         card.action.executePhase (phase)
+   
+      
+   def draw (self, debugIt=False):
+      SubDeck.draw (self)
+      
+      for card in self.data:  
+         sheetIndex = card.sheetIndex
+         name = self.cardInfo.idToName (sheetIndex)  
+         if name == 'enchantments/redRibbonArmy.png':         
+            if not card.counter is None:  
+               card.counter.draw()
+            
+   def getName (self, data):
+      return self.cardName (data.sheetIndex)       
       
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
@@ -184,6 +238,8 @@ class MTGCards (SubDeck):
       self.utilities = utils
       self.action  = MTGActions(self.utilities, self.cardInfo)
       self.name = name 
+      self.counter = None
+      
       cards = []
       if str(filename).isnumeric():  
          print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
@@ -206,7 +262,11 @@ class MTGCards (SubDeck):
       SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
                         yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
-                           
+      
+      for card in self.data:  
+         card.counter = None
+         card.action = MTGAction (card, self.cardInfo)
+      
       print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
 
    def isCreature (self,sheetIndex):
@@ -228,16 +288,6 @@ class MTGCards (SubDeck):
       for d in self.data: 
          d.tapped = False
          
-   # return the number of creatures in this deck.      
-   def countType (self,typeName):
-      count = 0 
-      for card in self.data: # Set the width/height of each image 
-         sheetIndex = card.sheetIndex
-         name = self.cardInfo.idToName (sheetIndex)            
-         if name.find ( typeName ) > -1: 
-            count = count + 1
-      print ( 'The number of ' + typeName + ' type cards in ' + self.name + ' = ' + str(count)) 
-      return count
  
     
 if __name__ == '__main__':
@@ -310,10 +360,12 @@ if __name__ == '__main__':
       pygame.display.update() 
       
       if phase.text() == 'Upkeep': 
-         manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level 
+         manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level          
          inplay.untap()
          inplay.redeal()
+         inplay.executePhase('Upkeep')      
          phase.next()
+         print ( 'phase.text is now: ' + phase.text() )
          haveCastLand = False 
       elif phase.text() == 'Draw':
          drawPile.topToDeck (hand, reveal=True)
@@ -375,9 +427,13 @@ if __name__ == '__main__':
          elif typeInput == 'select': 
             # Determine which subdeck the card is in. 
             (deck,index) = decks.findSprite (data)
-            card = deck.data[index]
-            
-            print ( '[deck,index]: [' + deck.name + ',' + str(index) + ']')             
+            try:
+               card = deck.data[index]            
+               print ( '[deck,index]: [' + deck.name + ',' + str(index) + ']')             
+            except Exception as ex:
+               print ( 'Exception : ' + str(ex)) 
+               index = -1
+               
             if index != -1: 
                x = deck.data[index].x
                y = deck.data[index].y
@@ -395,7 +451,7 @@ if __name__ == '__main__':
                            optionBox = hand.action.selectOption (['View', 'Cancel'])
                         else: 
                            optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
-                     elif manaBar.canCast (sheetIndex): 
+                     elif manaBar.canCast (hand,sheetIndex): 
                         if hand.cardInfo.isEnchantCreature (sheetIndex):
                            if (inplay.countType ('creatures') > 0) or (opponent.countType ('creatures') > 0): 
                               optionBox = hand.action.selectOption (['View', 'Cast', 'Cancel'])
@@ -424,24 +480,10 @@ if __name__ == '__main__':
                   
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
+               name = inplay.cardInfo.idToName (sheetIndex)
                if selection == 'Cast': 
-                  '''
-                  print ( 'Check enough mana is available for casting' ) 
-                  (success,mana) = self.removeCost (mana, color, cost[color])
-                  if success: 
-                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
-                  else:
-                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
-                     enough = False 
-                     break
-                  (success,mana) = self.removeCost (mana, color, cost[color])
-                  if success: 
-                     print ( 'New number of: ' + color + ' in mana: ' + str(mana[color])) 
-                  else:
-                     print ( 'Could not remove ' + color + ' from ' + str(mana) ) 
-                     enough = False 
-                     break
-                  '''   
+                  if not hand.isLand(sheetIndex): 
+                     manaBar.payMana (hand, sheetIndex) 
                   if hand.isCreature(sheetIndex): # Summoning sickness...
                      hand.data[index].tapped = True 
                   inplay.addCard (hand, index)
@@ -449,14 +491,16 @@ if __name__ == '__main__':
                   hand.remove (index) 
                   hand.redeal()                           
                   if hand.isLand (sheetIndex):                   
-                     haveCastLand = True                      
+                     haveCastLand = True                   
+                  if name == 'enchantments/redRibbonArmy.png': 
+                     card.counter = Counter ( card.x + 10, card.y + 10)
+                                         
                elif selection == 'View':                 
                   deck.view (sheetIndex, 'images/mtg/' + name)               
                elif selection == 'Untap': 
                   card.tapped = False 
                   utilities.showStatus ( 'Card is untapped' )
                elif selection == 'Tap':
-                  name = inplay.cardInfo.idToName (sheetIndex)
                   if inplay.isLand (sheetIndex):
                      manaBar.addLand (name)                     
                   

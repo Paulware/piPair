@@ -1,49 +1,4 @@
 class ManaCost ():
-   def complexity (self,filename):
-      baseColors = ['colorless', 'white', 'black', 'red', 'blue', 'green' ]
-      cost = self.cost[filename] 
-      totalComplexity = 0
-      totalCost = self.totalCastingCost ( filename )
-      for c in cost: 
-         if cost[c] > 0:       
-            if c in baseColors: 
-               totalComplexity = totalComplexity + 1
-            else:
-               totalComplexity = totalComplexity + 0.5
-         
-      # Creatures bigger than 3 casting cost are more difficult to cast          
-      if totalCost > 3: 
-         totalComplexity = totalComplexity + (totalCost - 3)
-         
-      return totalComplexity
-      
-   def getTypes ( self, typeName ): 
-      types = {} 
-      print ( 'getTypes [' + typeName + ']' )
-      for c in self.cost: 
-         if c.find (typeName) > -1: 
-            types[c] = self.cost[c]         
-      print ( 'Found ' + str(len(types)) + ' ' + typeName + ' in manacost' ) 
-      return types
-      
-   def doubleInMana (self,double,mana): 
-      exists = False 
-      count = 0
-      doubles = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
-      for d in doubles: 
-         if double.find (d) > -1: 
-            color = doubles[d]
-            if color in mana: 
-               exists = True 
-               break
-         
-      if exists: 
-         print ( double + ' found in ' + str(mana) ) 
-      else:
-         print ( double + ' not found in ' + str(mana) )       
-         
-      return exists
-   
    def colorInMana (self,color,mana):
       exists = False 
       colors = ['colorless', 'white', 'red', 'blue', 'black', 'green']
@@ -59,92 +14,6 @@ class ManaCost ():
          print ( color + ' NOT found in ' + mana )
          
       return exists 
-      
-   def totalCastingCost (self,filename): 
-      total = 0
-      mana = self.cost[filename]
-      for color in mana: 
-         total = total + mana[color]
-      return total
-
-   def totalMana (self,mana):
-      total = 0
-      for color in self.colors: 
-         if color in mana: 
-            total = total + mana[color]
-      return total 
-      
-   def zeroesExist (self,cost): 
-      exist = False 
-      for color in cost: 
-         if cost[color] == 0: 
-            exist = True 
-            break
-      return exist            
-      
-   def removeZeroes (self,cost): 
-      newCost = {}      
-      for color in cost:
-         if cost[color] != 0: 
-            newCost[color] = cost[color]            
-      return newCost
-      
-   def removeCost (self, pool, color, number): 
-      success = True       
-      print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
-      if color in pool: 
-         if pool[color] >= number:
-            pool[color] = pool[color] - number
-            print ( 'pool[' + color + '] is now: ' + str(pool[color]) ) 
-         else:
-            success = False          
-      return (success,pool)      
-      
-   def removeDouble (self, pool, color, number): 
-      startPool = pool.copy()
-      success = True      
-      colors = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
-      print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
-      for i in range(number):
-         found = False 
-         for colorIndex in colors: 
-            if color.find (colorIndex) > -1: 
-               lookupColor = colors[colorIndex]
-               if pool[lookupColor] > 0: 
-                  pool[lookupColor] = pool[lookupColor] - 1
-                  found = True 
-                  break
-         if not found: 
-            print ( 'removeDouble could not find ' + color + ' in ' + str(pool) )          
-            success = False         
-            break
-
-      if not success: 
-         pool = startPool.copy()       
-      print ( 'pool after removeDouble: ' + str (pool) )       
-      return (success,pool)    
-
-   
-   def doubleToList (self,color):
-      values = {'red':'red','white':'white','blue':'blue','black':'black','green':'green','wht':'white','blk':'black','blu':'blue','grn':'green'}
-      manaList = []
-      for value in values: 
-         if color.find (value) > -1: 
-            manaList.append (values[value])
-      return manaList
-   
-   def colorInMana (self, color, mana ): 
-      inMana = False                   
-      for checkColor in self.doubleToList(color): 
-         if checkColor in mana: 
-            if mana[checkColor] > 0: 
-               inMana = True 
-               break
-
-      return inMana         
-   
-   def idToInfo (self,id): 
-      return list(self.cost)[id]
    
    # For land should be checking if any mana color found in self.cost[filename] 
    def colorsMatch (self,mana,filename): 
@@ -170,6 +39,88 @@ class ManaCost ():
                   
       return match 
       
+   def complexity (self,filename):
+      baseColors = ['colorless', 'white', 'black', 'red', 'blue', 'green' ]
+      cost = self.cost[filename] 
+      totalComplexity = 0
+      totalCost = self.totalCastingCost ( filename )
+      for c in cost: 
+         if cost[c] > 0:       
+            if c in baseColors: 
+               totalComplexity = totalComplexity + 1
+            else:
+               totalComplexity = totalComplexity + 0.5
+         
+      # Creatures bigger than 3 casting cost are more difficult to cast          
+      if totalCost > 3: 
+         totalComplexity = totalComplexity + (totalCost - 3)
+         
+      return totalComplexity
+      
+   def doubleInMana (self,double,mana): 
+      exists = False 
+      count = 0
+      doubles = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
+      for d in doubles: 
+         if double.find (d) > -1: 
+            color = doubles[d]
+            if color in mana: 
+               exists = True 
+               break
+         
+      if exists: 
+         print ( double + ' found in ' + str(mana) ) 
+      else:
+         print ( double + ' not found in ' + str(mana) )       
+         
+      return exists
+         
+   def doubleToList (self,color):
+      values = {'red':'red','white':'white','blue':'blue','black':'black','green':'green','wht':'white','blk':'black','blu':'blue','grn':'green'}
+      manaList = []
+      for value in values: 
+         if color.find (value) > -1: 
+            manaList.append (values[value])
+      return manaList
+      
+   def enoughMana (self,mana,filename):
+      manaCopy = mana.copy()
+      doubles = ['blkred', 'blured', 'grnblu', 'whtblu', 'whtblk', 'redgrn', 'redwht', 'blublk']
+      enough = False
+      cost = self.cost[filename]
+      cost = self.removeZeroes (cost)
+      print ( 'Cost: ' + str(cost) )
+      print ( 'Provided mana: ' + str(mana) )
+      manaTotal = self.totalMana (mana)
+      costTotal = self.totalMana (cost)
+      if manaTotal < costTotal:
+         print ( 'You do not have enough total mana to handle this cost: ' + str(self.totalMana (cost)) )
+      else: # There is sufficient total mana, and enough colorless
+         enough = True 
+         for color in cost:
+            if cost[color] > 0:
+               if not color in mana: 
+                  if color in doubles: 
+                     print ( 'This is a double: ' + color )
+                     (success,mana) = self.removeDouble (mana, color, cost[color]) 
+                     if not success: 
+                        enough = False 
+                        break
+                  else:
+                     print ( 'This color is missing from provided mana: ' + color )               
+               elif (mana[color] < cost [color]) and (color != 'colorless'):
+                  print ( 'Not enough ' + color )
+                  enough = False 
+                  break
+      if not enough:      
+         print ( 'Cannot cast: ' + filename )
+         mana = manaCopy.copy()
+      return (enough,mana) 
+      
+   
+   def idToInfo (self,id): 
+      return list(self.cost)[id]
+   
    def isBasicLand (self,filename): 
       isBasic = False 
 
@@ -217,43 +168,112 @@ class ManaCost ():
          lastCount = count
          
       print ( str(len(creatures)) + ' ' + searchString + ' matched: ' + str(creatures)) 
-      return creatures 
-                      
-   def enoughMana (self,mana,filename):
-      manaCopy = mana.copy()
-      doubles = ['blkred', 'blured', 'grnblu', 'whtblu', 'whtblk', 'redgrn', 'redwht', 'blublk']
-      enough = False
-      cost = self.cost[filename]
-      cost = self.removeZeroes (cost)
-      print ( 'Cost: ' + str(cost) )
-      print ( 'Provided mana: ' + str(mana) )
-      manaTotal = self.totalMana (mana)
-      costTotal = self.totalMana (cost)
-      if manaTotal < costTotal:
-         print ( 'You do not have enough total mana to handle this cost: ' + str(self.totalMana (cost)) )
-      else: # There is sufficient total mana, and enough colorless
-         enough = True 
-         for color in cost:
-            if cost[color] > 0:
-               if not color in mana: 
-                  if color in doubles: 
-                     print ( 'This is a double: ' + color )
-                     (success,mana) = self.removeDouble (mana, color, cost[color]) 
-                     if not success: 
-                        enough = False 
-                        break
-                  else:
-                     print ( 'This color is missing from provided mana: ' + color )               
-               elif (mana[color] < cost [color]) and (color != 'colorless'):
-                  print ( 'Not enough ' + color )
-                  enough = False 
+      return creatures       
+               
+   def getTypes ( self, typeName ): 
+      types = {} 
+      print ( 'getTypes [' + typeName + ']' )
+      for c in self.cost: 
+         if c.find (typeName) > -1: 
+            types[c] = self.cost[c]         
+      print ( 'Found ' + str(len(types)) + ' ' + typeName + ' in manacost' ) 
+      return types
+      
+   def payMana (self, manaLevel, requiredMana): 
+      print ( 'ManaCost.payMana, requiredMana: ' + str(requiredMana) )
+      for color in requiredMana: # Do none-colorless first
+         if color in ['red','blue','white','green','black']: 
+            amount = requiredMana[color]            
+            self.removeCost (manaLevel, color, requiredMana[color])
+            
+      self.removeCost(manaLevel, 'colorless', requiredMana['colorless']) 
+      print ('ManaCost.payMana after payment: ' + str(manaLevel))
+      
+   def removeCost (self, pool, color, number): 
+      success = False
+      if number > 0: 
+         success = True       
+         print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
+         if color in pool: 
+            if pool[color] >= number:
+               pool[color] = pool[color] - number
+               print ( 'pool[' + color + '] is now: ' + str(pool[color]) ) 
+            else:
+               if color == 'colorless': 
+                  print ( 'Handle colorless by pulling from other colors' ) 
+                  # Remove all colorless 
+                  amount = pool['colorless']
+                  pool['colorless'] = 0 
+                  number = number - amount
+                  for color in ['red','blue','white','black','green']: 
+                     amount = pool[color]
+                     if amount >= 0: 
+                       if number >= amount: 
+                          pool[color] = 0
+                          number = number - amount
+                       else:
+                          amount = amount - number
+                          pool[color] = amount 
+                          number = 0
+                       if number == 0: 
+                          break # done 
+               else:
+                  print ( '...ERR do not have enough: ' + color )
+                  success = False          
+      return (success,pool)      
+      
+   def removeDouble (self, pool, color, number): 
+      startPool = pool.copy()
+      success = True      
+      colors = {'grn':'green','red':'red','blu':'blue','blk':'black','wht':'white'}
+      print ( 'Take out ' + str(number) + ' of ' + color + ' from: ' + str(pool)) 
+      for i in range(number):
+         found = False 
+         for colorIndex in colors: 
+            if color.find (colorIndex) > -1: 
+               lookupColor = colors[colorIndex]
+               if pool[lookupColor] > 0: 
+                  pool[lookupColor] = pool[lookupColor] - 1
+                  found = True 
                   break
-      if not enough:      
-         print ( 'Cannot cast: ' + filename )
-         mana = manaCopy.copy()
-      return (enough,mana) 
+         if not found: 
+            print ( 'removeDouble could not find ' + color + ' in ' + str(pool) )          
+            success = False         
+            break
+
+      if not success: 
+         pool = startPool.copy()       
+      print ( 'pool after removeDouble: ' + str (pool) )       
+      return (success,pool)    
+ 
+   def removeZeroes (self,cost): 
+      newCost = {}      
+      for color in cost:
+         if cost[color] != 0: 
+            newCost[color] = cost[color]            
+      return newCost
+          
+   def totalCastingCost (self,filename): 
+      total = 0
+      mana = self.cost[filename]
+      for color in mana: 
+         total = total + mana[color]
+      return total
+
+   def totalMana (self,mana):
+      total = 0
+      for color in self.colors: 
+         if color in mana: 
+            total = total + mana[color]
+      return total 
       
-      
+   def zeroesExist (self,cost): 
+      exist = False 
+      for color in cost: 
+         if cost[color] == 0: 
+            exist = True 
+            break
+      return exist            
       
    def __init__(self):  
       self.MAXIMUM_COMPLEXITY = 5.95   

@@ -297,7 +297,7 @@ class CardInfo():
       name = ''
       if id <= len(self.cards):
          name = list(self.cards)[id]
-      print ( 'idToName, Got name: ' + name )
+      #print ( 'idToName, Got name: ' + name )
       return (name)
       
    def nameFind (self,typeName,id): 
