@@ -9,12 +9,14 @@ from images.mtg.CardInfo import CardInfo
 from images.mtg.Counter  import Counter
 
 class MTGPhases (): 
-   def __init__ (self,inplay): 
+   def __init__ (self,inplay,hand): 
       self.phase = TextBox ('Upkeep', 500, 755)       
       self.manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0}
       self.inplay = inplay
+      self.hand = hand
       
    def next(self):
+      
       if self.phase.text == 'Upkeep':
          self.phase.text = 'Draw'
       elif self.phase.text == 'Draw':
@@ -24,10 +26,17 @@ class MTGPhases ():
       elif self.phase.text == 'Attack':
          self.phase.text = 'Assign Damage'
       elif self.phase.text == 'Assign Damage':
+         self.phase.text = 'End Turn'
+         while self.hand.length() > 7: 
+            ind = self.hand.action.selectCardToDiscard(self.hand)
+            print ( 'delete card [' + str(ind) + '] from hand' )
+            self.hand.discard (ind) 
+            self.hand.redeal()
+      elif self.phase.text == 'End Turn':
          self.phase.text = 'Upkeep'
          print ( 'Handle those Upkeep items...' ) 
          for card in self.inplay.data: 
-            name = inplay.getName (card) 
+            name = self.inplay.getName (card) 
             print ( 'Upkeep, card in play: ' + name )
             if name == 'enchantments/redRibbonArmy.png': 
                print ( 'Place a red ribbon army token in play' )
@@ -101,6 +110,33 @@ class MTGActions():
       else:
          print ( 'Friendly creature aborted' )
       return success
+      
+   def selectCardToDiscard (self, deck):
+      index = -1   
+      ind = -1       
+      deck.utilities.showStatus ('Select a card from your hand to discard: ')
+      escape = False 
+      while (ind == -1) and not escape:   
+         events = utilities.readOne()
+         for event in events:
+            (typeInput,data,addr) = event
+            if typeInput == 'escape': 
+               escape = True 
+            elif typeInput == 'drag': 
+               # Determine which subdeck the card is in. 
+               ind = deck.findSprite (data)
+               if ind != -1: 
+                  index = ind 
+                  break
+                     
+      if index == -1:
+         print ( 'No card selected' )
+      else:
+         print ( 'Selected card with index: ' + str(index)) 
+         print ( '  Selected card with name : ' + deck.data[index].name )
+      deck.utilities.clearStatus()
+      return index 
+      
       
    def selectCreature (self, deck):
       index = -1   
@@ -192,6 +228,46 @@ class ManaBar ():
    MTGCards is based on SubDeck but customized to an MTG deck   
 '''
 class MTGCards (SubDeck):  
+   # data is a list of objects that have an image and index attribute
+   def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, empty=False, name='', utils=None):
+      numCards = 0
+      self.cardInfo = CardInfo()
+      self.utilities = utils
+      assert not utils is None, 'MTGCards for [' + name + '], utils is None' 
+      self.action  = MTGActions(self.utilities, self.cardInfo)
+      self.name = name 
+      self.counter = None
+      
+      cards = []
+      if str(filename).isnumeric():  
+         print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
+         exit ()
+      elif filename != '': 
+         print ( 'open [filename]: [' + str(filename) + ']' )
+         f = open ( filename, 'r' )
+         line = f.readline()
+         f.close 
+         data = line.split ( ',' ) # Array of numeric strings
+         numCards = len(data)
+         print ( 'Got ' + str(numCards) + ' of cards read' )         
+         
+         # Convert array of string to array of integers 
+         cards = [] 
+         for d in data: 
+            cards.append (int(d)) 
+            
+      print ( 'MTGCards.init' )
+      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
+                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
+                        yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
+      
+      for card in self.data:  
+         card.counter = None
+         card.name = self.cardInfo.idToName (card.sheetIndex)            
+         card.action = MTGAction (card, self.cardInfo)
+      
+      print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
 
    def cardName (self, sheetIndex):
       name = drawPile.cardInfo.idToName (sheetIndex)
@@ -224,51 +300,12 @@ class MTGCards (SubDeck):
          sheetIndex = card.sheetIndex
          name = self.cardInfo.idToName (sheetIndex)  
          if name == 'enchantments/redRibbonArmy.png':         
-            if not card.counter is None:  
+            if not card.counter is None:             
                card.counter.draw()
             
    def getName (self, data):
       return self.cardName (data.sheetIndex)       
       
-   # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, empty=False, name='', utils=None):
-      numCards = 0
-      self.cardInfo = CardInfo()
-      self.utilities = utils
-      self.action  = MTGActions(self.utilities, self.cardInfo)
-      self.name = name 
-      self.counter = None
-      
-      cards = []
-      if str(filename).isnumeric():  
-         print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
-         exit ()
-      elif filename != '': 
-         print ( 'open [filename]: [' + str(filename) + ']' )
-         f = open ( filename, 'r' )
-         line = f.readline()
-         f.close 
-         data = line.split ( ',' ) # Array of numeric strings
-         numCards = len(data)
-         print ( 'Got ' + str(numCards) + ' of cards read' )         
-         
-         # Convert array of string to array of integers 
-         cards = [] 
-         for d in data: 
-            cards.append (int(d)) 
-            
-      print ( 'MTGCards.init' )
-      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
-                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
-      
-      for card in self.data:  
-         card.counter = None
-         card.action = MTGAction (card, self.cardInfo)
-      
-      print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__') 
-
    def isCreature (self,sheetIndex):
       return self.cardInfo.isCreature (sheetIndex)
         
@@ -278,8 +315,14 @@ class MTGCards (SubDeck):
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
-              self.cardName(sheetIndex))      
-              
+              self.cardName(sheetIndex))  
+
+   def redeal (self, debugIt=False):              
+      SubDeck.redeal(self,debugIt)        
+      for card in self.data: 
+         if not card.counter == None:  
+            card.counter.move (card.x+10, card.y+10 )         
+         
    def sheetIndex (self,index): 
       ind = self.data[index].sheetIndex
       
@@ -307,15 +350,16 @@ if __name__ == '__main__':
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
    filename     = MTGSetup(utilities).chooseDeckFilename('redDeck.txt')   
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
-                  yMultiplier=0.0, name='drawPile')   
+                  yMultiplier=0.0, name='drawPile',utils=utilities)   
    drawPile.hideAll()
    opponent     = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
-                             displaySurface=displaySurface, name='opponent')
+                             displaySurface=displaySurface, name='opponent', utils=utilities)
    hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, \
-                             displaySurface=displaySurface, name='hand')
+                             displaySurface=displaySurface, name='hand', utils=utilities)
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
-                   xMultiplier=1.0, yMultiplier=0.0, utils=utilities, name='inplay')   
-   discardPile  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, name='discardPile')
+                             xMultiplier=1.0, yMultiplier=0.0, utils=utilities, name='inplay')   
+   discardPile  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, \
+                             xMultiplier=0.0, yMultiplier=0.0, name='discardPile', utils=utilities)
    for i in range (7):
       drawPile.topToDeck (hand, reveal=True)
     
@@ -344,7 +388,7 @@ if __name__ == '__main__':
    labels.addLabel ('Draw'    , 310, 175)
    labels.addLabel ('In Play' , 100, 375)
    labels.addLabel ('Hand'    , 100, 575)
-   phase = MTGPhases (inplay)
+   phase = MTGPhases (inplay,hand)
    
    haveCastLand = False 
    while not quit:
@@ -362,7 +406,7 @@ if __name__ == '__main__':
       if phase.text() == 'Upkeep': 
          manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level          
          inplay.untap()
-         inplay.redeal()
+         inplay.redeal(True)
          inplay.executePhase('Upkeep')      
          phase.next()
          print ( 'phase.text is now: ' + phase.text() )

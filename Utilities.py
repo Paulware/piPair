@@ -19,7 +19,20 @@ class Utilities ():
       #if ch in offsets.keys(): 
       #   offset = offsets[ch]
       return offset 
-    
+      
+   def clearStatus (self):    
+       width, height = pygame.display.get_surface().get_size()
+       x = 0
+       y = height-35
+       w = width
+       h = 35 
+       # pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
+       line1 = TextBox ( '                                                           ', x=x, y=y, w=x, h=h)
+       line1.draw ( ) 
+       pygame.display.update()
+       print ( 'Status cleared [x,y,w,h]: [' + str(x) + ',' + str(y) + ',' + str(w) + ',' + str(h) + ']' )
+       self.statusMessage = ''
+        
    def createLabel (self, msg, x, y):
        WHITE = (255,255,255)  
        GREEN = (0,155,0)
@@ -376,17 +389,11 @@ class Utilities ():
        self.statusMessage = status 
        if self.statusMessage != "":
           print ( 'Show status: ' + self.statusMessage )
+          self.clearStatus()
           width, height = pygame.display.get_surface().get_size()
-          pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
-          #pygame.draw.rect(self.displaySurface, self.BLACK, (0,height+2,self.DISPLAYWIDTH,25))    
-          #self.showLine (self.statusMessage, 1, height+4) # Show status message
-          line1 = TextBox ( '                                                           ')
-          line1.draw ( (0,height-35,30) ) 
           line1 = TextBox ( status )
           line1.draw ( (0,height-35,30) )
-          print ( 'pygame.update')
           pygame.display.update()
-          print ('Done showing Status: ' + self.statusMessage)
           
        
    def stop (self):

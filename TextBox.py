@@ -37,11 +37,9 @@ class TextBox():
         rect = pygame.Rect (self.x, self.y-3, width, height+6)
         pygame.draw.rect (pygame.display.get_surface(), (0,0,0), rect );
         pygame.display.flip()
-        pygame.event.pump()        
+        pygame.event.pump()  
         
-    def length(self):
-        return len (self.text)
-
+        
     def draw(self, pos=None):
         surf = pygame.display.get_surface()
         msg = self.font.render(self.text, 1, (0, 0, 0))
@@ -51,14 +49,27 @@ class TextBox():
         if pos is not None:            
            self.x = pos[0]
            self.y = pos[1]
-           self.height = pos[2]
+           if len(pos) > 2:
+              self.height = pos[2]
+           else:
+              print ( 'New textbox [x,y]: [' + str(self.x) + ',' + str(self.y) + ',' + str(self.height) + ']' )
            self.rect = pygame.Rect (self.x, self.y, width + self.pad, self.height)
                  
         pygame.draw.rect(surf, self.highlight_color, self.rect)
         surf.blit(msg, self.rect) # msg.get_rect(center = self.rect.center))
         nextPosition = (self.x,self.y+self.height,self.height)
         return nextPosition
-
+        
+    def length(self):
+        return len (self.text)
+        
+    def move (self,x,y):
+        #self.clearLine()
+        self.clearLast()
+        self.draw ( (x,y) ) 
+        pygame.display.flip()
+        pygame.event.pump() 
+        print ( 'Done moving counter' )
 
 if __name__ == '__main__':
    pygame.init()

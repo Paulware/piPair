@@ -260,6 +260,8 @@ class SubDeck ():
          
          self.data[ind].x = x
          self.data[ind].y = y
+         card.x = x
+         card.y = y 
          if card.tapped: 
             xOffset = self.height * self.xMultiplier
          else:
