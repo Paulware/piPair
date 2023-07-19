@@ -7,6 +7,7 @@ from pygame_widgets import slider
 from TextBox import TextBox
 from images.mtg.ManaCost import ManaCost 
 from MessageBox import MessageBox
+from images.mtg.Globals import *
 
 # Select the colors for the deck you wish to play with  
 class MTGSetup: 
@@ -62,12 +63,11 @@ class MTGSetup:
       self.items.append (self.quitButton)  
       self.items.append (self.createButton)
       
-   def __init__ (self,utilities):    
+   def __init__ (self):    
       self.manaCost = ManaCost()
       self.items = []       
       self.deck = [] 
       self.window = pygame.display.get_surface()
-      self.utilities = utilities
       
    def draw (self):
       for item in self.items: 
@@ -179,7 +179,7 @@ class MTGSetup:
          window.fill ((0,0,0)) 
          self.draw()
          
-         events = self.utilities.readOne()
+         events = globalDictionary['utilities'].readOne()
          for event in events:
             (typeInput,data,addr) = event
             if typeInput == 'drop': 
@@ -219,7 +219,7 @@ class MTGSetup:
          for item in self.items: 
             item.draw()
          
-         events = self.utilities.readOne()
+         events = globalDictionary['utilities'].readOne()
          for event in events:
             (typeInput,data,addr) = event
             if typeInput == 'drop': 
@@ -231,7 +231,7 @@ class MTGSetup:
          
          if self.selectButton.isPressed() != '':  
             filename = 'images/mtg/' + self.deckFilename.value
-            if not self.utilities.fileExists (filename): 
+            if not globalDictionary['utilities'].fileExists (filename): 
                MessageBox ('   Warning   ').go(100,50,filename + ' does not exist' )
             else:
                break
@@ -245,12 +245,11 @@ if __name__ == '__main__':
    pygame.init()
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    window = pygame.display.set_mode((1000, 600))
-   utilities = Utilities (window, BIGFONT)   
-   
-   setup = MTGSetup(utilities)
+
+   setup = MTGSetup()
    setup.mainPage  ()   
 
-   filename = setup.chooseDeckFilename (utilities)
+   filename = setup.chooseDeckFilename ()
    if filename == '': 
       print ( 'No file was selected' )
    else:

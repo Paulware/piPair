@@ -2,6 +2,9 @@ import pygame
 import copy
 from ViewImage import ViewImage
 
+class Object(object):
+    pass
+
 '''
    SubDeck is like a hand or a discard pile 
    It will use Decks ability to deal and will add the attributes x,y,width,height to each element in the dealt hand.
@@ -55,11 +58,12 @@ class SubDeck ():
                dealtCards = self.deck.deal (numCards)
                
             self.data = dealtCards
-                      
+
+      self.coverIndex = deckBasis.coverIndex                      
       print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
       self.numImages = len(self.data)         
       print (self.name + ' has ' + str(self.numImages) + ' cards ') 
-                  
+   
    def addCard (self,sourceDeck,index): 
       print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       ind = len(self.data)-1
@@ -84,6 +88,24 @@ class SubDeck ():
       print ( 'Appending card with data: [x,y,sheetIndex]: [' + str(d.x) + \
               ',' + str(d.y) + ',' + str(d.sheetIndex) + ']' )   
       print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
+      
+   def addCoverCard (self): 
+      obj = Object()
+      ind = len(self.data)-1
+      # obj = type ('Object', (object,), {})
+         
+      obj.tapped = False
+      if len(self.data) == 0: 
+         obj.x = 0
+      else:
+         obj.x = self.data[ind].x + self.width
+      obj.y = self.data[ind].y
+      obj.hide = True
+      obj.name = 'token'               
+      obj.sheetIndex = self.coverIndex
+      obj.counter = None
+      self.data.append (obj)
+      
 
    # add a card from the specified deck.data[index] to the top card of this deck       
    def addTopCard (self,deck,index): 

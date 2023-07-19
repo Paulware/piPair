@@ -2,8 +2,6 @@ import random
 import copy
 from SpriteSheet import SpriteSheet
 
-# import SubDeck is not required, but knowledge of Subdeck routines might be necessary
-
 class Object(object):
     pass
 
@@ -24,7 +22,16 @@ class Object(object):
    This class will also have a coverImage attribute which is the image on the back of the card
 '''
 class Deck (SpriteSheet): 
-      
+   # numImages is the number of images in the deck that is dealt to a player 
+   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None):
+      if coverIndex is None: 
+         raise Exception("ERR coverIndex not specified in deck creation")
+         
+      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
+      print ( 'Done in Deck.init' ) 
+      if self.coverImage is None:
+         raise Exception ("ERR cover images is not defined" )
+
    def deal (self, numCards): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
@@ -98,14 +105,6 @@ class Deck (SpriteSheet):
          index = int ( random.random() * listLength)
       # print ( 'Got a random index: ' + str(index))
       return index
-   
-   # numImages is the number of images in the deck that is dealt to a player 
-   def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None):
-      if coverIndex is None: 
-         raise Exception("ERR coverIndex not specified in deck creation")
-         
-      SpriteSheet.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)
-      print ( 'Done in Deck.init' ) 
      
 if __name__ == '__main__':
    print ( '***Deck __main__' ) 

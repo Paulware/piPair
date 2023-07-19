@@ -297,6 +297,8 @@ class CardInfo():
       name = ''
       if id <= len(self.cards):
          name = list(self.cards)[id]
+      if name == 'mtg.jpg':
+         name = 'creatures/token.jpg'
       #print ( 'idToName, Got name: ' + name )
       return (name)
       

@@ -8,7 +8,30 @@ import pygame
 #    data is a list, each element has an image, and an index attribute at this level
 #       subsequent levels will add attributes to each data element such as x,y,width,height,name
 class SpriteSheet:  
-
+   # numImages is the total number of images
+   # coverIndex is the zero-based index that points to the back cover 
+   def __init__(self, filename, numColumns, numRows, numImages, coverIndex):    
+      self.numImages = numImages
+      self.coverIndex = coverIndex 
+      print ( 'coverIndex is: ' + str(coverIndex)) 
+      if os.path.exists (filename): 
+         print ( 'This file exists ' + filename )         
+      else:
+         print ( filename + ' does not exist' )         
+      self.filename = filename 
+      self.numColumns = numColumns
+      self.numRows = numRows
+      if os.path.exists (filename):
+         self.image = pygame.image.load (filename).convert()
+         (width,height) = self.image.get_size()
+         self.spriteWidth  = int(width/numColumns)
+         self.spriteHeight = int(height/numRows)
+         print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
+         self.data = self.loadSpriteImages ()
+      else:
+         print( 'This filename does not exist: ' + filename)
+         exit(1)  
+         
    # Get the image of a specific index such as cover image 
    def getIndexImage (self,index): 
       image = None 
@@ -32,31 +55,7 @@ class SpriteSheet:
          print ( 'Could not find the image for index: ' + str(index) + ' in the spritesheet?' )
          exit(1)
          
-      return image       
-   
-   # numImages is the total number of images
-   # coverIndex is the zero-based index that points to the back cover 
-   def __init__(self, filename, numColumns, numRows, numImages, coverIndex):    
-      self.numImages = numImages
-      self.coverIndex = coverIndex 
-      print ( 'coverIndex is: ' + str(coverIndex)) 
-      if os.path.exists (filename): 
-         print ( 'This file exists ' + filename )         
-      else:
-         print ( filename + ' does not exist' )         
-      self.filename = filename 
-      self.numColumns = numColumns
-      self.numRows = numRows
-      if os.path.exists (filename):
-         self.image = pygame.image.load (filename).convert()
-         (width,height) = self.image.get_size()
-         self.spriteWidth  = int(width/numColumns)
-         self.spriteHeight = int(height/numRows)
-         print ( 'sprite [width,height]: [' + str(self.spriteWidth) + ',' + str(self.spriteHeight) + ']' )       
-         self.data = self.loadSpriteImages ()
-      else:
-         print( 'This filename does not exist: ' + filename)
-         exit(1)   
+      return image        
          
    def length(self):
       return len(self.data)
