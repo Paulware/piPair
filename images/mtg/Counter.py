@@ -1,9 +1,10 @@
 from TextBox import TextBox
 
 class Counter: 
-   def __init__ (self, x, y): 
-      self.count = 0
-      self.label = TextBox (str(self.count), x, y)
+   def __init__ (self, x, y):
+      print ( 'Create a counter' )   
+      self.value = 0
+      self.label = TextBox (str(self.value), x, y)
       self.x = x 
       self.y = y
 
@@ -17,8 +18,8 @@ class Counter:
       self.label.move (x,y)     
       
    def increment (self):
-      self.count = self.count + 1      
-      self.label = TextBox (str(self.count), self.x, self.y)
-      print ( 'counter incremented to: ' + str(self.count))
+      self.value = self.value + 1      
+      self.label = TextBox (str(self.value), self.x, self.y)
+      print ( 'counter incremented to: ' + str(self.value))
       self.draw()
       

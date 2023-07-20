@@ -48,6 +48,7 @@ class Deck (SpriteSheet):
          obj.tapped = False
          obj.x = 0
          obj.y = 0
+         obj.name = 'name'
          print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
          hand.append (obj) # TODO: Do I need a copy?
          self.data.pop (index)
@@ -73,6 +74,7 @@ class Deck (SpriteSheet):
             obj.hide       = False 
             # obj.unique = count
             obj.tapped     = False 
+            obj.name       = 'name'
          except IndexError:
             print ( 'This index of out of range: ' + str(ind) )
             exit()

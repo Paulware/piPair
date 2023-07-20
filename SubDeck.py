@@ -1,6 +1,7 @@
 import pygame
 import copy
 from ViewImage import ViewImage
+from TextBox import TextBox
 
 class Object(object):
     pass
@@ -82,14 +83,15 @@ class SubDeck ():
             d.x = x
          else:
             d.x = x * self.xMultiplier
+         d.name = sourceDeck.data[index].name
          d.y = y
          
       self.data.append (d)
-      print ( 'Appending card with data: [x,y,sheetIndex]: [' + str(d.x) + \
-              ',' + str(d.y) + ',' + str(d.sheetIndex) + ']' )   
+      print ( 'Appending card with data: [x,y,sheetIndex,name]: [' + str(d.x) + \
+              ',' + str(d.y) + ',' + str(d.sheetIndex) + ',' + d.name + ']' )   
       print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
       
-   def addCoverCard (self): 
+   def addCoverCard (self, labelText, name='cover'): 
       obj = Object()
       ind = len(self.data)-1
       # obj = type ('Object', (object,), {})
@@ -100,15 +102,17 @@ class SubDeck ():
       else:
          obj.x = self.data[ind].x + self.width
       obj.y = self.data[ind].y
+      obj.label = TextBox (labelText, obj.x+20, obj.y + 50)   
       obj.hide = True
-      obj.name = 'token'               
+      obj.name = name               
       obj.sheetIndex = self.coverIndex
       obj.counter = None
-      self.data.append (obj)
-      
+      obj.width = self.width
+      obj.height = self.height
+      self.data.append (obj)  
 
    # add a card from the specified deck.data[index] to the top card of this deck       
-   def addTopCard (self,deck,index): 
+   def addTopCard (self,deck,index,name='name'): 
       
       print ( 'addTopCard [index,sheetIndex,tapped]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ',' + \
               str(deck.data[index].tapped) + ']') 
@@ -125,6 +129,7 @@ class SubDeck ():
          else:
             deck.data[index].x = x * self.xMultiplier
          deck.data[index].y = y
+         deck.data[index].name = self.data[ind].name
       #self.data.insert (0,deck.data[index])
       self.data.append (deck.data[index].copy()) 
       count = 0 
@@ -179,15 +184,18 @@ class SubDeck ():
          print ('draw, self.data: ' + str(self.data)) 
 
       count = 0      
-      for sprite in self.data:
+      for card in self.data:
          count = count + 1
-         image = self.getImage (sprite)
+         image = self.getImage (card)
          if self.showLength and (count == 8): 
-            print ( '[x,y] of card 8 [: ' + str(sprite.x) + ',' + str(sprite.y) + ']' ) 
+            print ( '[x,y] of card 8 [: ' + str(card.x) + ',' + str(card.y) + ']' ) 
          if debugIt: 
-            print ( 'card (' + str(count) + ').[x,y,sheetIndex: [' + str(sprite.x) + ',' + str(sprite.y) + ',' + str (sprite.sheetIndex) + ']'  ) 
-         self.displaySurface.blit (image, (sprite.x,sprite.y)) 
-               
+            print ( 'card (' + str(count) + ').[x,y,sheetIndex: [' + str(card.x) + ',' + str(card.y) + ',' + \
+                    str (sprite.sheetIndex) + ']'  ) 
+         self.displaySurface.blit (image, (card.x,card.y)) 
+         if hasattr(card,"label"): 
+            card.label.draw()
+            
    def dropAll (self):
       print ( 'Dropping all cards')
       for card in self.data:
@@ -210,10 +218,10 @@ class SubDeck ():
             print ( 'findSprite (' + str(x) + ',' + str(y) + '), len(self.data): ' + str(len(self.data)) + \
                     ' sprite [x,y,width,height]: [' + str(self.data[0].x) + ',' + str(self.data[0].y) + \
                     ',' + str(self.data[0].width) + ',' + str(self.data[0].height) + ']' ) 
-         for sprite in self.data: 
-            width  = sprite.width
-            height = sprite.height
-            rect = pygame.Rect (sprite.x, sprite.y, width,height)               
+         for card in self.data: 
+            width  = card.width
+            height = card.height
+            rect = pygame.Rect (card.x, card.y, width,height)               
             if debugIt:
                print ( 'rect: ' + str(rect)) 
             index = index + 1
