@@ -18,7 +18,9 @@ class MTGActions():
       print ('addEnchantment' )
       
    # Card is cast from hand deck to inplay deck    
-   def cast (self,sourceDeck,index):         
+   def cast (self,sourceDeck,index):  
+      wasCast = True   
+      card = sourceDeck.data[index]
       if card.name == 'enchantments/redRibbonArmy.png':                      
          card = globalDictionary['inplay'].addCard (sourceDeck,index)           
          ind = globalDictionary['inplay'].length()-1
@@ -27,15 +29,29 @@ class MTGActions():
          ind = self.selectPermanent()
          if ind == -1: 
             print ( 'Casting cancelled')
+            wasCast = False
          else:
-            card = sourceDeck.data[index]
-            self.addEnchantment(card):
+            permanent = globalDictionary['inplay'].data[ind]
+            if not hasattr(permanent,"enchantments"): 
+               print ( 'enchantments=[]' )
+               permanent.enchantments = []
+            else:
+               print ( 'Permanent already has enchantments' )            
+            # Move card from hand to inplay 
+            card.x = permanent.x
+            card.y = permanent.y + 30
+            print ( 'card [x,y]: [' + str(card.x) + ',' + str(card.y) + ']' )
+            permanent.enchantments.append (card) 
             print ( 'Casting completed' )
       else:
          card = globalDictionary['inplay'].addCard (sourceDeck,index)  
       
-      print ( 'Card cast: [' + card.name + ']' )
-
+      if wasCast:
+         print ( 'Card cast: [' + card.name + ']' )
+      else:
+         print ( 'This card was NOT cast: ' + card.name )
+      return wasCast 
+      
    def damageOpponent (self,amount):
       print ( 'Opponent takes ' + str(amount) + ' damage' )
 
@@ -313,10 +329,16 @@ class MTGCards (SubDeck):
       for card in self.data:  
          sheetIndex = card.sheetIndex
          name = globalDictionary['cardInfo'].idToName (sheetIndex)  
-         if name == 'enchantments/redRibbonArmy.png':         
-            if hasattr (card, "counter"):  # Counter appears after being cast
-               card.counter.draw()
-                   
+         if hasattr (card, "counter"):  # Counter appears after being cast
+            card.counter.draw()
+         if hasattr (card, "enchantments"): 
+            # print ( 'Draw all enchantments for: ' + card.name )
+            for c in card.enchantments:
+               image = self.getImage (c)
+               self.displaySurface.blit (image, (c.x,c.y)) 
+               #if hasattr(c,"label"): 
+               #   c.label.draw()            
+                          
    def getName (self, data):
       return self.cardName (data.sheetIndex)       
       
@@ -331,12 +353,15 @@ class MTGCards (SubDeck):
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
               self.cardName(sheetIndex))  
 
-   def redeal (self, debugIt=False):              
+   def redeal (self, debugIt=False):
+      print ( 'redeal' )
+            
       SubDeck.redeal(self,debugIt)        
       for card in self.data:
          if hasattr (card,"counter"):       
             card.counter.move (card.x+10, card.y+10 )         
-         
+      
+      
    def sheetIndex (self,index): 
       ind = self.data[index].sheetIndex
       
@@ -344,9 +369,7 @@ class MTGCards (SubDeck):
       print ( 'Untap all cards in deck: ' + self.name )
       for d in self.data: 
          d.tapped = False
-         
- 
-    
+             
 if __name__ == '__main__':
    from Deck               import Deck
    from Utilities          import Utilities
@@ -551,18 +574,19 @@ if __name__ == '__main__':
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
                # name = globalDictionary['cardInfo'].idToName (sheetIndex)
-               if selection == 'Cast': 
-                  if not globalDictionary['hand'].isLand(sheetIndex): 
-                     manaBar.payMana (sheetIndex) 
-                  if globalDictionary['hand'].isCreature(sheetIndex): # Summoning sickness...
-                     globalDictionary['hand'].data[index].tapped = True # TODO: should not tap, just has summoning sickness so can't attack
-                     
-                  actions.cast (globalDictionary['hand'], index)
-                  globalDictionary['inplay'].redeal()
-                  globalDictionary['hand'].remove (index) 
-                  globalDictionary['hand'].redeal()                           
-                  if globalDictionary['hand'].isLand (sheetIndex):                   
-                     haveCastLand = True                                 
+               if selection == 'Cast':                      
+                  if actions.cast (globalDictionary['hand'], index):
+                     if not globalDictionary['hand'].isLand(sheetIndex): 
+                        manaBar.payMana (sheetIndex) 
+                        
+                     globalDictionary['inplay'].redeal()
+                     globalDictionary['hand'].remove (index) 
+                     globalDictionary['hand'].redeal()                           
+                     if globalDictionary['hand'].isLand (sheetIndex):                   
+                        haveCastLand = True                                 
+                     if globalDictionary['hand'].isCreature(sheetIndex): # Summoning sickness...
+                        globalDictionary['hand'].data[index].tapped = True # TODO: should not tap, just has summoning sickness so can't attack
+                        
                elif selection == 'View':                 
                   deck.view (sheetIndex, 'images/mtg/' + card.name)               
                elif selection == 'Untap': 

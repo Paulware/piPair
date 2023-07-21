@@ -185,10 +185,6 @@ class SubDeck ():
             self.data[len(self.data)-i-1] = self.data[len(self.data)-i-2]
          self.data[0] = topCard
                                
-   def drawCard (self): 
-      cards = self.deck.deal (1)
-      self.data.append (cards[0]) 
-               
    def discard (self,index): 
       self.remove (index)
    
@@ -213,6 +209,11 @@ class SubDeck ():
          self.displaySurface.blit (image, (card.x,card.y)) 
          if hasattr(card,"label"): 
             card.label.draw()
+            
+   def drawCard (self): 
+      cards = self.deck.deal (1)
+      self.data.append (cards[0]) 
+               
             
    def dropAll (self):
       print ( 'Dropping all cards')
