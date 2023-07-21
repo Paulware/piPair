@@ -19,6 +19,7 @@ class SubDeck ():
    # data is a list of objects that have an image and index attribute
    #    xMultiplier dictates how far apart each card will be in the horizontal (x) axis
    #    yMultiplier dictates how far apart each card will be in the vertical (y) axis
+   #    Note: counter should not be found here because that is specific to MTG Cards  
    def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], empty=False , name = ''):                    
       if displaySurface is None: 
@@ -64,11 +65,26 @@ class SubDeck ():
       print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
       self.numImages = len(self.data)         
       print (self.name + ' has ' + str(self.numImages) + ' cards ') 
+      
+      
+   def makeCopy (self,card): 
+      obj = Object()         
+      obj.tapped = card.tapped 
+      obj.x = card.x 
+      obj.y = card.y
+      obj.label = TextBox (labelText, obj.x+20, obj.y + 50)   
+      obj.hide = card.hide
+      obj.name = card.name               
+      obj.sheetIndex = card.sheetIndex
+      obj.width = self.width
+      obj.height = self.height
+      return obj
    
-   def addCard (self,sourceDeck,index): 
+   def addCard (self,sourceDeck,index):       
       print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       ind = len(self.data)-1
       d = sourceDeck.data[index]
+      name = 'unknown name'
       if len(self.data) == 0: 
          x = self.startX;
          y = self.startY; 
@@ -84,12 +100,15 @@ class SubDeck ():
          else:
             d.x = x * self.xMultiplier
          d.name = sourceDeck.data[index].name
+         name = d.name 
          d.y = y
-         
+                  
       self.data.append (d)
       print ( 'Appending card with data: [x,y,sheetIndex,name]: [' + str(d.x) + \
               ',' + str(d.y) + ',' + str(d.sheetIndex) + ',' + d.name + ']' )   
       print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
+      
+      return self.data [len(self.data)-1]
       
    def addCoverCard (self, labelText, name='cover'): 
       obj = Object()
@@ -106,7 +125,7 @@ class SubDeck ():
       obj.hide = True
       obj.name = name               
       obj.sheetIndex = self.coverIndex
-      obj.counter = None
+         
       obj.width = self.width
       obj.height = self.height
       self.data.append (obj)  
@@ -130,8 +149,7 @@ class SubDeck ():
             deck.data[index].x = x * self.xMultiplier
          deck.data[index].y = y
          deck.data[index].name = self.data[ind].name
-      #self.data.insert (0,deck.data[index])
-      self.data.append (deck.data[index].copy()) 
+      self.data.append (deck.data[index].copy()) # Note: Use of copy! 
       count = 0 
       print ( 'addTopCard, new self.data: ' )
       for d in self.data: 

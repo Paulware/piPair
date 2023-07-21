@@ -4,11 +4,31 @@ import os
 import socket
 import select
 from TextBox import TextBox
+from OptionBox import OptionBox
 
 '''
    Utilities
 '''
 class Utilities ():
+   def __init__ (self,displaySurf, font):
+       self.displaySurface = displaySurf
+       self.font = font
+       self.DISPLAYWIDTH=800
+       self.DISPLAYHEIGHT=600       
+       self.statusMessage = ''
+       self.BLACK      = (  0,   0,   0)
+       self.GREEN      = (  0, 155,   0)
+       self.BRIGHTBLUE = (  0,  50, 255)
+       self.BROWN      = (174,  94,   0)
+       self.RED        = (255,   0,   0) 
+       self.comm       = None    
+       self.lastType   = 0   
+       self.message    = ''  
+       self.msg        = '' 
+       self.quit       = False
+       self.debugIt    = False
+       self.debugIt1   = True 
+
    def chOffset (self, ch): 
       offsets = { '.':4, ':':4, ',':5, '-':4, ' ':4, \
                   'I':4, 'W':13, \
@@ -178,26 +198,7 @@ class Utilities ():
              print ( 'Could not find a sprite' )
           else:
              print ( 'Found sprite: ' + str(found)) 
-       return found
-      
-   def __init__ (self,displaySurf, font):
-       self.displaySurface = displaySurf
-       self.font = font
-       self.DISPLAYWIDTH=800
-       self.DISPLAYHEIGHT=600       
-       self.statusMessage = ''
-       self.BLACK      = (  0,   0,   0)
-       self.GREEN      = (  0, 155,   0)
-       self.BRIGHTBLUE = (  0,  50, 255)
-       self.BROWN      = (174,  94,   0)
-       self.RED        = (255,   0,   0) 
-       self.comm       = None    
-       self.lastType   = 0   
-       self.message    = ''  
-       self.msg        = '' 
-       self.quit       = False
-       self.debugIt    = False
-       self.debugIt1   = True       
+       return found      
        
    def isMouseClick (self,event): 
        isClick = False 
@@ -307,15 +308,21 @@ class Utilities ():
           
        print (str(ssids)) 
        return ssids  
-        
+       
+   def selectOption ( self, options):
+       x = 600
+       y = 100 
+       optionBox = OptionBox (options, x,y, width=300)                  
+       return optionBox   
+      
    def showCh (self, ch,x,y):
-     WHITE = (255,255,255) 
-     GREEN = (0,155,0)
-     surface = self.font.render(str(ch), True, WHITE, GREEN)
-     rect = surface.get_rect()
-     rect.topleft = (x,y)
-     self.displaySurface.blit(surface, rect)
-     pygame.display.update()
+       WHITE = (255,255,255) 
+       GREEN = (0,155,0)
+       surface = self.font.render(str(ch), True, WHITE, GREEN)
+       rect = surface.get_rect()
+       rect.topleft = (x,y)
+       self.displaySurface.blit(surface, rect)
+       pygame.display.update()
          
    def showLabels (self, labels, locations):
        print ( 'Utilities.showLabels, len(labels): ' + str(len(labels)) ) 
@@ -359,14 +366,14 @@ class Utilities ():
           line1.draw ( (0,height-35,30) )
           
    def showLine ( self,line, x,y ):
-     height = self.DISPLAYHEIGHT - 23
-     BLACK = (0,0,0)
-     pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
-     pygame.display.update()
-     for ch in line:
-        self.showCh (ch, x, y)
-        x = x + self.chOffset (ch)       
-                    
+       height = self.DISPLAYHEIGHT - 23
+       BLACK = (0,0,0)
+       pygame.draw.rect(self.displaySurface, BLACK, (0,height+2,self.DISPLAYWIDTH,height+2+25))    
+       pygame.display.update()
+       for ch in line:
+          self.showCh (ch, x, y)
+          x = x + self.chOffset (ch)       
+                      
    def showSsids(self,ssids):
        BLACK      = (0,   0,   0)
        self.displaySurface.fill((BLACK))

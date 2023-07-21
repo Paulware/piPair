@@ -2,7 +2,7 @@ import pygame
 
 class OptionBox():
 
-    def __init__(self, options, x=40, y=40, width=160, height=40, selected = 0): 
+    def __init__(self, options, x=40, y=40, width=400, height=40, selected = 0): 
         self.window = pygame.display.get_surface()   
         self.color = (150, 150, 150)
         self.highlight_color = (100, 200, 255)
@@ -85,7 +85,7 @@ class OptionBox():
        
 if __name__ == '__main__':
    pygame.init()
-   window = pygame.display.set_mode((640, 480))
+   window = pygame.display.set_mode((840, 480))
    
    options = ['option 1', '2nd Option', 'another Option', 'cancel']
    comboBox = OptionBox(options)
