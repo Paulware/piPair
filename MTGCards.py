@@ -12,33 +12,45 @@ from images.mtg.Globals  import *
       
 class MTGActions():   
    def __init__ (self):
-      self.phase = TextBox ('Upkeep', 500, 755)       
-  
+      self.phase = TextBox ('Upkeep', 500, 755)
+
+   def addEnchantment (self, card):
+      print ('addEnchantment' )
+      
    # Card is cast from hand deck to inplay deck    
-   def cast (self,sourceDeck,index):      
-      card = globalDictionary['inplay'].addCard (sourceDeck,index)  
+   def cast (self,sourceDeck,index):         
       if card.name == 'enchantments/redRibbonArmy.png':                      
+         card = globalDictionary['inplay'].addCard (sourceDeck,index)           
          ind = globalDictionary['inplay'].length()-1
          card.counter = Counter ( card.x + 10, card.y + 10)
       elif card.name == 'enchantments/lethalResponse.png': 
-         ind = self.selectPermanent ()
-      print ( 'Card cast: [' + card.name + ']' ) 
+         ind = self.selectPermanent()
+         if ind == -1: 
+            print ( 'Casting cancelled')
+         else:
+            card = sourceDeck.data[index]
+            self.addEnchantment(card):
+            print ( 'Casting completed' )
+      else:
+         card = globalDictionary['inplay'].addCard (sourceDeck,index)  
+      
+      print ( 'Card cast: [' + card.name + ']' )
 
    def damageOpponent (self,amount):
       print ( 'Opponent takes ' + str(amount) + ' damage' )
 
    def executePhase (self,deck,phase): 
       print ( 'Execute ' + phase + ' for all cards' )
-      for card in deck.data:  
-         if phase == "Upkeep": 
+      for card in deck.data:
+         if phase == "Upkeep":
             print ( 'Execute Upkeep phase for : ' + card.name )
             if card.name == 'enchantments/redRibbonArmy.png':
                print ( 'Increment counter for redRibbonArmy' )
-               if card.counter is None: 
-                  raise Exception("red Ribbon Army has no counter?!")
+               if card.counter is None:
+                  raise Exception("Red Ribbon Army has no counter?!")
                else:
                   card.counter.increment()
-                  for i in range (card.counter.value): 
+                  for i in range (card.counter.value):
                      globalDictionary['inplay'].addCoverCard('1/1 Army')
                      
    def fight (self,mana): 
@@ -72,13 +84,12 @@ class MTGActions():
             globalDictionary['hand'].discard (ind) 
             globalDictionary['hand'].redeal()
       elif self.phase.text == 'End Turn':
-         self.phase.text = 'Upkeep'
-  
+         self.phase.text = 'Upkeep'  
       print ( 'new phase.text: [' + self.phase.text + ']' )
          
    def selectCardFromDeck (self, deck, prompt):
       index = -1   
-      ind = -1       
+      ind   = -1       
       globalDictionary['utilities'].showStatus (prompt)
       escape = False 
       while (ind == -1) and not escape:   
@@ -99,13 +110,13 @@ class MTGActions():
          print ( 'Selected card with index: ' + str(index)) 
          print ( '  Selected card with name : ' + deck.data[index].name )
       globalDictionary['utilities'].clearStatus()
-      return index 
+      return index
       
    def selectCardToDiscard (self, deck):
       return self.selectCardFromDeck (deck, 'Select a card from your hand to discard: ')
 
-   def selectPermanent ( self ): 
-      return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play' )   
+   def selectPermanent (self): 
+      return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play (ESC to cancel)')   
             
    def selectCreature (self, deck):
       index = -1   
@@ -136,8 +147,7 @@ class MTGActions():
       else:
          print ( 'Selected creature with index: ' + str(index)) 
          print ( '  Selected creature named: ' + deck.data[index].name )
-      return index 
-
+      return index
               
    def tap (self,mana,card):
       print ( 'tap [mana,card]: [' + str(mana) + ',' + card.name + ']' )
@@ -152,18 +162,18 @@ class MTGActions():
          options.append ( 'Cancel' )
          optionBox = globalDictionary['utilities'].selectOption (options)
          selection = optionBox.getSelection()
-         if selection == 'Tap For Red': 
+         if selection == 'Tap For Red':
             mana['red'] = mana['red'] + 1
-            card.tapped = True 
-         elif selection == 'Tap For Black': 
+            card.tapped = True
+         elif selection == 'Tap For Black':
             mana['black'] = mana['black'] + 1
-            card.tapped = True 
-         elif selection == 'Damage target player (cost R)':  
+            card.tapped = True
+         elif selection == 'Damage target player (cost R)':
             print ( 'Deal 1 point damage to target player' ) # Todo select which player?
          elif selection == 'Target creature reduced 1/1 (cost B)':
-            print ( 'TODO ' )         
-         elif selection == 'Cancel': 
-            print ( 'Never mind') 
+            print ('TODO ')
+         elif selection == 'Cancel':
+            print ('Never mind') 
       elif name == 'lands/pitOfDespair.jpg': 
          options = ['Tap For Red', 'Tap For Green']
          if (mana['red'] > 0) and (mana['green']  > 0) and (globalDictionary['inplay'].countType ('creatures') > 0):
@@ -353,15 +363,12 @@ if __name__ == '__main__':
    
    globalDictionary['utilities'] = Utilities (displaySurface, BIGFONT)   
    globalDictionary['cardInfo']  = CardInfo()
-   
-   
-   
+    
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
    filename     = MTGSetup().chooseDeckFilename('redDeck.txt')   
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
                   yMultiplier=0.0, name='drawPile')                     
    drawPile.hideAll()
-   
    
    opponentDeck = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
                              displaySurface=displaySurface, name='opponent')
@@ -377,9 +384,8 @@ if __name__ == '__main__':
    globalDictionary['hand']        = hand
    globalDictionary['discardPile'] = discardDeck
    globalDictionary['drawPile']    = drawPile
-   manaBar  = ManaBar()
-   globalDictionary['manaBar'] = manaBar
-   
+   manaBar                         = ManaBar()
+   globalDictionary['manaBar']     = manaBar   
    actions                         = MTGActions()
    
    for i in range (7):
