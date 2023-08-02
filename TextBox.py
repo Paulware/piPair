@@ -38,8 +38,7 @@ class TextBox():
         pygame.draw.rect (pygame.display.get_surface(), (0,0,0), rect );
         pygame.display.flip()
         pygame.event.pump()  
-        
-        
+               
     def draw(self, pos=None):
         surf = pygame.display.get_surface()
         msg = self.font.render(self.text, 1, (0, 0, 0))

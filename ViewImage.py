@@ -25,7 +25,7 @@ class ViewImage:
       x = 40
       y = height + 20
       
-      buttons = ['Ok']
+      buttons = ['Click Anywhere']
       buttonRects = [] 
       for buttonText in buttons: 
          buttonSurf     = font.render (buttonText, True, (0,255,0)) # Color is final argument 
@@ -45,12 +45,15 @@ class ViewImage:
          pygame.time.Clock().tick(60)
          for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
+               selection = 'clicked'
+               '''
                pos = pygame.mouse.get_pos()  
                print ( 'Got pos: ' + str(pos))                
                for rect in buttonRects: 
                   if rect.collidepoint(pos): 
                      index = buttonRects.index (rect)
                      selection = buttons[index]
+               '''      
       print ( 'Got selection: ' + selection )
       surface.fill ((0,0,0))
 

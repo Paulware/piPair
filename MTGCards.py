@@ -5,7 +5,7 @@ from SelectButton        import SelectButton
 from ViewImage           import ViewImage 
 from StatusBar           import StatusBar
 from Labels              import Labels 
-from images.mtg.CardInfo import CardInfo 
+from images.mtg.CardInfo import CardInfo  
 from images.mtg.Counter  import Counter
 from images.mtg.Globals  import * 
 
@@ -14,35 +14,45 @@ class MTGActions():
    def __init__ (self):
       self.phase = TextBox ('Upkeep', 500, 755)
 
-   def addEnchantment (self, card):
+   def addEnchantment (self, permanent, enchantment):
       print ('addEnchantment' )
-      
+      if not hasattr(permanent,"enchantments"): 
+         print ( 'enchantments=[]' )
+         permanent.enchantments = []
+      # Move card from hand to inplay 
+      card.x = permanent.x
+      card.y = permanent.y + 30
+      print ( 'card [x,y]: [' + str(card.x) + ',' + str(card.y) + ']' )
+      permanent.enchantments.append (card) 
+            
    # Card is cast from hand deck to inplay deck    
    def cast (self,sourceDeck,index):  
       wasCast = True   
       card = sourceDeck.data[index]
-      if card.name == 'enchantments/redRibbonArmy.png':                      
-         card = globalDictionary['inplay'].addCard (sourceDeck,index)           
-         ind = globalDictionary['inplay'].length()-1
-         card.counter = Counter ( card.x + 10, card.y + 10)
-      elif card.name == 'enchantments/lethalResponse.png': 
-         ind = self.selectPermanent()
+      if card.name == 'enchantments/imposingVisage.jpg': 
+         ind = self.selectCreature([globalDictionary['inplay'],globalDictionary['opponent']])
          if ind == -1: 
-            print ( 'Casting cancelled')
+            print ( 'Casting/Selection cancelled')
             wasCast = False
          else:
             permanent = globalDictionary['inplay'].data[ind]
-            if not hasattr(permanent,"enchantments"): 
-               print ( 'enchantments=[]' )
-               permanent.enchantments = []
-            else:
-               print ( 'Permanent already has enchantments' )            
-            # Move card from hand to inplay 
-            card.x = permanent.x
-            card.y = permanent.y + 30
-            print ( 'card [x,y]: [' + str(card.x) + ',' + str(card.y) + ']' )
-            permanent.enchantments.append (card) 
+            self.addEnchantment (permanent,card)
+            print ( 'Casting completed' )    
+            
+      elif card.name == 'enchantments/lethalResponse.png': 
+         ind = self.selectPermanent()
+         if ind == -1: 
+            print ( 'Casting/Selection cancelled')
+            wasCast = False
+         else:
+            permanent = globalDictionary['inplay'].data[ind]
+            self.addEnchantment (permanent,card)
             print ( 'Casting completed' )
+            
+      elif card.name == 'enchantments/redRibbonArmy.png':                      
+         card = globalDictionary['inplay'].addCard (sourceDeck,index)           
+         ind = globalDictionary['inplay'].length()-1
+         card.counter = Counter ( card.x + 10, card.y + 10)
       else:
          card = globalDictionary['inplay'].addCard (sourceDeck,index)  
       
@@ -71,9 +81,9 @@ class MTGActions():
                      
    def fight (self,mana): 
       success = False 
-      friendly = self.selectCreature(globalDictionary['inplay'])
+      friendly = self.selectCreature([globalDictionary['inplay']])
       if friendly != -1: 
-         enemy    = self.selectCreature(globalDictionary['opponent'])
+         enemy    = self.selectCreature([globalDictionary['opponent']])
          if enemy != -1:  
             print ( 'Assign damage between those creatures' )
             success = True 
@@ -134,10 +144,9 @@ class MTGActions():
    def selectPermanent (self): 
       return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play (ESC to cancel)')   
             
-   def selectCreature (self, deck):
+   def selectCreature (self, decks):
       index = -1   
       ind = -1       
-      globalDictionary['utilities'].showStatus ('Select a creature in deck: ' + deck.name)
       escape = False 
       while (ind == -1) and not escape:   
          events = globalDictionary['utilities'].readOne()
@@ -147,16 +156,18 @@ class MTGActions():
                escape = True 
             elif typeInput == 'drag': 
                # Determine which subdeck the card is in. 
-               ind = deck.findSprite (data)
-               if ind != -1: 
-                  id = deck.data[ind].sheetIndex
-                  if globalDictionary['cardInfo'].isCreature(id): 
-                     card = deck.data[ind]            
-                     print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')               
-                     index = ind
-                  else:
-                     globalDictionary['utilities'].showStatus ( 'That card is not a creature aborting... ' + deck.name )
-                  break
+               for deck in decks:
+                  globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
+                  ind = deck.findSprite (data)
+                  if ind != -1: 
+                     id = deck.data[ind].sheetIndex
+                     if globalDictionary['cardInfo'].isCreature(id): 
+                        card = deck.data[ind]            
+                        print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')               
+                        index = ind
+                     else:
+                        globalDictionary['utilities'].showStatus ( 'That card is not a creature aborting... ' + deck.name )
+                     break
                      
       if index == -1:
          print ( 'No creature selected' )
@@ -169,7 +180,17 @@ class MTGActions():
       print ( 'tap [mana,card]: [' + str(mana) + ',' + card.name + ']' )
       name = card.name 
       print ( 'tap: card. [name]: [' + name + ']' ) 
-      if name == 'lands/fireSwamp.jpg':
+      if name == 'lands/cliffsOfInsanity.jpg':
+         options = ['Tap For Red', 'Tap For White','Cancel']
+         optionBox = globalDictionary['utilities'].selectOption (options)
+         selection = optionBox.getSelection()
+         if selection == 'Tap For Red':
+            mana['red'] = mana['red'] + 1
+            card.tapped = True
+         elif selection == 'Tap For White':
+            mana['white'] = mana['white'] + 1
+            card.tapped = True      
+      elif name == 'lands/fireSwamp.jpg':
          options = ['Tap For Red', 'Tap For Black']
          if mana['red'] > 0:
             options.append ( 'Damage target player (cost R)' )
@@ -216,10 +237,12 @@ class MTGActions():
             print ( 'Never mind') 
       elif globalDictionary['inplay'].isLand (card.sheetIndex):
          globalDictionary['manaBar'].addLand (card.name)                     
+         card.tapped = True 
       else:
          print ( 'Did not find an action for: ' + card.name )
          card.tapped = True 
-         
+      globalDictionary['inplay'].redeal()
+      
 class HealthBar(): 
    def __init__ (self): 
       self.health = 20
@@ -335,10 +358,8 @@ class MTGCards (SubDeck):
             # print ( 'Draw all enchantments for: ' + card.name )
             for c in card.enchantments:
                image = self.getImage (c)
-               self.displaySurface.blit (image, (c.x,c.y)) 
-               #if hasattr(c,"label"): 
-               #   c.label.draw()            
-                          
+               self.displaySurface.blit (image, (c.x,c.y))             
+   
    def getName (self, data):
       return self.cardName (data.sheetIndex)       
       
@@ -360,8 +381,12 @@ class MTGCards (SubDeck):
       for card in self.data:
          if hasattr (card,"counter"):       
             card.counter.move (card.x+10, card.y+10 )         
-      
-      
+         if hasattr (card,"enchantments"): 
+            for enchantment in card.enchantments:
+               enchantment.x = card.x            
+         if hasattr (card,'label'):
+            card.label.move (card.x+5, card.y+30)
+            
    def sheetIndex (self,index): 
       ind = self.data[index].sheetIndex
       
@@ -378,7 +403,24 @@ if __name__ == '__main__':
    from TextBox            import TextBox
    from MTGSetup           import MTGSetup
 
-   import time   
+   import time  
+
+   def findEnchantment (pos):
+      print ( 'MTGUtility? findEnchantment' )      
+      found = None 
+      for card in globalDictionary['inplay'].data: 
+         if hasattr (card, 'enchantments'): 
+            for enchantment in card.enchantments:          
+               width  = enchantment.width
+               height = enchantment.height
+               rect   = pygame.Rect (enchantment.x, enchantment.y, width,height)               
+               if rect.collidepoint (pos): 
+                  print ( 'Found enchantment sprite at pos: ' + str(pos))
+                  found = enchantment  
+      if not found is None: 
+         print ( found.name + '.findSprite found at [' + str(found.x) + ',' + str(found.y) + ']' ) 
+         
+      return found   
    
    pygame.init()
    displaySurface = pygame.display.set_mode((1200, 780))
@@ -451,8 +493,12 @@ if __name__ == '__main__':
       globalDictionary['utilities'].showLastStatus()
       bar.show (['Quit', 'Message', 'Next Phase'] )
       pygame.display.update() 
-      
-      if actions.phase.text == 'Upkeep': 
+
+      if actions.phase.text == 'Draw':
+         drawPile.topToDeck (globalDictionary['hand'], reveal=True)
+         globalDictionary['hand'].redeal() 
+         actions.nextPhase()       
+      elif actions.phase.text == 'Upkeep': 
          manaLevel = {'red':0, 'black':0, 'green':0, 'white':0, 'blue':0} # Reset mana level          
          globalDictionary['inplay'].untap()
          globalDictionary['inplay'].redeal(True)
@@ -460,10 +506,6 @@ if __name__ == '__main__':
          actions.nextPhase()
          print ( 'phase.text is now: ' + actions.phase.text )
          haveCastLand = False 
-      elif actions.phase.text == 'Draw':
-         drawPile.topToDeck (globalDictionary['hand'], reveal=True)
-         globalDictionary['hand'].redeal() 
-         actions.nextPhase()       
       
       events = globalDictionary['utilities'].readOne()
       for event in events:
@@ -517,21 +559,23 @@ if __name__ == '__main__':
             else: 
                print ( 'Illegal drop yo' )
             dragCard = None
+            
          elif typeInput == 'select': 
             # Determine which subdeck the card is in. 
-            (deck,index) = decks.findSprite (data)
-            try:
-               card = deck.data[index]            
-               print ( '[deck,index]: [' + deck.name + ',' + str(index) + ']')             
-            except Exception as ex:
-               print ( 'Exception : ' + str(ex)) 
-               index = -1
+            card = findEnchantment (data)
+            if card is None: 
+               (deck,index) = decks.findSprite (data) 
+               try:
+                  if index != -1: 
+                     card = deck.data[index]                             
+               except Exception as ex:
+                  print ( 'Exception : ' + str(ex)) 
                
-            if index != -1: 
-               x = deck.data[index].x
-               y = deck.data[index].y
-               sheetIndex = deck.data[index].sheetIndex
-               card = deck.data[index]
+            if not card is None: # A card was clicked on 
+               print ( 'card.name: ' + card.name )
+               x = card.x
+               y = card.y
+               sheetIndex = card.sheetIndex                        
 
                optionBox = OptionBox ( ['Unknown'] )
                if deck == globalDictionary['hand']: 
@@ -566,15 +610,18 @@ if __name__ == '__main__':
                   if card.tapped: 
                      optionBox = globalDictionary['utilities'].selectOption (['View', 'Untap', 'Cancel'])
                   else:
-                     if (globalDictionary['inplay'].isCreature (sheetIndex)) and (actions.phase.text == 'Attack'):                  
+                     if (globalDictionary['inplay'].isCreature (sheetIndex)) and (actions.phase.text == 'Attack') and \
+                        (not card.tapped):                  
                         optionBox = globalDictionary['utilities'].selectOption (['View', 'Attack', 'Cancel'])
                      else:                     
                         optionBox = globalDictionary['utilities'].selectOption (['View', 'Tap', 'Cancel'])
-                  
+                                 
+               # Handle user action selection 
                selection = optionBox.getSelection()
-               print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-               # name = globalDictionary['cardInfo'].idToName (sheetIndex)
-               if selection == 'Cast':                      
+               print ( '[selection]: [' + selection + ']' ) 
+               if selection == 'Attack':
+                  card.tapped = True
+               elif selection == 'Cast':                      
                   if actions.cast (globalDictionary['hand'], index):
                      if not globalDictionary['hand'].isLand(sheetIndex): 
                         manaBar.payMana (sheetIndex) 
@@ -591,7 +638,7 @@ if __name__ == '__main__':
                   deck.view (sheetIndex, 'images/mtg/' + card.name)               
                elif selection == 'Untap': 
                   card.tapped = False 
-                  globalDictionary['utilities'].showStatus ( 'Card is untapped' )
+                  globalDictionary['inplay'].redeal()                  
                elif selection == 'Tap':                  
                   print ( 'Mana before execution: ' + str(manaBar.manaLevel) ) 
                   actions.tap (manaBar.manaLevel,card)               

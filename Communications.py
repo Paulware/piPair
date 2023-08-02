@@ -17,7 +17,7 @@ class Communications:
       if not self.debug: 
          try:
             print ( 'Connect to: ' + self.broker )
-            self.client.connect(self.broker, 1883, 30)
+            self.client.connect(self.broker) # , 1883, 60)
          except Exception as ex:
             print ( 'Could not connect to ' + self.broker + '  because: ' + str(ex))
             print ( 'Make sure that the mosquito broker is running...' )
@@ -218,6 +218,7 @@ class Communications:
                
 if __name__ == "__main__":
    import time
+   import os
    try: 
       import pygame
    except Exception as ex: 
@@ -231,9 +232,15 @@ if __name__ == "__main__":
    userMessage = ''            
 
    if len(sys.argv) == 1: 
-      broker = 'localhost'
-      myName = 'pi7'
-      target = 'laptop'
+      if os.name == 'posix':
+         broker = '192.168.4.15'
+         # broker = 'localhost'
+         myName = 'pi7'
+         target = 'laptop'
+      else:
+         broker = 'localhost'
+         myName = 'laptop'
+         target = 'pi7'
    elif len(sys.argv) != 4:
       print ( 'Note mosquitto should be installed and running' )
       print ( 'Usage: python3 Communications.py broker myName targetName' )
@@ -247,7 +254,7 @@ if __name__ == "__main__":
    topic = 'messages'
       
    try: 
-      print ( 'I am ' + myName + ' talking to: ' + target ) 
+      print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']') 
       comm = Communications (topic,broker,myName);
       if comm.connectBroker(): 
          comm.setTarget (target)            

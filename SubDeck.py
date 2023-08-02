@@ -65,21 +65,7 @@ class SubDeck ():
       print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
       self.numImages = len(self.data)         
       print (self.name + ' has ' + str(self.numImages) + ' cards ') 
-      
-      
-   def makeCopy (self,card): 
-      obj = Object()         
-      obj.tapped = card.tapped 
-      obj.x = card.x 
-      obj.y = card.y
-      obj.label = TextBox (labelText, obj.x+20, obj.y + 50)   
-      obj.hide = card.hide
-      obj.name = card.name               
-      obj.sheetIndex = card.sheetIndex
-      obj.width = self.width
-      obj.height = self.height
-      return obj
-   
+            
    def addCard (self,sourceDeck,index):       
       print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       ind = len(self.data)-1
@@ -110,7 +96,7 @@ class SubDeck ():
       
       return self.data [len(self.data)-1]
       
-   def addCoverCard (self, labelText, name='cover'): 
+   def addCoverCard (self, labelText, name='cover.jpg'): 
       obj = Object()
       ind = len(self.data)-1
       # obj = type ('Object', (object,), {})
@@ -121,7 +107,7 @@ class SubDeck ():
       else:
          obj.x = self.data[ind].x + self.width
       obj.y = self.data[ind].y
-      obj.label = TextBox (labelText, obj.x+20, obj.y + 50)   
+      obj.label = TextBox (labelText, obj.x+5, obj.y + 50)   
       obj.hide = True
       obj.name = name               
       obj.sheetIndex = self.coverIndex
@@ -220,8 +206,7 @@ class SubDeck ():
       for card in self.data:
          card.drag = False 
    
-   def findSprite (self,pos,debugIt=False):
-   
+   def findSprite (self,pos,debugIt=False): 
       found = -1
       if pos is None: 
          print ( 'ERR...SubDeck.findSprite, pos is None' )
@@ -290,6 +275,7 @@ class SubDeck ():
    def pos (self,index): 
       return ( self.data[index].x, self.data[index].y )    
    
+   # set the x location of cards
    def redeal (self, debugIt=False): 
       newList = []    
       yOffset = self.yMultiplier * self.height  
@@ -312,6 +298,7 @@ class SubDeck ():
          card.x = x
          card.y = y 
          if card.tapped: 
+            print ( 'This card is tapped: ' + card.name )
             xOffset = self.height * self.xMultiplier
          else:
             xOffset = self.width * self.xMultiplier
@@ -324,7 +311,6 @@ class SubDeck ():
          x = x + xOffset
          y = y + yOffset    
          cnt = cnt + 1
-         # self.showInfo ()
 
       if debugIt:
          print ( 'Recheck data...' )
