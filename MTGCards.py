@@ -9,7 +9,51 @@ from images.mtg.CardInfo import CardInfo
 from images.mtg.Counter  import Counter
 from images.mtg.Globals  import * 
 
+import os
+from Communications      import Communications
+class MTGCommunications (Communications):
+   # data is a list of objects that have an image and index attribute
+   def __init__ (self):
+      if os.name == 'posix':
+         broker = 'localhost'
+         myName = 'pi7'
+         target = 'laptop'
+      else: # Windows computer 
+         broker = '192.168.4.1'
+         myName = 'laptop'
+         target = 'pi7'
+      topic = 'messages'
       
+      print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']')
+      Communications.__init__(self,topic,broker,myName)
+      self.callback = self.callbackProcedure
+      if self.connectBroker():
+         self.setTarget (target)
+      else:
+         raise Exception ( 'Could not connect to broker: ' + broker )
+
+   def moveCard ( self, card, sourceDeck, destinationDeck): 
+      self.send ( 'move ' + str(card.index) + sourceDeck + ' ' + destinationDeck )
+  
+   def addCard ( self, deckName, card):
+      print ( 'Add ' + card.name + ' to ' + deckName )
+  
+   def callbackProcedure (self, msg ):
+      data = msg.split ( ' ' )
+      print ( 'callbackProcedure got the message: ' + str(data) )  
+      if data[0] == 'move': 
+         index = int(data[1]) 
+         sourceDeck = data[2]
+         destinationDeck = data[3]
+         print ( 'Move card ' + str(index) + ' from ' + sourceDeck + ' to: ' + destinationDeck)            
+         source = globalDictionary[sourceDeck]
+         card = globalDictionary[destinationDeck].addCard (source,index)              
+  
+   def sendDeck ( self, deck, deckName ): 
+      self.send ( 'deck init ' + deckName )
+      for card in deck.data: 
+         self.addCard (deckName, card)   
+                   
 class MTGActions():   
    def __init__ (self):
       self.phase = TextBox ('Upkeep', 500, 755)
@@ -402,6 +446,8 @@ if __name__ == '__main__':
    from SubDecks           import SubDecks
    from TextBox            import TextBox
    from MTGSetup           import MTGSetup
+   from Communications     import Communications
+   import os
 
    import time  
 
@@ -428,6 +474,8 @@ if __name__ == '__main__':
    
    globalDictionary['utilities'] = Utilities (displaySurface, BIGFONT)   
    globalDictionary['cardInfo']  = CardInfo()
+
+   comm = MTGCommunications ();
     
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
    filename     = MTGSetup().chooseDeckFilename('redDeck.txt')   
@@ -437,8 +485,10 @@ if __name__ == '__main__':
    
    opponentDeck = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
                              displaySurface=displaySurface, name='opponent')
+   
    hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, \
                              displaySurface=displaySurface, name='hand')
+                             
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
                              xMultiplier=1.0, yMultiplier=0.0, name='inplay')   
    discardDeck  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, \
@@ -455,7 +505,9 @@ if __name__ == '__main__':
    
    for i in range (7):
       drawPile.topToDeck (globalDictionary['hand'], reveal=True)
-    
+      
+   comm.sendDeck (hand, 'opponent' )
+       
    globalDictionary['hand'].showAll() 
    globalDictionary['hand'].redeal(True)    
    globalDictionary['hand'].draw(True)
@@ -482,6 +534,8 @@ if __name__ == '__main__':
    labels.addLabel ('Hand'    , 100, 575)
    
    haveCastLand = False 
+   
+      
    while not quit:
       pygame.time.Clock().tick(60)   
       window.fill ((0,0,0))   
@@ -645,3 +699,6 @@ if __name__ == '__main__':
                   print ( 'Mana is now: ' + str(manaBar.manaLevel) ) 
          else:
             print ( 'event: ' + typeInput)
+            
+print ( 'All done doing a disconnect...' )
+comm.disconnect()

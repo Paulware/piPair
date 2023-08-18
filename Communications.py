@@ -9,6 +9,32 @@ import time
 import sys
 
 class Communications: 
+   def __init__ (self,topic,broker,name):
+      ok = True 
+      self.name = name
+      print ( 'My name is : ' + self.name )
+      self.count = 0
+      self.ack = False
+      self.client = mqtt.Client()
+      self.topic = topic
+      self.broker = broker
+      self.client.on_connect = self.on_connect
+      self.client.on_message = self.on_message
+      self.connected = False
+      self.callback = None 
+      
+      # set the will (last testament) message, when the Raspberry Pi is powered off, or the network is interrupted abnormally, it will send the will message to other clients      
+      message = '{\"id\":0, \"from\":\"' + self.name + '\",\"to\":\"*\", \"message\":\"Off\"}'
+      self.client.will_set(topic, message.encode())
+      self.message = '' 
+      self.target = ''
+      self.buffer = ['','','','','','','','','','']
+      self.head = 0
+      self.tail = 0
+      
+      self.debug = False 
+      self.quit = False
+
    def acknowledge ( self, destination):   
       self.publish (destination, 'ACK', self.count)  # self.count is probably not correct here.  Don't care?   
 
@@ -31,9 +57,9 @@ class Communications:
       return ok 
 
    def disconnect (self): 
-      print ( 'Disconnecting.' )         
+      print ( 'Communications.disconnect' )         
       try: 
-         self.publish (self.target, 'disconnect yo', self.count)
+         self.publish (self.target, 'Communications.disconnect...', self.count)
          self.client.disconnect();
       except Exception as ex:
          print ( 'Could not disconnect because: ' + str(ex)) 
@@ -53,63 +79,15 @@ class Communications:
          #   print ( 'Got message: [' + msg + '] looking for: [' + message + ']')
       return peeked       
 
-   def __init__ (self,topic,broker,name):
-      ok = True 
-      self.name = name
-      print ( 'My name is : ' + self.name )
-      self.count = 0
-      self.ack = False
-      self.client = mqtt.Client()
-      self.topic = topic
-      self.broker = broker
-      self.client.on_connect = self.on_connect
-      self.client.on_message = self.on_message
-      self.connected = False
-      
-      # set the will (last testament) message, when the Raspberry Pi is powered off, or the network is interrupted abnormally, it will send the will message to other clients      
-      message = '{\"id\":0, \"from\":\"' + self.name + '\",\"to\":\"*\", \"message\":\"Off\"}'
-      self.client.will_set(topic, message.encode())
-      self.message = '' 
-      self.target = ''
-      self.buffer = ['','','','','','','','','','']
-      self.head = 0
-      self.tail = 0
-      
-      self.debug = False 
-      self.quit = False
-
    def isReady (self): 
       return self.message != ''   
-      
-   def peek (self):
-      message = ''
-      # print ( ' in peek, self.tail: ' + str(self.tail) )
-      if self.empty(): 
-         print ( 'Nothing to return in peek' );
-      else:
-         message = self.buffer[self.tail]
-         # print ( 'in peek, return [' + message + ']' )
-         
-      return message
-  
-   def pop (self):
-      value = self.peek()        
-      self.tail = self.tail if self.empty() else (self.tail + 1) % 10
-      print ( 'Returning from pop ' )
-      return value
-      
-   def publish (self,destination,message,id):
-      message = '{\'id\':' + str(id) + ',\'from\':\'' + self.name + '\',\'to\':\'' + destination + \
-                '\',\'message\':\'' + message + '\'}'  
-      print ( 'Publish [topic,payload]: [' + self.topic + ',' + message + ']' )
-      self.client.publish(self.topic, payload=message, qos=0, retain=False)
-      
+   
    def on_connect(self,client, userdata, flags, rc):
       print(f"Connected with result code {rc}, subscribe to " + self.topic)
       # subscribe, which need to put into on_connect
       # if reconnect after losing the connection with the broker, it will continue to subscribe to the raspberry/topic topic
       self.client.subscribe(self.topic)
-      self.connected = True 
+      self.connected = True
   
    # the callback function, it will be triggered when receiving messages
    def on_message(self, client, userdata, msg):
@@ -134,11 +112,39 @@ class Communications:
           else:
              print ( 'RCVD ' + msg + ' from ' + fromName ) 
              self.message = msg
+             if self.callback is None:
+                print ( 'On_message not calling calling callback because it is None' )
+             else:
+                print ( '***Calling callback***')             
+                self.callback (msg)
              # print ( 'This is for me, and not an ACK so ack it' )
              self.acknowledge ( fromName)
              print ( 'Append ' + msg + ' to the message buffer ' ) 
              self.push (msg)
-       
+             
+   def peek (self):
+      message = ''
+      # print ( ' in peek, self.tail: ' + str(self.tail) )
+      if self.empty(): 
+         print ( 'Nothing to return in peek' );
+      else:
+         message = self.buffer[self.tail]
+         # print ( 'in peek, return [' + message + ']' )
+         
+      return message
+  
+   def pop (self):
+      value = self.peek()        
+      self.tail = self.tail if self.empty() else (self.tail + 1) % 10
+      print ( 'Returning from pop ' )
+      return value
+      
+   def publish (self,destination,message,id):
+      message = '{\'id\':' + str(id) + ',\'from\':\'' + self.name + '\',\'to\':\'' + destination + \
+                '\',\'message\':\'' + message + '\'}'  
+      print ( 'Publish [topic,payload]: [' + self.topic + ',' + message + ']' )
+      self.client.publish(self.topic, payload=message, qos=0, retain=False)
+             
    def push (self,value): 
       print ( 'self.buffer[' + str(self.head) + '] = ' + value )
       self.buffer[self.head] = value
@@ -168,6 +174,7 @@ class Communications:
                print ( 'Re publish message: ' + message)
       
    def stop(self):
+      print ( '*********** Communications.stop **********' )   
       self.quit = True
       self.client.loop_stop()
       self.disconnect()
@@ -233,12 +240,11 @@ if __name__ == "__main__":
 
    if len(sys.argv) == 1: 
       if os.name == 'posix':
-         broker = '192.168.4.15'
-         # broker = 'localhost'
+         broker = 'localhost'
          myName = 'pi7'
          target = 'laptop'
-      else:
-         broker = 'localhost'
+      else: # Windows computer 
+         broker = '192.168.4.1'
          myName = 'laptop'
          target = 'pi7'
    elif len(sys.argv) != 4:
@@ -261,15 +267,17 @@ if __name__ == "__main__":
          quit = False 
          print ( 'Ready to accept test commands 1,2,q' )
          while not quit:  
-            events = utilities.readOne()
+            events = utilities.readOneEvent()
             for ev in events: 
+               print ( 'ev: ' + str(ev)) 
                (event, data, addr ) = ev
                if (event == 'keypress'):
                   if (data == '1'): 
-                     print ( 'send dealuno' )
+                     print ( 'send join uno' )
                      comm.send ( 'join uno')                       
                   elif (data == '2'): 
                      print ( 'Output test data for command 2' ) 
+                     comm.send ( 'move 27 drawPile hand' )
                   elif (data == 'q'): 
                      quit = True
                      
@@ -281,6 +289,16 @@ if __name__ == "__main__":
                   utilities.message = ''
       else:
          print ( 'Could not initialize Communications')
+         print ( 'Note for raspberry pi issue command: mosquitto -v')
+         print ( '  to see if mosquitto is running...' )
+         print ( '  if not running: ' )
+         print ( '     sudo apt install -y mosquitto mosquitto-clients' )
+         print ( '     sudo systemctl enable mosquitto.service' )
+         print ( '     sudo nano /etc/mosquitto/mosquitto.conf')
+         print ( '        add: ' )
+         print ( '        listener 1883' )
+         print ( '        allow_anonymouse true' )
+         print ( '        sudo systemctl restart mosquitto' )
          
    finally:
       comm.disconnect()      

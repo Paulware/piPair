@@ -259,7 +259,7 @@ class SubDeck ():
       print ( 'Done hiding all cards ' )
       
    def length (self):
-      # print ( 'Length of deck: ' + str(len(self.data)))       
+      print ( 'Length of deck: ' + str(len(self.data)))       
       return len(self.data)
          
    def listCards (self):

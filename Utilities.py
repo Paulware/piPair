@@ -215,16 +215,19 @@ class Utilities ():
      (typeInput,data,addr) = self.getKeyOrMqtt(blocking)
      return (typeInput,data,addr)
      
-   # event.type == 1025 for button down 
-   # event.type == 1026 for button up   
-   # event.button == 1 for left button 
-   # event.button == 3 for right button 
-   # event.type == 769 for keyup 
+   # event.type   == 1025 for button down
+   # event.type   == 1026 for button up
+   # event.button == 1 for left button
+   # event.button == 3 for right button
+   # event.type   == 769 for keyup
    def readOne (self):
       debugIt = False
       events = []       
       ev = pygame.event.get()
+      
       data = '' 
+      if (len(ev) > 0) and debugIt: 
+         print ( 'Got ' + str(len(ev)) + ' events' )
       for event in ev:       
          typeInput = ''
          try: 
@@ -277,8 +280,7 @@ class Utilities ():
                   if event.key == 27: 
                      typeInput = 'escape'
                elif debugIt: 
-                  print ( 'Not handled event: ' + str(event))
-                                     
+                  print ( 'Not handled event: ' + str(event))                                   
          except Exception as ex:
             print ( 'readOne has exception : ' + str(ex)) 
          if typeInput != '': 
@@ -286,7 +288,35 @@ class Utilities ():
       if (len(events) > 0) and self.debugIt: 
          print ( 'events: ' + str(events) ) 
       return events
-       
+      
+   def readAtLeastOne(self): 
+      events = []
+      while len(events) == 0: 
+         events = self.readOne()
+      if len(events) > 0: 
+         if len(events[0]) > 2: 
+            if (events[0][0] != 'move') or (events[0][2] != 'mouse'):
+               print ( 'readAtLeastOne got ' + str(events))
+      return [events] 
+      
+   def readPiCh (self): 
+      ch = ''
+      if os.name == 'posix': # Running on a raspberry pi 
+        import tty, sys, termios
+        filedescriptors = termios.tcgetattr(sys.stdin)
+        tty.setcbreak(sys.stdin)
+        x = sys.stdin.read(1)[0]
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, filedescriptors)        
+        return [( 'keypress', x, '')]
+        
+   def readOneEvent (self):
+      event = ('', '', '' )
+      if os.name == 'posix':
+         event = self.readPiCh ()
+      else:
+         event = self.readAtLeastOne()
+      return event         
+                
    def scanForSsids (self):
        ssids = []
        print ( "Show wlan ssids" )               
@@ -401,14 +431,13 @@ class Utilities ():
           line1 = TextBox ( status )
           line1.draw ( (0,height-35,30) )
           pygame.display.update()
-          
-       
+   
    def stop (self):
        self.quit = True  
        print ( '*** Done in Utilities.stop ***' )
        # pygame.display.quit()
        # exit(1)       
-                       
+   
    def updateWpaSupplicant (self, ssid, password):
       print ('updateWpaSupplicant...tbd' )
       return 
@@ -441,7 +470,7 @@ class Utilities ():
             f.close()      
       except Exception as ex:
          print ("Could not modify wpa_supplicate because: " + str(ex) )
-         
+   
    def waitForClick(self): 
       found = False 
       print ( 'Wait for click' )
@@ -452,8 +481,7 @@ class Utilities ():
             if self.isMouseClick (event): 
                found = True 
       print ( 'Done waiting for click' )    
-      
-       
+
 if __name__ == "__main__":
    print ("pygame.init")
    pygame.init()
@@ -461,8 +489,6 @@ if __name__ == "__main__":
    DISPLAYSURF = pygame.display.set_mode((1200, 800))
    utilities = Utilities(DISPLAYSURF, BIGFONT)
    from Communications import Communications
-   
-   
    
    comm = Communications ('messages', 'localhost', 'laptop')
    if comm.connectBroker():
