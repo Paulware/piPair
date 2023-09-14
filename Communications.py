@@ -297,7 +297,7 @@ if __name__ == "__main__":
          print ( '     sudo nano /etc/mosquitto/mosquitto.conf')
          print ( '        add: ' )
          print ( '        listener 1883' )
-         print ( '        allow_anonymouse true' )
+         print ( '        allow_anonymous true' )
          print ( '        sudo systemctl restart mosquitto' )
          
    finally:

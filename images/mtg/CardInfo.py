@@ -302,6 +302,7 @@ class CardInfo():
       #print ( 'idToName, Got name: ' + name )
       return (name)
       
+   '''   
    def nameFind (self,typeName,id): 
       name = self.idToName (id)
       found = False 
@@ -311,7 +312,8 @@ class CardInfo():
       else:
          print ( name + ' is NOT a ' + typeName )
       return found
-      
+   '''
+   
    def isCreature (self,id): 
       return self.nameFind ('creatures', id)
       

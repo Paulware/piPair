@@ -3,6 +3,10 @@ import copy
 from ViewImage import ViewImage
 from TextBox import TextBox
 
+# For self.shuffle function 
+import random
+import datetime 
+
 class Object(object):
     pass
 
@@ -62,14 +66,12 @@ class SubDeck ():
             self.data = dealtCards
 
       self.coverIndex = deckBasis.coverIndex                      
-      print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
+      # print ( 'Self.data for ' + self.name + ' is : ' + str(self.data))    
       self.numImages = len(self.data)         
       print (self.name + ' has ' + str(self.numImages) + ' cards ') 
-            
-   def addCard (self,sourceDeck,index):       
-      print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
+   
+   def addData ( self,d): 
       ind = len(self.data)-1
-      d = sourceDeck.data[index]
       name = 'unknown name'
       if len(self.data) == 0: 
          x = self.startX;
@@ -85,7 +87,6 @@ class SubDeck ():
             d.x = x
          else:
             d.x = x * self.xMultiplier
-         d.name = sourceDeck.data[index].name
          name = d.name 
          d.y = y
                   
@@ -95,6 +96,11 @@ class SubDeck ():
       print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
       
       return self.data [len(self.data)-1]
+   
+   def addCard (self,sourceDeck,index):       
+      print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
+      d = sourceDeck.data[index]
+      self.addData (d)
       
    def addCoverCard (self, labelText, name='cover.jpg'): 
       obj = Object()
@@ -205,7 +211,16 @@ class SubDeck ():
       print ( 'Dropping all cards')
       for card in self.data:
          card.drag = False 
-   
+         
+   def findCard (self,name): 
+      found = -1
+      count = 0
+      for card in self.data: 
+         if card.name == name: 
+            found = count
+         count = count + 1
+      return found
+      
    def findSprite (self,pos,debugIt=False): 
       found = -1
       if pos is None: 
@@ -271,7 +286,14 @@ class SubDeck ():
    def move (self,index,pos): 
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]    
-                  
+   
+   def moveToDeck (self,destinationDeck,index,reveal=False): 
+      print ( 'Add card to ' + destinationDeck.name )
+      if reveal:
+         self.data[index].hide = False 
+      destinationDeck.addCard (self,index)      
+      self.remove (index)  
+         
    def pos (self,index): 
       return ( self.data[index].x, self.data[index].y )    
    
@@ -323,7 +345,15 @@ class SubDeck ():
             count = count + 1
                   
    def remove (self,index,redealCards=False): 
+      debugIt = True 
+      if debugIt:
+         print ( '*** Data before pop' )
+         self.showData()
       self.data.pop (index)
+      if debugIt: 
+         print ( '*** Data after pop' )
+         self.showData()
+         
       if redealCards: 
          self.redeal()
       
@@ -370,14 +400,37 @@ class SubDeck ():
          card.hide = False
          
    def showCard (self, i, card):       
-      print ( 'show card ' + str(i) + '):' + str(card.x) + ',' + str(card.y) + ',' + \
+      print ( 'show card ' + str(i) + '):' + card.name + ' ' + str(card.x) + ',' + str(card.y) + ',' + \
       str(card.sheetIndex) ) 
+      
+   def showData (self): 
+      self.showInfo()
          
    def showInfo (self):
       i = 0
       for card in self.data: 
          self.showCard (i,card)
          i = i + 1
+         
+   def getRandomIndex (self):
+      listLength = len (self.data)    
+      index = -1
+      if listLength == 0: 
+         print ( '***ERR SubDeck.getRandomIndex cannot get a random index of a list that is empty***' )
+         exit(1)
+      if listLength > 0:
+         index = int ( random.random() * listLength)
+      return index         
+         
+   def shuffle (self): 
+      random.seed (datetime.datetime.now().timestamp())   
+      for card in self.data: 
+         index1 = self.getRandomIndex()
+         index2 = self.getRandomIndex()
+         
+         d = self.data[index1]
+         self.data[index1] = self.data[index2]
+         self.data[index2] = d         
          
    def shuffleTo (self, destinationDeck): 
       while self.length() > 0: 
@@ -392,17 +445,12 @@ class SubDeck ():
    def topSheetIndex (self): 
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex
-   
+      
    def topToDeck (self,destinationDeck,reveal=False): 
       if reveal: 
          self.revealTopCard()
-
-      index = self.length()-1
-      
-      print ( 'Add card to ' + destinationDeck.name )
-      destinationDeck.addCard (self,index)
-      
-      self.remove (index)  
+      index = self.length()-1     
+      self.moveToDeck (destinationDeck,index)
    
    def unhide (self,index):
       self.data[index].hide = False 

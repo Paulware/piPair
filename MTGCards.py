@@ -9,6 +9,328 @@ from images.mtg.CardInfo import CardInfo
 from images.mtg.Counter  import Counter
 from images.mtg.Globals  import * 
 
+
+def exit1 ():
+   comm.disconnect()
+   exit()
+ 
+class MTGUtilities: 
+   def killAllCreatures(self):
+      print ( 'MTGUtilitites.kill all creatures in play' )  
+      exit1()      
+ 
+#from MTGUtilities           import MTGUtilities   
+class MTGCardBase: 
+   # Return True if the provided mana is enough to cast the creature      
+   def canCast (self,mana):
+      print ( 'Check if ' + str(mana) + ' is sufficient to handle casting cost: ' + str(self.manaCost) ) 
+      return True  
+   def cast (self):
+      print ( 'MTGCardBase, casting of ' + self.name )
+      sourceDeck = globalDictionary['hand']
+      card = globalDictionary['inplay'].addData (self.container)
+   def __init__ (self,name,manaCost): 
+      print ( 'Base Card initialization [name,manaCost]: [' + name + ',' + str(manaCost) + ']' )
+      self.name                  = name  
+      self.manaCost              = manaCost 
+      self.minimumNumberBlockers = 1 
+      self.creatureEnchantment   = False     
+      self.isLand                = False
+      self.isArtifact            = False 
+      self.isInstant             = False
+      self.isSorcery             = False 
+      self.isCreature            = False       
+      self.specialEffects        = []
+      
+   def selectCreature (self, decks):
+      index = -1   
+      ind = -1       
+      escape = False 
+      globalDictionary['utilities'].showStatus ('Select a creature in play')
+      while (ind == -1) and not escape:   
+         events = globalDictionary['utilities'].readOne()
+         for event in events:
+            (typeInput,data,addr) = event
+            if typeInput == 'escape': 
+               escape = True 
+            elif typeInput == 'drag': 
+               # Determine which subdeck the card is in. 
+               for deck in decks:
+                  globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
+                  ind = deck.findSprite (data)
+                  if ind != -1: 
+                     id = deck.data[ind].sheetIndex
+                     if deck.data[ind].behavior.isCreature:
+                        card = deck.data[ind]            
+                        print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')               
+                        index = ind
+                     else:
+                        globalDictionary['utilities'].showStatus ( 'That card is not a creature aborting... ' + deck.name )
+                     break
+                     
+      if index == -1:
+         print ( 'No creature selected' )
+      else:
+         print ( 'Selected creature with index: ' + str(index)) 
+         print ( '  Selected creature named: ' + deck.data[index].name )
+      return index
+                    
+   def selectPermanent (self): 
+      return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play (ESC to cancel)')   
+   def tap (self):
+      print ( 'MTGCardBase, tap of: ' + self.name )
+'''
+   Type cards 
+'''         
+class ArtifactCard (MTGCardBase): 
+   def __init__ (self,name): 
+      MTGCardBase.__init__(self,name,0)  
+      self.isArtifact = True       
+class CreatureCard (MTGCardBase): 
+   def __init__ (self,name): 
+      MTGCardBase.__init__(self,name,0)  
+      self.isCreature = True       
+class InstantCard (MTGCardBase): 
+   def __init__ (self,name): 
+      MTGCardBase.__init__(self,name,0)  
+      self.isInstant = True        
+class LandCard (MTGCardBase): 
+   def __init__ (self,name): 
+      MTGCardBase.__init__(self,name,0)  
+      self.isLand = True       
+   def tap (self):
+      print ( 'Add the default color to your mana pool' )
+class SorceryCard (MTGCardBase): 
+   def __init__ (self,name): 
+      MTGCardBase.__init__(self,name,0)  
+      self.isSorcery = True       
+'''
+   Specific cards 
+'''   
+class AK47 (ArtifactCard):
+   def __init__ (self): 
+      ArtifactCard.__init__(self,'artifacts/ak47.png')  
+   def attack (self):
+      print ( 'AK47 add +2/+0, and remove an ammo counter' )      
+class BFG (ArtifactCard):
+   def __init__ (self): 
+      ArtifactCard.__init__(self,'artifacts/bfg.jpg')  
+   def attack (self):
+      print ( 'BFG add +8/+8' )      
+class BatheInDragonBreath (SorceryCard):
+   def __init__ (self): 
+      SorceryCard.__init__(self,'sorcery/batheInDragonbreath.png')  
+   def cast (self):
+      print ( 'BathInDragonBreath, deal 3 damage to target creature' )      
+class BlackerLotus (ArtifactCard):
+   def __init__ (self): 
+      ArtifactCard.__init__(self,'artifacts/blackerLotus.jpg')  
+   def cast (self):
+      print ( 'BlackerLotus add 4 mana of any color' ) 
+      print ( 'Remove card from the game' )      
+class CaptainAmericasShield (ArtifactCard):
+   def __init__ (self): 
+      ArtifactCard.__init__(self,'artifacts/captainAmericasShield.png')  
+   def cast (self):
+      print ( 'CaptainAmericasShield, equipped player gets +1/+4' )
+class CliffsOfInsanity (LandCard): 
+   def __init__ (self): 
+      LandCard.__init__(self,'/lands/cliffsOfInsanity.jpg')  
+   def tap (self):
+      print ( 'CliffsOfInsanity, choose white or red' )   
+class DarylDixon (CreatureCard):
+   def __init__ (self): 
+      CreatureCard.__init__(self,'creatures/darylDixon.jpg')  
+   def tap (self):
+      print ( 'Tapping DarylDixon yo' )
+class GameOver (InstantCard):
+   def __init__ (self):
+      InstantCard.__init__(self,'instants/gameOver.jpg')
+   def cast (self):
+      print ( 'GameOver, Game is a draw yo' )
+class GeorgeWBush (CreatureCard): 
+   def __init__ (self): 
+      CreatureCard.__init__(self,'/creatures/georgeWBush.jpg')          
+   def tap(self):
+      print ( 'George W Bush, tap, discard a card' )      
+class GordonRamsey (CreatureCard): 
+   def __init__ (self): 
+      CreatureCard.__init__(self,'/creatures/georgeWBush.jpg')          
+   def attack(self):
+      print ( 'First strike and combat damage' )      
+class ImposingVisage (MTGCardBase): 
+   def __init__ (self):         
+      MTGCardBase.__init__(self,'enchantments/imposingVisage.jpg',12)    
+      self.minimumNumberBlockers = 2 
+      self.creatureEnchantment = True 
+   def cast (self): 
+      ind = self.selectCreature([globalDictionary['inplay'],globalDictionary['opponent']])
+      if ind == -1: 
+         print ( 'Casting/Selection cancelled')
+         wasCast = False
+      else:
+         permanent   = globalDictionary['inplay'].data[ind]
+         enchantment = self.container 
+         if hasattr (permanent,"enchantments"): 
+            enchantment.x = permanent.x
+            enchantment.y = permanent.y + 30         
+            permanent.enchantments.append (enchantment) 
+            print ( 'Added ' + self.name + ' to enchantments for: ' + permanent.name )
+         else:
+            print ( 'Could not find enchantments for: ' + permanent.name )
+            exit1()
+         print ( 'Casting completed' ) 
+class InigoMontoya (CreatureCard): 
+   def __init__ (self): 
+      CreatureCard.__init__(self,'/creatures/inigoMontoya.jpg')          
+   def cast(self):
+      print ( 'Inigo Montoya, place father killer counter on target creature' )   
+class JangoFett (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/jangoFett.jpg')          
+   def attack(self):
+      print ( 'JengoFett, place bounty counter on target creature' )   
+class JustDesserts (InstantCard):
+   def __init__ (self):
+      InstantCard.__init__(self,'instants/justDesserts.jpg')
+   def cast (self):
+      print ( 'Just Desserts, deal 3 damage to target creature' )
+class KoolAidMan (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/koolAidMan.jpg')          
+   def tap(self):
+      print ( 'KoolAidMan, destroy target wall' )   
+class LethalResponse (MTGCardBase): 
+   def __init__ (self):         
+      MTGCardBase.__init__(self,'enchantments/lethalResponse.png',12)    
+   def tap (self): 
+      print ( 'Destroy a creature' )
+      ind = self.selectPermanent()
+      if ind == -1: 
+         print ( 'Selection cancelled')
+      else:
+         permanent = globalDictionary['inplay'].data[ind]
+         print ( 'Casting completed' )  
+class MichaelBay (SorceryCard):
+   def __init__ (self): 
+      SorceryCard.__init__(self,'sorcery/michaelBay.jpg')  
+   def cast (self):
+      print ( 'MichaelBay, destroy target land' )               
+class Molotov (InstantCard):
+   def __init__ (self):
+      InstantCard.__init__(self,'instants/molotov.png')
+   def cast (self):
+      print ( 'Molotov, 2 damage to target creature, 1 damage to adjacent?!' )         
+class Mountain (LandCard): 
+   def __init__ (self): 
+      LandCard.__init__(self,'/lands/mountain.jpg')          
+class NoviceBountyHunter (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/noviceBountyHunter.jpg')          
+   def cast(self):
+      print ( 'NoviceBountyHunter, place bounty counter on target creature' )   
+class Pikachu (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/pikachu.jpg')          
+   def cast(self):
+      print ( 'Pikachu cast, 1 direct damage or +1/+1' )   
+class PitOfDespair (LandCard):       
+   def __init__ (self):
+      LandCard.__init__(self,'/lands/pitOfDespair.jpg') 
+      self.specialEffects.append ( ('fight', 'red,green,tap','You and Opponent, random creature fight' ) )
+   def tap (self):
+      print ( 'PitOfDespair, choose red or Green' )        
+class RedRibbonArmy (MTGCardBase): 
+   def __init__ (self):         
+      MTGCardBase.__init__(self,'enchantments/redRibbonArmy.png',12)      
+   # Actions that take place when the card is cast 
+   def cast (self): 
+      globalDictionary['mtgUtilities'].killAllCreatures()
+      self.counter = Counter (110,110)            
+   def upkeep (self):
+      print ( 'Execute Upkeep phase for : ' + self.name )
+      print ( 'Increment counter for redRibbonArmy' )
+      if not hasattr(self,"counter"):          
+         raise Exception("Red Ribbon Army has no counter?!")
+      else:
+         self.counter.increment()
+         for i in range (self.counter.value):
+            globalDictionary['inplay'].addCoverCard('1/1 Army')               
+class RocketTrooper (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/rocketTropper.jpg')          
+   def cast(self):
+      print ( 'Rocket Trooper cast, 1 direct damage' )                   
+class SpiderMan (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/creatures/rocketTropper.jpg')
+      self.specialEffects.append ( ('spray web', 'red,blue','target creature cannot untap' ) )
+      self.specialEffects.append ( ('spidey sense', 'red,red', 'first strike' ) ) 
+   def cast(self):
+      print ( 'SpiderMan, all rogues get minus 1' )   
+class ShotInTheArm (InstantCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/instants/shotInTheArm.jpg')
+   def cast(self):
+      print ( 'ShotInTheArm, target creature gets +4/+4' ) 
+class TheFireSwamp (LandCard): 
+   def __init__ (self): 
+      LandCard.__init__(self,'/lands/fireSwamp.jpg') 
+      self.specialEffects.append ( ('plague', 'black,tap','target creature gets -1/-1' ) )
+      self.specialEffects.append ( ('poke', 'red,tap', 'target creature gets 1 damage' ) )       
+   def tap (self):
+      print ( 'CliffsOfInsanity, choose black or red' )        
+class TheMachine (CreatureCard):       
+   def __init__ (self):
+      CreatureCard.__init__(self,'/artifacts/The Machine.jpg')
+   def tap(self):
+      print ( 'The Machine, suck life out of creatures' )   
+
+behaviors = {}
+behaviors['artifacts/ak47.png']                  = AK47                  ()
+behaviors['artifacts/bfg.jpg']                   = BFG                   ()
+behaviors['artifacts/blackerLotus.jpg']          = BlackerLotus          ()
+behaviors['artifacts/captainAmericasShield.png'] = CaptainAmericasShield ()
+behaviors['artifacts/The Machine.jpg']           = TheMachine            ()
+behaviors['creatures/darylDixon.jpg']            = DarylDixon            ()
+behaviors['creatures/georgeWBush.jpg']           = GeorgeWBush           () 
+behaviors['creatures/gordonRamsey.jpg']          = GordonRamsey          () 
+behaviors['creatures/inigoMontoya.jpg']          = InigoMontoya          ()
+behaviors['creatures/jangoFett.jpg']             = JangoFett             ()
+behaviors['creatures/koolAidMan.jpg']            = KoolAidMan            () 
+behaviors['creatures/logan.jpg']                 = CreatureCard          ('creatures/logan.jpg')
+behaviors['creatures/mtgPlayer.png']             = CreatureCard          ('creatures/mtgPlayer.png')
+behaviors['creatures/noviceBountyHunter.jpg']    = CreatureCard          ('creatures/noviceBountyHunter.jpg')
+behaviors['creatures/pikachu.png']               = Pikachu               ()
+behaviors['creatures/rocketTropper.jpg']         = RocketTrooper         ()
+behaviors['creatures/ragePlayer.jpeg']           = CreatureCard          ('creatures/ragePlayer.jpeg')
+behaviors['creatures/redForman.jpg']             = CreatureCard          ('creatures/redForman.jpg')
+behaviors['creatures/spiderman.jpg']             = SpiderMan             ()
+behaviors['creatures/t34Tank.jpg']               = CreatureCard          ('creatures/t34Tank.jpg')
+behaviors['creatures/theJoker.jpg']              = CreatureCard          ('creatures/theJoker.jpg')
+behaviors['creatures/weepingStatue.jpg']         = CreatureCard          ('creatures/weepingStatue.jpg')
+behaviors['enchantments/redRibbonArmy.png']      = RedRibbonArmy         ()
+behaviors['enchantments/imposingVisage.jpg']     = ImposingVisage        ()
+behaviors['enchantments/lethalResponse.png']     = LethalResponse        ()
+behaviors['instants/gameOver.jpg']               = GameOver              ()
+behaviors['instants/justDesserts.jpg']           = JustDesserts          ()
+behaviors['instants/molotov.png']                = Molotov               ()
+behaviors['instants/shotInTheArm.jpg']           = ShotInTheArm          ()
+behaviors['lands/cliffsOfInsanity.jpg']          = CliffsOfInsanity      ()
+behaviors['lands/fireSwamp.jpg']                 = TheFireSwamp          ()
+behaviors['lands/mountain.jpg']                  = Mountain              ()
+behaviors['lands/pitOfDespair.jpg']              = PitOfDespair          ()
+behaviors['sorcery/batheInDragonbreath.png']     = BatheInDragonBreath   ()
+behaviors['sorcery/michaelBay.jpg']              = MichaelBay            ()
+
+def returnBehavior ( name ): 
+   if name in behaviors: 
+      behavior = behaviors[name]
+   else:
+      raise Exception ( 'Could not find behavior for: ' + name )
+   return behavior
+
+
 import os
 from Communications      import Communications
 class MTGCommunications (Communications):
@@ -60,19 +382,18 @@ class MTGActions():
 
    def addEnchantment (self, permanent, enchantment):
       print ('addEnchantment' )
-      if not hasattr(permanent,"enchantments"): 
-         print ( 'enchantments=[]' )
-         permanent.enchantments = []
+      # permanent.enchantments = []
       # Move card from hand to inplay 
-      card.x = permanent.x
-      card.y = permanent.y + 30
+      enchantment.x = permanent.x
+      enchantment.y = permanent.y + 30
       print ( 'card [x,y]: [' + str(card.x) + ',' + str(card.y) + ']' )
-      permanent.enchantments.append (card) 
+      permanent.enchantments.append (enchantment) 
             
    # Card is cast from hand deck to inplay deck    
    def cast (self,sourceDeck,index):  
       wasCast = True   
-      card = sourceDeck.data[index]
+      card = sourceDeck.data[index].behavior.cast()
+      ''' 
       if card.name == 'enchantments/imposingVisage.jpg': 
          ind = self.selectCreature([globalDictionary['inplay'],globalDictionary['opponent']])
          if ind == -1: 
@@ -104,6 +425,7 @@ class MTGActions():
          print ( 'Card cast: [' + card.name + ']' )
       else:
          print ( 'This card was NOT cast: ' + card.name )
+      '''   
       return wasCast 
       
    def damageOpponent (self,amount):
@@ -136,7 +458,7 @@ class MTGActions():
       else:
          print ( 'Friendly creature aborted' )
       return success
-      
+ 
    def nextPhase(self):     
       if self.phase.text == 'Upkeep':
          self.phase.text = 'Draw'
@@ -156,7 +478,7 @@ class MTGActions():
       elif self.phase.text == 'End Turn':
          self.phase.text = 'Upkeep'  
       print ( 'new phase.text: [' + self.phase.text + ']' )
-         
+ 
    def selectCardFromDeck (self, deck, prompt):
       index = -1   
       ind   = -1       
@@ -221,9 +543,15 @@ class MTGActions():
       return index
               
    def tap (self,mana,card):
+      print ( 'Mana before execution: ' + str(mana) ) 
+      if not hasattr (card, 'behavior'):
+         print ( 'Missing behavior for this card: ' + card.name ) 
+         exit1()
+         
       print ( 'tap [mana,card]: [' + str(mana) + ',' + card.name + ']' )
       name = card.name 
       print ( 'tap: card. [name]: [' + name + ']' ) 
+      '''
       if name == 'lands/cliffsOfInsanity.jpg':
          options = ['Tap For Red', 'Tap For White','Cancel']
          optionBox = globalDictionary['utilities'].selectOption (options)
@@ -285,7 +613,11 @@ class MTGActions():
       else:
          print ( 'Did not find an action for: ' + card.name )
          card.tapped = True 
+      '''   
+      card.tapped = True 
       globalDictionary['inplay'].redeal()
+      print ( 'Mana is now: ' + str(mana) ) 
+      
       
 class HealthBar(): 
    def __init__ (self): 
@@ -348,7 +680,7 @@ class MTGCards (SubDeck):
       cards = []
       if str(filename).isnumeric():  
          print ( 'ERR MTGCards, filename has been passed as a number: ' + str(filename) ) 
-         exit ()
+         exit1()
       elif filename != '': 
          print ( 'open [filename]: [' + str(filename) + ']' )
          f = open ( filename, 'r' )
@@ -368,9 +700,21 @@ class MTGCards (SubDeck):
                         startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
                         yMultiplier=yMultiplier, cards=cards, empty=empty, name=name)
       
+      # Add attributes which are specific to MTG cards 
       for card in self.data:  
          card.name = globalDictionary['cardInfo'].idToName (card.sheetIndex)
-         print ( 'name set to: ' + card.name )
+         card.enchantments  = []
+         card.isEnchantment = False 
+         card.isCreature    = False
+         if card.name.find ( 'enchantment' ) > -1:
+            card.isEnchantment = True 
+         if card.name in behaviors: 
+            card.behavior = behaviors[card.name]
+            card.behavior.container = card 
+         else:
+            print ( card.name + ' needs a behavior' )
+            exit1()
+         
       
       print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__')
 
@@ -410,9 +754,6 @@ class MTGCards (SubDeck):
    def isCreature (self,sheetIndex):
       return globalDictionary['cardInfo'].isCreature (sheetIndex)
         
-   def isLand (self,sheetIndex):
-      return globalDictionary['cardInfo'].isLand (sheetIndex)
-      
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
@@ -472,16 +813,16 @@ if __name__ == '__main__':
    displaySurface = pygame.display.set_mode((1200, 780))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    
-   globalDictionary['utilities'] = Utilities (displaySurface, BIGFONT)   
-   globalDictionary['cardInfo']  = CardInfo()
+   globalDictionary['mtgUtilities'] = MTGUtilities()
+   globalDictionary['utilities']    = Utilities (displaySurface, BIGFONT)   
+   globalDictionary['cardInfo']     = CardInfo()
 
-   comm = MTGCommunications ();
-    
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
    filename     = MTGSetup().chooseDeckFilename('redDeck.txt')   
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
                   yMultiplier=0.0, name='drawPile')                     
    drawPile.hideAll()
+   drawPile.shuffle()
    
    opponentDeck = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
                              displaySurface=displaySurface, name='opponent')
@@ -505,9 +846,7 @@ if __name__ == '__main__':
    
    for i in range (7):
       drawPile.topToDeck (globalDictionary['hand'], reveal=True)
-      
-   comm.sendDeck (hand, 'opponent' )
-       
+             
    globalDictionary['hand'].showAll() 
    globalDictionary['hand'].redeal(True)    
    globalDictionary['hand'].draw(True)
@@ -535,6 +874,14 @@ if __name__ == '__main__':
    
    haveCastLand = False 
    
+   comm = MTGCommunications ();
+   comm.sendDeck (hand, 'opponent' ) 
+   
+   # Move Daryl Dixon from drawPile to Inplay (Test purposes only)
+   ind = drawPile.findCard ( 'creatures/darylDixon.jpg')
+   print ( 'Found draylDixon: ' + str(ind) ) 
+   drawPile.data[ind].behavior = behaviors['creatures/darylDixon.jpg']
+   drawPile.moveToDeck ( globalDictionary['inplay'],ind,True)
       
    while not quit:
       pygame.time.Clock().tick(60)   
@@ -548,7 +895,7 @@ if __name__ == '__main__':
       bar.show (['Quit', 'Message', 'Next Phase'] )
       pygame.display.update() 
 
-      if actions.phase.text == 'Draw':
+      if actions.phase.text == 'Draw': #Draw a card 
          drawPile.topToDeck (globalDictionary['hand'], reveal=True)
          globalDictionary['hand'].redeal() 
          actions.nextPhase()       
@@ -634,7 +981,7 @@ if __name__ == '__main__':
                optionBox = OptionBox ( ['Unknown'] )
                if deck == globalDictionary['hand']: 
                   if actions.phase.text == 'Cast': 
-                     if globalDictionary['hand'].isLand(sheetIndex): 
+                     if card.behavior.isLand:  
                         if haveCastLand: 
                            print ( 'Already cast a land this turn' )
                            
@@ -667,36 +1014,44 @@ if __name__ == '__main__':
                      if (globalDictionary['inplay'].isCreature (sheetIndex)) and (actions.phase.text == 'Attack') and \
                         (not card.tapped):                  
                         optionBox = globalDictionary['utilities'].selectOption (['View', 'Attack', 'Cancel'])
-                     else:                     
-                        optionBox = globalDictionary['utilities'].selectOption (['View', 'Tap', 'Cancel'])
+                     else:
+                        if card.isEnchantment:                     
+                           optionBox = globalDictionary['utilities'].selectOption (['View', 'Cancel'])
+                        else:                        
+                           optionBox = globalDictionary['utilities'].selectOption (['View', 'Tap', 'Cancel'])
                                  
                # Handle user action selection 
                selection = optionBox.getSelection()
                print ( '[selection]: [' + selection + ']' ) 
                if selection == 'Attack':
                   card.tapped = True
-               elif selection == 'Cast':                      
-                  if actions.cast (globalDictionary['hand'], index):
-                     if not globalDictionary['hand'].isLand(sheetIndex): 
+               elif selection == 'Cast':
+                  if actions.cast (globalDictionary['hand'], index): # Can cast the card 
+                     if not card.behavior.isLand:
                         manaBar.payMana (sheetIndex) 
+                        
+                     # Add behavior to last item cast 
+                     behavior = returnBehavior ( card.name )                      
                         
                      globalDictionary['inplay'].redeal()
                      globalDictionary['hand'].remove (index) 
                      globalDictionary['hand'].redeal()                           
-                     if globalDictionary['hand'].isLand (sheetIndex):                   
+                     if card.behavior.isLand:
                         haveCastLand = True                                 
-                     if globalDictionary['hand'].isCreature(sheetIndex): # Summoning sickness...
-                        globalDictionary['hand'].data[index].tapped = True # TODO: should not tap, just has summoning sickness so can't attack
-                        
+                     if card.behavior.isCreature:
+                        globalDictionary['hand'].data[index].tapped = True # TODO: should not tap, just has summoning sickness so can't attack                
                elif selection == 'View':                 
                   deck.view (sheetIndex, 'images/mtg/' + card.name)               
                elif selection == 'Untap': 
                   card.tapped = False 
                   globalDictionary['inplay'].redeal()                  
+                  for enchantment in card.enchantments:
+                     enchantment.tapped = False
                elif selection == 'Tap':                  
-                  print ( 'Mana before execution: ' + str(manaBar.manaLevel) ) 
                   actions.tap (manaBar.manaLevel,card)               
-                  print ( 'Mana is now: ' + str(manaBar.manaLevel) ) 
+                  for enchantment in card.enchantments:
+                     actions.tap (manaBar.manaLevel,enchantment)
+   
          else:
             print ( 'event: ' + typeInput)
             
