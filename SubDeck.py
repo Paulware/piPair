@@ -100,14 +100,14 @@ class SubDeck ():
    def addCard (self,sourceDeck,index):       
       print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       d = sourceDeck.data[index]
-      self.addData (d)
+      card = self.addData (d)
+      return card
       
    def addCoverCard (self, labelText, name='cover.jpg'): 
       obj = Object()
       ind = len(self.data)-1
       # obj = type ('Object', (object,), {})
          
-      obj.tapped = False
       if len(self.data) == 0: 
          obj.x = 0
       else:
@@ -121,12 +121,12 @@ class SubDeck ():
       obj.width = self.width
       obj.height = self.height
       self.data.append (obj)  
+      return obj 
 
    # add a card from the specified deck.data[index] to the top card of this deck       
    def addTopCard (self,deck,index,name='name'): 
       
-      print ( 'addTopCard [index,sheetIndex,tapped]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ',' + \
-              str(deck.data[index].tapped) + ']') 
+      print ( 'addTopCard [index,sheetIndex]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ']') 
       ind = len(self.data)-1 # Get new location from the top card of this deck 
       if ind >= 0:
          if self.xMultiplier == 0.0: 
@@ -219,6 +219,10 @@ class SubDeck ():
          if card.name == name: 
             found = count
          count = count + 1
+      if found == -1: 
+         print ( 'SubDeck.findCard, could not find card: ' + name + ' in ' + self.name ) 
+      else:
+         print ( 'SubDeck.findCard, found card at: ' + str(found)) 
       return found
       
    def findSprite (self,pos,debugIt=False): 
@@ -257,9 +261,6 @@ class SubDeck ():
          image = pygame.transform.scale(self.coverImage, (self.width, self.height))                                     
       else: 
          image = pygame.transform.scale(sprite.image, (self.width, self.height)) 
-       
-      if sprite.tapped:          
-         image = self.rotate (image,90) 
       sprite.width  = image.get_width()
       sprite.height = image.get_height()      
       return image 
@@ -291,14 +292,20 @@ class SubDeck ():
       print ( 'Add card to ' + destinationDeck.name )
       if reveal:
          self.data[index].hide = False 
-      destinationDeck.addCard (self,index)      
+      destinationDeck.addCard (self,index)        
       self.remove (index)  
+      numCards = len (destinationDeck.data)
+      print ( 'There are ' + str(numCards) + ' in ' + destinationDeck.name )
+      numCards = numCards - 1
+      
+      card = destinationDeck.data[numCards]
+      return card 
          
-   def pos (self,index): 
-      return ( self.data[index].x, self.data[index].y )    
-   
+   def pos (self,index):
+      return ( self.data[index].x, self.data[index].y )
+
    # set the x location of cards
-   def redeal (self, debugIt=False): 
+   def redeal (self, debugIt=False):
       newList = []    
       yOffset = self.yMultiplier * self.height  
       x = self.startX
@@ -319,17 +326,13 @@ class SubDeck ():
          self.data[ind].y = y
          card.x = x
          card.y = y 
-         if card.tapped: 
-            print ( 'This card is tapped: ' + card.name )
-            xOffset = self.height * self.xMultiplier
-         else:
-            xOffset = self.width * self.xMultiplier
+         xOffset = self.width * self.xMultiplier
          c = self.data[ind]
          newList.append(newCard)
          if debugIt: 
-            print ( 'card (' + str(ind) + ') redeal [width,height,xMultipler, xOffset,x,y,sheetIndex,tapped]: [' + \
+            print ( 'card (' + str(ind) + ') redeal [width,height,xMultipler, xOffset,x,y,sheetIndex]: [' + \
                     str(self.width) + ',' + str(self.height) + ',' + str(self.xMultiplier) + ',' + str(xOffset) + ',' + \
-                    str(c.x) + ',' + str(c.y) + ',' + str(c.sheetIndex) + ',' + str(c.tapped) + ']' )
+                    str(c.x) + ',' + str(c.y) + ',' + str(c.sheetIndex) + ']' )
          x = x + xOffset
          y = y + yOffset    
          cnt = cnt + 1
@@ -435,13 +438,7 @@ class SubDeck ():
    def shuffleTo (self, destinationDeck): 
       while self.length() > 0: 
          self.topToDeck (destinationDeck, False)
-      #TODO: Need to actually shuffle the cards 
-             
-   # Note: Tap should be just for the MTG game for a specific game.   
-   def tap (self,index,value): 
-      print ( 'self.data[' + str(index) + '].tapped = ' + str(value))
-      self.data[index].tapped = value
-
+       
    def topSheetIndex (self): 
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex

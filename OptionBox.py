@@ -73,12 +73,11 @@ class OptionBox():
        return selection
        
     def run (self): 
-       options = ['option 1', '2nd Option', 'another Option', 'cancel']
-       comboBox = OptionBox(options)
+       comboBox = OptionBox(self.options)
 
        while True:
           result = comboBox.getSelection()
-          if result in options: 
+          if result in self.options: 
              break
        
        return result

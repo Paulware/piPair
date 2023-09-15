@@ -41,12 +41,12 @@ class SubDecks():
    def findOtherDeck (self, skipDeck, pos):
       debugIt = True
       if debugIt: 
-         print ( 'SubDecks.findSprite (' + str(pos) + ')' )
+         print ( 'SubDecks.findOtherDeck (' + str(pos) + ')' )
       found = None
       if pos is None: 
-         print ( 'SubDecks.findSprite, pos == None' )
+         print ( 'SubDecks.findOtherDeck, pos == None' )
       elif len(pos) != 2: 
-         print ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
+         print ( 'SubDecks.findOtherDeck, pos is not correct: ' + str(len(pos)) ) 
       else:    
          for deck in self.decks:           
             if deck != skipDeck: 
@@ -58,8 +58,8 @@ class SubDecks():
       if found is None:
          print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
       else:
-         print ( 'SubDecks.findSprite, found: ' + str(found) ) 
-         print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
+         print ( 'SubDecks.findOtherDeck, found: ' + str(found) ) 
+         print ( 'SubDecks.findOtherDeck, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
          
       return (found,index)
       
