@@ -8,6 +8,24 @@ import threading
 import time
 import sys
 
+class TestClient: 
+   def __init__ (self):
+      print ( 'Test Client initialization ')
+   def connect (self, broker):
+      print ( 'TestClient.connect (' + broker + ')' ) 
+   def disconnect (self):
+      print ( 'TestClient.disconnect ()' )
+   def loop_forever (self):
+      print ( 'TestClient.loop_forever') 
+   def loop_stop (self):
+      print ( 'TestClient.loop_stop ()' )
+   def publish (self,topic,payload,qos,retain):
+      print ( 'TestClient.publish (' + topic + ',' + payload + ')' )
+   def subscribe (self,topic):
+      print ( 'TestClient.subscribe(' + topic + ')' )   
+   def will_set (self, topic, message):
+      print ( 'TestClient.will_set ( ' + topic + ',' + message.decode() + ')' ) 
+
 class Communications: 
    def __init__ (self,topic,broker,name):
       ok = True 
@@ -15,7 +33,10 @@ class Communications:
       print ( 'My name is : ' + self.name )
       self.count = 0
       self.ack = False
-      self.client = mqtt.Client()
+      if broker == 'testServer':
+         self.client = TestClient ()
+      else:      
+         self.client = mqtt.Client()
       self.topic = topic
       self.broker = broker
       self.client.on_connect = self.on_connect
@@ -129,8 +150,7 @@ class Communications:
          print ( 'Nothing to return in peek' );
       else:
          message = self.buffer[self.tail]
-         # print ( 'in peek, return [' + message + ']' )
-         
+         # print ( 'in peek, return [' + message + ']' )         
       return message
   
    def pop (self):
@@ -165,13 +185,14 @@ class Communications:
          raise Exception('Communication.target not set, use setTarget')
       else:
          print ( 'comm.send [' + message + ']' )
-         while True: 
-            self.publish (self.target, message, self.count)         
-            if self.waitAck (): 
-               self.count = self.count + 1 
-               break
-            else:
-               print ( 'Re publish message: ' + message)
+         if self.broker != 'testServer':
+            while True: 
+               self.publish (self.target, message, self.count)         
+               if self.waitAck (): 
+                  self.count = self.count + 1 
+                  break
+               else:
+                  print ( 'Re publish message: ' + message)
       
    def stop(self):
       print ( '*********** Communications.stop **********' )   
@@ -204,7 +225,7 @@ class Communications:
       
    def waitConnected (self):
       print ( '***Communications...Wait to get connected' )
-      while not self.connected and not self.quit: 
+      while not self.connected and not self.quit and (self.broker != 'testServer'): 
          time.sleep (0.1) 
       print ( '***Communications done in waitConnected' )
   
@@ -247,6 +268,11 @@ if __name__ == "__main__":
          broker = '192.168.4.1'
          myName = 'laptop'
          target = 'pi7'
+   elif (len(sys.argv) == 2) and (sys.argv[1] == 'test'):
+      print ( 'This is a test request!' ) 
+      broker = 'testServer'
+      myName = 'pi7'
+      target = 'laptop'
    elif len(sys.argv) != 4:
       print ( 'Note mosquitto should be installed and running' )
       print ( 'Usage: python3 Communications.py broker myName targetName' )
@@ -270,7 +296,7 @@ if __name__ == "__main__":
             events = utilities.readOneEvent()
             for ev in events: 
                print ( 'ev: ' + str(ev)) 
-               (event, data, addr ) = ev
+               (event, data, addr ) = ev[0]
                if (event == 'keypress'):
                   if (data == '1'): 
                      print ( 'send join uno' )

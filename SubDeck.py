@@ -33,7 +33,9 @@ class SubDeck ():
       self.height         = height 
       self.selected       = -1 
       self.startX         = startXY [0]
-      self.startY         = startXY [1]      
+      self.startY         = startXY [1]    
+      self.nextX          = self.startX
+      self.nextY          = self.startY      
       self.displaySurface = displaySurface
       self.xMultiplier    = xMultiplier
       self.yMultiplier    = yMultiplier
@@ -92,7 +94,7 @@ class SubDeck ():
                   
       self.data.append (d)
       print ( 'Appending card with data: [x,y,sheetIndex,name]: [' + str(d.x) + \
-              ',' + str(d.y) + ',' + str(d.sheetIndex) + ',' + d.name + ']' )   
+              ',' + str(d.y) + ',' + str(d.sheetIndex) + ',' + d.name + ']'  + ' to deck: ' + self.name  )
       print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
       
       return self.data [len(self.data)-1]
@@ -186,6 +188,7 @@ class SubDeck ():
       
    # Show the sprites at specified start position and update the location of each   
    def draw (self, debugIt=False):
+      debugIt = True
       if debugIt:         
          print ('draw, self.data: ' + str(self.data)) 
 
@@ -197,7 +200,7 @@ class SubDeck ():
             print ( '[x,y] of card 8 [: ' + str(card.x) + ',' + str(card.y) + ']' ) 
          if debugIt: 
             print ( 'card (' + str(count) + ').[x,y,sheetIndex: [' + str(card.x) + ',' + str(card.y) + ',' + \
-                    str (sprite.sheetIndex) + ']'  ) 
+                    str (card.sheetIndex) + ']'  ) 
          self.displaySurface.blit (image, (card.x,card.y)) 
          if hasattr(card,"label"): 
             card.label.draw()
@@ -286,19 +289,32 @@ class SubDeck ():
          
    def move (self,index,pos): 
       self.data[index].x = pos[0]
-      self.data[index].y = pos[1]    
-   
-   def moveToDeck (self,destinationDeck,index,reveal=False): 
+      self.data[index].y = pos[1]   
+      
+   def moveDataToDeck (self,destinationDeck,data,reveal=False): 
       print ( 'Add card to ' + destinationDeck.name )
       if reveal:
-         self.data[index].hide = False 
-      destinationDeck.addCard (self,index)        
-      self.remove (index)  
+         data.hide = False 
+      destinationDeck.addData (data)        
       numCards = len (destinationDeck.data)
-      print ( 'There are ' + str(numCards) + ' in ' + destinationDeck.name )
-      numCards = numCards - 1
-      
+      numCards = numCards - 1      
       card = destinationDeck.data[numCards]
+      return card 
+   
+   def moveToDeck (self,destinationDeck,index,reveal=False): 
+      if (index == -1) or (index >= len(self.data)): 
+         raise Exception ( 'moveToDeck, illegal index: ' + str(index)) 
+      else:
+         print ( 'Add card to ' + destinationDeck.name )
+         if reveal:
+            self.data[index].hide = False 
+         destinationDeck.addCard (self,index)        
+         self.remove (index)  
+         numCards = len (destinationDeck.data)
+         destinationDeck.showInfo()
+         numCards = numCards - 1
+      
+         card = destinationDeck.data[numCards]
       return card 
          
    def pos (self,index):
@@ -337,6 +353,8 @@ class SubDeck ():
          y = y + yOffset    
          cnt = cnt + 1
 
+      self.nextX = x
+      self.nextY = y
       if debugIt:
          print ( 'Recheck data...' )
          count = 0      
@@ -410,6 +428,8 @@ class SubDeck ():
       self.showInfo()
          
    def showInfo (self):
+      length = len(self.data)
+      print ( 'There are ' + str(length) + ' cards in : ' + self.name )
       i = 0
       for card in self.data: 
          self.showCard (i,card)
