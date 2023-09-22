@@ -188,7 +188,6 @@ class SubDeck ():
       
    # Show the sprites at specified start position and update the location of each   
    def draw (self, debugIt=False):
-      debugIt = True
       if debugIt:         
          print ('draw, self.data: ' + str(self.data)) 
 
@@ -370,6 +369,8 @@ class SubDeck ():
       if debugIt:
          print ( '*** Data before pop' )
          self.showData()
+      if index == -1:
+         raise Exception ( 'SubDeck.remove, index == -1' )
       self.data.pop (index)
       if debugIt: 
          print ( '*** Data after pop' )

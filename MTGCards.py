@@ -18,6 +18,7 @@ def selectCreature (decks):
    index = -1   
    ind = -1       
    escape = False 
+   name = ''
    globalDictionary['utilities'].showStatus ('Select a creature in play')
    while (ind == -1) and not escape:   
       events = globalDictionary['utilities'].readOne()
@@ -36,6 +37,7 @@ def selectCreature (decks):
                   if deck.data[ind].behavior.isCreature:
                      card = deck.data[ind]            
                      print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')               
+                     name = deck.name 
                      index = ind
                   else:
                      globalDictionary['utilities'].showStatus ( 'That card is not a creature aborting... ' + deck.name )
@@ -46,7 +48,7 @@ def selectCreature (decks):
    else:
       print ( 'Selected creature with index: ' + str(index)) 
       print ( '  Selected creature named: ' + deck.data[index].name )
-   return index
+   return (name,index)
          
 def selectLand (decks):
    index = -1  
@@ -84,6 +86,78 @@ def selectLand (decks):
       print ( '  Selected land named: ' + deck.data[index].name )
    return (name,index)
  
+def selectPermanent (decks):
+   index = -1  
+   name = ''   
+   ind = -1       
+   escape = False 
+   globalDictionary['utilities'].showStatus ('Select a land in play')
+   while (ind == -1) and not escape:   
+      events = globalDictionary['utilities'].readOne()
+      for event in events:
+         (typeInput,data,addr) = event
+         if typeInput == 'escape': 
+            escape = True 
+         elif typeInput == 'drag': 
+            # Determine which subdeck the card is in. 
+            for deckName in decks:
+               deck = globalDictionary[deckName] 
+               globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
+               ind = deck.findSprite (data)
+               if ind != -1: 
+                  id = deck.data[ind].sheetIndex
+                  if deck.data[ind].behavior.isLand or deck.data[ind].behavior.isCreature:
+                     card = deck.data[ind]            
+                     print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')  
+                     name = deck.name                      
+                     index = ind
+                  else:
+                     globalDictionary['utilities'].showStatus ( 'That card is not a land or creature... ' + deck.name )
+                  break
+                  
+   if index == -1:
+      print ( 'No land or creature selected' )
+   else:
+      print ( 'Selected permanent with index: ' + str(index)) 
+      print ( '  Selected permanent named: ' + deck.data[index].name )
+   return (name,index)
+   
+def selectWall (decks):
+   index = -1  
+   name = ''   
+   ind = -1       
+   escape = False 
+   globalDictionary['utilities'].showStatus ('Select a land in play')
+   while (ind == -1) and not escape:   
+      events = globalDictionary['utilities'].readOne()
+      for event in events:
+         (typeInput,data,addr) = event
+         if typeInput == 'escape': 
+            escape = True 
+         elif typeInput == 'drag': 
+            # Determine which subdeck the card is in. 
+            for deckName in decks:
+               deck = globalDictionary[deckName] 
+               globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
+               ind = deck.findSprite (data)
+               if ind != -1: 
+                  id = deck.data[ind].sheetIndex
+                  if deck.data[ind].behavior.isWall:
+                     card = deck.data[ind]            
+                     print ( '[deck,index]: [' + deck.name + ',' + str(ind) + ']')  
+                     name = deck.name                      
+                     index = ind
+                  else:
+                     globalDictionary['utilities'].showStatus ( 'That card is not a land or creature... ' + deck.name )
+                  break
+                  
+   if index == -1:
+      print ( 'No land or creature selected' )
+   else:
+      print ( 'Selected permanent with index: ' + str(index)) 
+      print ( '  Selected permanent named: ' + deck.data[index].name )
+   return (name,index)
+ 
 class MTGUtilities: 
    def killAllCreatures(self):
       print ( 'MTGUtilitites.kill all creatures in play' )  
@@ -113,13 +187,15 @@ class MTGCardBase:
       self.isSorcery             = False 
       self.isCreature            = False      
       self.isEnchantment         = False 
-      self.tapped                = False       
+      self.tapped                = False 
+      self.isEquipment           = False  
+      self.isWall                = False       
       self.specialEffects        = []                 
-   def selectPermanent (self): 
-      return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play (ESC to cancel)')   
    def tap (self):
       print ( 'MTGCardBase, tap of: ' + self.name ) 
       return True 
+   def equip (self):
+      print ( 'MTGCardBase, Equip a creature.' )
 '''
    Type cards 
 '''         
@@ -149,8 +225,17 @@ class SorceryCard (MTGCardBase):
 class AK47 (ArtifactCard):
    def __init__ (self): 
       ArtifactCard.__init__(self,'artifacts/ak47.png')  
+      self.isEquipment = True 
    def attack (self):
-      print ( 'AK47 add +2/+0, and remove an ammo counter' )      
+      print ( 'AK47 add +2/+0, and remove an ammo counter' )     
+   def cast (self):
+      # Place 3 counters on AK47
+      self.counter = Counter (110,110)            
+      for I in range(3):
+         self.counter.increment()
+   def equip (self):
+      print ( 'Equip an AK47 on a creature' )
+   
 class BFG (ArtifactCard):
    def __init__ (self): 
       ArtifactCard.__init__(self,'artifacts/bfg.jpg')  
@@ -221,16 +306,15 @@ class ImposingVisage (MTGCardBase):
       self.minimumNumberBlockers = 2 
       self.creatureEnchantment = True 
    def cast (self,container): 
-      ind = selectCreature(['inplay','opponent'])
+      (deck,ind) = selectCreature(['inplay','opponent'])
       if ind == -1: 
          print ( 'Casting/Selection cancelled')
          wasCast = False
       else:
-         creature = globalDictionary['inplay'].data[ind]
+         creature = globalDictionary[deck].data[ind]            
          creature.enchantments.append (container)
-         index = globalDictionary['hand'].findCard (creature.name)
-         globalDictionary['hand'].remove (index, True )
-         
+         index = globalDictionary['hand'].findCard (container.name)
+         globalDictionary['hand'].remove (index, True )         
 class InigoMontoya (CreatureCard): 
    def __init__ (self): 
       CreatureCard.__init__(self,'creatures/inigoMontoya.jpg')          
@@ -256,11 +340,16 @@ class LethalResponse (MTGCardBase):
       MTGCardBase.__init__(self,'enchantments/lethalResponse.png',12)    
    def tap (self): 
       print ( 'Destroy a creature' )
-      ind = self.selectPermanent()
+   def cast (self,container): 
+      (deck,ind) = selectPermanent(['inplay','opponent'])
       if ind == -1: 
-         print ( 'Selection cancelled')
+         print ( 'Casting/Selection cancelled')
       else:
-         permanent = globalDictionary['inplay'].data[ind]
+         creature = globalDictionary[deck].data[ind]            
+         creature.enchantments.append (container)
+         index = globalDictionary['hand'].findCard (creature.name)
+         globalDictionary['hand'].remove (index, True )
+
       return True  
 class MichaelBay (SorceryCard):
    def __init__ (self): 
@@ -269,8 +358,7 @@ class MichaelBay (SorceryCard):
       print ( 'MichaelBay, destroy target land' )  
       (deck,ind) = selectLand(['opponent','inplay']) 
       if deck != '': 
-         print ( 'Remove land with index: ' + str(ind) + ' from deck: ' + deck )
-               
+         print ( 'Remove land with index: ' + str(ind) + ' from deck: ' + deck )               
 class Molotov (InstantCard):
    def __init__ (self):
       InstantCard.__init__(self,'instants/molotov.png')
@@ -492,27 +580,7 @@ class MTGActions():
       #card.behavior.cast(card)
  
       # card = globalDictionary['inplay'].addCard (sourceDeck,index)  
-      ''' 
-      if card.name == 'enchantments/imposingVisage.jpg': 
-         ind = selectCreature(['inplay','opponent'])
-         if ind == -1: 
-            print ( 'Casting/Selection cancelled')
-            wasCast = False
-         else:
-            permanent = globalDictionary['inplay'].data[ind]
-            self.addEnchantment (permanent,card)
-            print ( 'Casting completed' )    
-            
-      elif card.name == 'enchantments/lethalResponse.png': 
-         ind = self.selectPermanent()
-         if ind == -1: 
-            print ( 'Casting/Selection cancelled')
-            wasCast = False
-         else:
-            permanent = globalDictionary['inplay'].data[ind]
-            self.addEnchantment (permanent,card)
-            print ( 'Casting completed' )
-            
+      '''             
       elif card.name == 'enchantments/redRibbonArmy.png':                      
          card = globalDictionary['inplay'].addCard (sourceDeck,index)           
          ind = globalDictionary['inplay'].length()-1
@@ -546,9 +614,9 @@ class MTGActions():
                      
    def fight (self,mana): 
       success = False 
-      friendly = selectCreature(['inplay'])
+      (name,friendly) = selectCreature(['inplay'])
       if friendly != -1: 
-         enemy    = selectCreature(['opponent'])
+         (name,enemy) = selectCreature(['opponent'])
          if enemy != -1:  
             print ( 'Assign damage between those creatures' )
             success = True 
@@ -603,9 +671,6 @@ class MTGActions():
       
    def selectCardToDiscard (self, deck):
       return self.selectCardFromDeck (deck, 'Select a card from your hand to discard: ')
-
-   def selectPermanent (self): 
-      return self.selectCardFromDeck (globalDictionary['inplay'], 'Select a permanent in play (ESC to cancel)')   
    
    def tap (self,mana,card):
       print ( 'Mana before execution: ' + str(mana) ) 
@@ -1002,7 +1067,10 @@ if __name__ == '__main__':
    
    # Move rocket Tropper from drawPile to Inplay (Test purposes only)
    ind  = drawPile.findCard ( 'creatures/rocketTropper.jpg')
-   card = drawPile.moveToDeck ( globalDictionary['opponent'],ind,True)      
+   if ind == -1: 
+      print ( 'Could not find rocketTropper.jpg, pick another card' )
+   else:   
+      card = drawPile.moveToDeck ( globalDictionary['opponent'],ind,True)      
          
    while not quit:
       pygame.time.Clock().tick(60)   
