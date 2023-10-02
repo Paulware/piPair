@@ -48,17 +48,26 @@ class OptionBox():
         return -1
     
     def getSelection (self):
+       debugIt = False 
        result = -1
        selection = ''
        run = True
        print ( 'getSelection....')
+       quit = False 
        while run:    
           pygame.time.Clock().tick(60)
+                   
           event_list = pygame.event.get()
           for event in event_list:
              if event.type == pygame.QUIT:
                 run = False
-
+             elif event.type == 769: # ESCAPE 
+                quit = True 
+                break
+             elif debugIt:
+                print ( 'event.type: ' + str(event.type) ) 
+          if quit:
+             break
           selected_option = self.update(event_list)       
           if selected_option >= 0:
              print(selected_option)

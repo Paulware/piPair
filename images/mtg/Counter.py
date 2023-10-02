@@ -1,10 +1,13 @@
 from TextBox import TextBox
 
 class Counter: 
-   def __init__ (self, x, y):
+   def __init__ (self, x, y, title='default'):
       print ( 'Create a counter' )   
       self.value = 0
-      self.label = TextBox (str(self.value), x, y)
+      if title == 'default':
+         self.label = TextBox (str(self.value), x, y)
+      else:
+         self.label = TextBox (title, x, y )
       self.x = x 
       self.y = y
 

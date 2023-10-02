@@ -44,9 +44,9 @@ class SubDecks():
          print ( 'SubDecks.findOtherDeck (' + str(pos) + ')' )
       found = None
       if pos is None: 
-         print ( 'SubDecks.findOtherDeck, pos == None' )
+         raise Exception ( 'SubDecks.findOtherDeck, pos == None' )
       elif len(pos) != 2: 
-         print ( 'SubDecks.findOtherDeck, pos is not correct: ' + str(len(pos)) ) 
+         raise Exception ( 'SubDecks.findOtherDeck, pos is not correct: ' + str(len(pos)) ) 
       else:    
          for deck in self.decks:           
             if deck != skipDeck: 
@@ -56,7 +56,7 @@ class SubDecks():
                   break
             
       if found is None:
-         print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
+         print ( 'No deck found with sprite associated with this position: ' + str(pos) ) 
       else:
          print ( 'SubDecks.findOtherDeck, found: ' + str(found) ) 
          print ( 'SubDecks.findOtherDeck, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
@@ -69,9 +69,9 @@ class SubDecks():
          print ( 'SubDecks.findSprite (' + str(pos) + ')' )
       found = None
       if pos is None: 
-         print ( 'SubDecks.findSprite, pos == None' )
+         raise Exception ( 'SubDecks.findSprite, pos == None' )
       elif len(pos) != 2: 
-         print ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
+         raise Exception ( 'SubDecks.findSprite, pos is not correct: ' + str(len(pos)) ) 
       else:    
          for deck in self.decks:           
             index = deck.findSprite (pos)
@@ -80,7 +80,7 @@ class SubDecks():
                break
             
       if found is None:
-         print ( 'This deck has no sprite associated with this position: ' + str(pos) ) 
+         print ( 'No deck found with sprite associated with this position: ' + str(pos) ) 
       else:
          print ( 'SubDecks.findSprite, found: ' + str(found) ) 
          print ( 'SubDecks.findSprite, found a match at position: ' + str(pos) + ', index: ' + str(index)) 
