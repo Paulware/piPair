@@ -9,69 +9,128 @@ from OptionBox import OptionBox
 from SubDecks  import SubDecks
 from TextBox   import TextBox
 from UnoCards  import UnoCards
+from Globals   import *
  
 BLACK = (  0,  0,  0)
 RED   = (255,  0,  0)
+
+import os
+from Communications      import Communications
+class UnoCommunications (Communications):
+   # data is a list of objects that have an image and index attribute
+   def __init__ (self, hostOrPlayer):
+   
+      if hostOrPlayer == 'host':
+         broker = 'localhost'
+         myName = 'host'
+         target = 'player'
+      else: # Windows computer 
+         broker = 'localhost'
+         myName = 'player'
+         target = 'host'
+         #broker = '192.168.4.1'
+         #myName = 'laptop'
+         #target = 'pi7'
+         #broker = 'testServer' # pi not required to be in loop 
+      topic = 'messages'
+      
+      print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']')
+      Communications.__init__(self,topic,broker,myName)
+      self.callback = self.callbackProcedure
+      if self.connectBroker():
+         self.setTarget (target)
+      else:
+         raise Exception ( 'Could not connect to broker: ' + broker )
+   def callbackProcedure (self, msg ):
+      data = msg.split ( ' ' )
+      print ( '\n***callbackProcedure got message: [' + str(data) + ']')  
+      
+   def handleSubdeck (self,name,cardsStr,deck):
+      print ( 'handleSubdeck [name,cardsStr]: [' + name + ',' + str(cardsStr) + ']' )
+      if self.gotPeek ('subdeck uno'):   
+         message = self.peek () 
+         print ( 'handleSubdeck, got message: [' + message + ']')
+         cards = [] 
+         for c in cardsStr: 
+            cards.append (int(c))             
+         if name == 'hand': 
+            print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
+            d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards, name=name)             
+         elif name == 'opponent': 
+            d = UnoCards (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards, name=name) 
+            d.hideAll()
+         elif name == 'discardPile': 
+            print ( 'Creating a discardPile with xMultiplier = 0.0' )
+            d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
+         elif name == 'drawPile':
+            d = UnoCards (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
+         return d  
+      else: 
+         raise Exception ( 'Could not gotPeek subdeck uno' )      
+         
+   def waitPeek ( self, msg ):
+      print ( 'Waiting for msg: [' + msg + ']' )
+      while True: 
+         if self.gotPeek ( msg ):
+            break
+            
+      print ( '\n***waitPeek, got ' + msg + '!!!!')
+   def waitData (self, peekString,deck):
+      self.waitPeek (peekString)
+      globalDictionary['utilities'].showStatus ( "Waiting..." + peekString )
+      message = self.peek()
+      data = message.split (' ')
+      print ( 'data: ' + str(data) ) 
+      name     = data[2]                 
+      cardsStr = data[3:]
+      subDeck =  self.handleSubdeck (name,cardsStr,deck)      
+      self.pop() 
+      return subDeck
+
 # Show the Uno Pages
 class Uno (): 
-    def __init__ (self, DISPLAYSURF, utilities, comm ):
+    def __init__ (self, DISPLAYSURF, utilities, comm, host ):
        self.comm = comm
        self.DISPLAYSURF = DISPLAYSURF
        self.utilities   = utilities       
        print ( 'Initialization Uno' )
-       self.iAmHost     = True   
+       self.iAmHost     = host
+       
+    def exit1 (self):
+       self.comm.disconnect()
+       exit()       
 
     def gameOver (self): 
        over = False
        return over
        
-    def main (self):
-       def handleSubdeck (name,cardsStr):
-          print ( 'handleSubdeck [name,cardsStr]: [' + name + ',' + str(cardsStr) + ']' )
-          if self.comm.gotPeek ('subdeck uno'):   
-             message = self.comm.peek () 
-             print ( 'handleSubdeck, got message: [' + message + ']')
-             cards = [] 
-             for c in cardsStr: 
-                cards.append (int(c))             
-             if name == 'hand': 
-                print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
-                d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards)             
-             elif name == 'opponent': 
-                d = UnoCards (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards) 
-                d.hideAll()
-             elif name == 'discardPile': 
-                print ( 'Creating a discardPile with xMultiplier = 0.0' );
-                d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
-             elif name == 'drawPile': 
-                d = UnoCards (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards)
-             d.name = name 
-             return d
-             
+    def main (self):             
        discardPile = None
        print ( 'Uno.main' )
        self.DISPLAYSURF.fill((BLACK))
        displaySurface = self.DISPLAYSURF # refactor out?
        if self.iAmHost: 
-          pygame.display.set_caption('Play Uno I am host:' + self.comm.target)        
+          pygame.display.set_caption('Play Uno I am host')        
        else:
-          pygame.display.set_caption('Play Uno I am player:' + self.comm.target)        
+          pygame.display.set_caption('Play Uno I am player')        
        
        sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )
        pygame.display.update()
 
        deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)
                  
-       if self.iAmHost: 
-          state = 1   
-          self.utilities.showStatus ( "Host, Waiting for player to join")
-          hand        = UnoCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)
-          opponent    = UnoCards (deck,  7, startXY=(100,50),  displaySurface=displaySurface)
-          opponent.hideAll ()
-          discardPile = UnoCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
+       if self.iAmHost:   
+          hand        = UnoCards (deckBasis=deck, numCards=7, startXY=(100,400), displaySurface=displaySurface, name='hand')
+          hand.redeal()
+          opponent    = UnoCards (deckBasis=deck, numCards=7, startXY=(100,50),  displaySurface=displaySurface, name='opponent')
+          # opponent.hideAll ()
+          opponent.redeal()
+          opponent.showAll()
+          discardPile = UnoCards (deckBasis=deck, numCards=1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, \
+                                  name='discardPile')
           # All remaining cards go into the draw pile 
-          drawPile    = UnoCards (deck,  0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-          print ( 'line 72, drawPile.hideAll' )
+          drawPile    = UnoCards (deckBasis=deck, numCards=0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, \
+                                  name='drawPile')
           drawPile.hideAll () 
           
           # creates decks array 
@@ -80,78 +139,73 @@ class Uno ():
           cards.append (drawPile)   
           cards.append (discardPile)
           cards.append (hand)
-          decks = SubDecks (cards)    
-          
-        
+          decks = SubDecks (cards)  
+          decks.setGlobals()          
+            
           pygame.display.update()
+          
+          self.utilities.showStatus ( "Waiting for join uno")
+          self.comm.waitPeek ('join uno' )
+          self.utilities.showStatus ( "Give Cards")
+          #self.utilities.showStatus ( '\n***Sending cards to opponent' )
+          self.comm.send ( 'subdeck uno opponent '    + hand.cardsToStr () )
+          self.comm.send ( 'subdeck uno drawPile '    + drawPile.cardsToStr () )                 
+          self.comm.send ( 'subdeck uno discardPile ' + discardPile.cardsToStr() )
+          self.comm.send ( 'subdeck uno hand '        + opponent.cardsToStr () )          
        else: # Host goes first...
-          #hand = type('SubDeck', (object,), {})()       
-          #opponent = type('SubDeck', (object,), {})()       
-          state = 2
           self.comm.send ( 'join uno' )
           self.utilities.showStatus ( "Waiting for host to deal")
           cards=[]
-       
-       joinTimeout = 0    
-       quit = False 
 
-       # Get/Send Decks        
-       if state == 1: 
-          self.utilities.showStatus ( "Give Cards")
-       else:
-          self.utilities.showStatus ( "Get Cards" )
-       while True:
-          if state == 1: # host 
-             if self.comm.gotPeek ( 'join uno' ):
-                self.utilities.showStatus ( 'Sending cards to opponent' )
-                self.comm.send ( 'subdeck uno opponent '    + hand.cardsToStr () )
-                self.comm.send ( 'subdeck uno drawPile '    + drawPile.cardsToStr () )                 
-                self.comm.send ( 'subdeck uno discardPile ' + discardPile.cardsToStr() )
-                self.comm.send ( 'subdeck uno hand '        + opponent.cardsToStr () )
-                self.comm.pop() # Consume peek 
-                break
-          elif state == 2: # player 
-             if self.comm.gotPeek ('subdeck uno'): 
-                message = self.comm.peek()
-                data = message.split (' ')
-                print ( 'data: ' + str(data) ) 
-                name     = data[2]                 
-                cardsStr = data[3:]
-                
-                if name == 'opponent': 
-                   opponent    = handleSubdeck (name, cardsStr)                 
-                   opponent.hideAll()
-                elif name == 'hand': 
-                   hand        = handleSubdeck (name, cardsStr )
-                elif name == 'discardPile': 
-                   discardPile = handleSubdeck (name, cardsStr )
-                elif name == 'drawPile': 
-                   drawPile    = handleSubdeck (name, cardsStr )
-                   drawPile.hideAll () 
-                   
-                message = self.comm.pop ()
-                   
-                # creates decks array 
-                if name == 'hand': 
-                   cards=[]
-                   cards.append (opponent)
-                   cards.append (drawPile)   
-                   cards.append (discardPile)
-                   cards.append (hand)                   
-                   decks = SubDecks (cards)  
-                   decks.draw()               
-                   break
+          opponent = self.comm.waitData ( 'subdeck uno opponent',deck)
+          globalDictionary['opponent'] = opponent
+          opponent.redeal()          
+          opponent.showAll()
+          
+          drawPile = self.comm.waitData ( 'subdeck uno drawPile',deck )
+          globalDictionary['drawPile'] = drawPile
+          drawPile.hideAll()
+          
+          discardPile = self.comm.waitData ( 'subdeck uno discardPile',deck )
+          globalDictionary['discardPile'] = discardPile
+
+          
+          hand = self.comm.waitData ( 'subdeck uno hand',deck)
+          globalDictionary['hand'] = hand
+          #hand.hideAll()
+          hand.redeal()
+          
+          message = self.comm.pop () # Why? 
+          
+          # creates decks array 
+          cards=[]
+          cards.append (opponent)
+          cards.append (drawPile)   
+          cards.append (discardPile)
+          cards.append (hand)                   
+          decks = SubDecks (cards) 
+          decks.setGlobals()             
+          decks.draw()               
+             
+       self.comm.pop() # Consume peek why? 
  
-       myMove = self.iAmHost 
-       if myMove: 
-          self.utilities.showStatus ( "Your Turn")
-       else:
-          self.utilities.showStatus ( 'Waiting for opponents move' )
+       myMove = self.iAmHost # Host goes first 
+
        dragging   = None
        dragDeck   = None
        sourceDeck = None
        offset     = None
+       quit = False
+       lastMove = not myMove 
        while not self.utilities.quit and not self.gameOver() and not quit:
+          if myMove != lastMove: 
+             lastMove = myMove
+             if myMove: 
+                pygame.display.set_caption('It is your move')
+             else:
+                pygame.display.set_caption('Waiting on opponent to move')
+             hand.showInfo()
+             discardPile.showInfo()
           
           window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
@@ -160,7 +214,7 @@ class Uno ():
           TextBox('Draw',     x=310, y=175).draw()
           TextBox('Hand',     x=100, y=375).draw()        
 
-          decks.draw() # Show and set their x/y locations 
+          decks.draw()
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
           self.utilities.showLastStatus()
           self.utilities.flip() 
@@ -180,17 +234,19 @@ class Uno ():
              message = self.comm.pop() # consume the message
              if message.find ( 'uno move skip' ) > -1: 
                 myMove = True # opponent skipping their turn
+                pygame.display.set_caption('It is your move')
                 self.utilities.showStatus ('Move again')
              elif message.find ( 'hand discard') > -1: 
                 data = message.split ( ' ' )
-                index = int ( data [2] )                
+                index = int ( data [2] )   
+                print ( 'Got an index of: ' + str(index) )                 
                 sheetIndex = opponent.data[index].sheetIndex             
                 cardName = opponent.cardName (sheetIndex)                
                 self.utilities.showStatus ('Opponent discarded ' + cardName )
                 
-                discardPile.addTopCard (opponent,index)
+                opponent.moveToDeck (discardPile,index,reveal=True)
+                opponent.redeal()
                 discardPile.showAll()
-                opponent.remove (index, True)
                 if cardName == 'Joker+4':
                    for i in range(4): 
                       drawPile.topToDeck (hand, True)                      
@@ -209,7 +265,7 @@ class Uno ():
                    self.utilities.showStatus ('Skipping my turn')
                 else:
                    myMove = True   
-                      
+                                    
              elif message.find ( 'draw hand') > -1:
                 print ( 'split data [' + message + ']' )
                 data = message.split ( ' ' )
@@ -221,7 +277,7 @@ class Uno ():
                 self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
                 drawPile.data[index].hide = False 
                 opponent.addTopCard (drawPile,index)
-                opponent.hideAll()
+                # opponent.hideAll()
                 drawPile.remove (index)
                 myMove = True                 
              else:
@@ -242,27 +298,29 @@ class Uno ():
                    if myMove:
                       print ( '\n\n***DRAG***\n\n' )
                       (deck,index) = decks.findSprite (data) # Returns index in list 
-                      name = deck.cardName ( deck.data[index].sheetIndex)
-                      print ( 'CardName: ' + name )
-                      startPos = (deck.data[index].x,deck.data[index].y)                      
+                      if index != -1: 
+                         name = deck.cardName ( deck.data[index].sheetIndex)
+                         startPos = (deck.data[index].x,deck.data[index].y)                      
 
-                      if deck == opponent: 
-                         self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
-                      elif deck == discardPile: 
-                         self.utilities.showStatus ( 'ERR this is where you drop cards' )
-                      elif deck == drawPile:
-                         deck.data[index].hide = False
-                         hand.addCard (deck,index)
-                         deck.remove (index)
-                         myMove = False
-                         self.utilities.showStatus ( 'Waiting for opponent to move' )
-                         self.comm.send ( 'uno move ' + str(index) + ' draw hand' )
-                      elif deck == hand:
-                         sourceDeck = hand
-                         mousePos = data
-                         dragging = index                    
-                      else:
-                         self.utilities.showStatus ( 'Unknown deck' )
+                         if deck == opponent: 
+                            self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
+                         elif deck == discardPile: 
+                            self.utilities.showStatus ( 'ERR this is where you drop cards' )
+                            # Return card to starting position 
+                            hand.data[dragging].x = startPos[0]
+                            hand.data[dragging].y = startPos[1]
+                            startPos = None                          
+                         elif deck == drawPile:
+                            deck.data[index].hide = False
+                            hand.addCard (deck,index)
+                            deck.remove (index)
+                            myMove = False
+                            self.utilities.showStatus ( 'Waiting for opponent to move' )
+                            self.comm.send ( 'uno move ' + str(index) + ' draw hand' )
+                         elif deck == hand:
+                            sourceDeck = hand
+                            mousePos = data
+                            dragging = index                    
                    else: 
                       self.utilities.showStatus ('Err, not your move' )                      
  
@@ -279,26 +337,26 @@ class Uno ():
              elif typeInput == 'drop':
                 if not dragging is None: 
                    print ( 'dragging: ' + str(dragging) )
-                   (deck,index) = decks.findOtherDeck (hand,data) # Where are we dropping
-                   if deck != discardPile:
-                      self.utilities.showStatus ( 'ERR, you can only drop on the discard pile' )                   
-                      if not startPos is None: 
-                         hand.data[dragging].x = startPos[0]
-                         hand.data[dragging].y = startPos[1]
-                   else:
+                   #TODO replace findOther with discardPile.findSprite 
+                   index = discardPile.findSprite (data)
+                   if index == -1:
+                      self.utilities.showStatus ( 'You can only drop on the discard pile' )
+                   else: 
+                      index = len(discardPile.data)-1
+                      deck=discardPile
                       sheetIndex = hand.data[dragging].sheetIndex
                       if hand.canDrop (sheetIndex, deck.data[index].sheetIndex): 
                          self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
                          self.utilities.showStatus ( 'Waiting for opponents move' )
 
-                         discardPile.addCard (hand,dragging)  
-                         if discardPile.length() == 5:   # test for discardPile shuffle  
-                            self.utilities.showStatus ( 'Need to shuffle discard into draw pile' )
-                            discardPile.shuffleTo ( drawPile )
-                         else: 
-                            self.utilities.showStatus ( 'discardPile.length(): ' + str(discardPile.length()) )
+                         hand.moveToDeck (discardPile,dragging,reveal=True)
+                         # TODO: shuffle discard pile back into draw Pile 
+                         #if discardPile.length() == 5:   # test for discardPile shuffle  
+                         #   self.utilities.showStatus ( 'Need to shuffle discard into draw pile' )
+                         #   discardPile.shuffleTo ( drawPile )
+                         #else: 
+                         #   self.utilities.showStatus ( 'discardPile.length(): ' + str(discardPile.length()) )
                          
-                         hand.remove (dragging) 
                          hand.redeal()                         
                          print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
                          myMove = False 
@@ -311,11 +369,13 @@ class Uno ():
                             count = 4
                          for i in range(count): 
                             drawPile.topToDeck (opponent, True)                          
-                         opponent.hideAll()
+                         #opponent.hideAll()
                       else:
                          self.utilities.showStatus ( 'Illegal move' )
                          print ( 'Oops you cannot drop this card here' )
                          # Return card to origin position 
+                         print ( '[dragging,x,y]:[' + str(dragging) + ',' + str(startPos[0]) + ',' + \
+                                 str(startPos[1]) + ']' )
                          hand.data[dragging].x = startPos[0]
                          hand.data[dragging].y = startPos[1]
                          startPos = None               
@@ -342,19 +402,17 @@ if __name__ == '__main__':
       displaySurface = pygame.display.set_mode((1200, 800))
       BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
       
-      name = 'pi7'   
-      comm = Communications ('messages', 'localhost', name )
-      comm.connectBroker()
-      comm.setTarget ( 'laptop' )
-      print ( 'Back from connectBroker' )
-      
-      utilities = Utilities (displaySurface, BIGFONT)   
-      utilities.comm = comm
-      
-      uno = Uno(displaySurface,utilities,comm)
-      uno.iAmHost = True
+
+      options        = ['host', 'player']
+      comboBox       = OptionBox(options)
+      result         = comboBox.run ()      
+      utilities      = Utilities (displaySurface, BIGFONT)   
+      globalDictionary['utilities'] = utilities
+ 
+      comm           = UnoCommunications (result)           
+      utilities.comm = comm                       
+      uno = Uno(displaySurface,utilities,comm,result == 'host')
       uno.main()       
-      
-     
+         
    finally: 
       comm.disconnect()

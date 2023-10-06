@@ -6,8 +6,25 @@ from SubDeck import SubDeck
    Wherever SubDeck is used, UnoCards can be used instead.  
 '''
 class UnoCards (SubDeck):  
+   # data is a list of objects that have an image and index attribute
+   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
+                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], name='' ):
+      print ( 'UnoCards.init' )
+      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
+                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
+                        yMultiplier=yMultiplier, cards=cards, name=name)
+      print ('UnoCards, total number of cards: ' + str(self.numImages)) 
+      
+      # Add attributes which are specific to MTG cards 
+      index = 0
+      for card in self.data:            
+         card.name = self.cardName (card.sheetIndex)
+         index     = index + 1
+      
    def canDrop (self,topIndex,bottomIndex): 
       ok = False 
+      print ( 'canDrop [topIndex,name,bottomIndex,name]: [' + str(topIndex) + ',' + self.cardName(topIndex) + \
+                        ',' + str(bottomIndex) + ',' + self.cardName(bottomIndex) + ']') 
       if (self.getColor (topIndex) == self.getColor(bottomIndex)) or \
          (self.getNumber(topIndex) == self.getNumber(bottomIndex)) or \
          (self.cardName(topIndex).find ( 'Joker') > -1) or \
@@ -44,23 +61,17 @@ class UnoCards (SubDeck):
          color = 'Blue'
       elif (index < 40) or (index == 43) or (index == 47) or (index == 51): 
          color = 'Green'        
+      print ( 'getColor [color]: [' + color + ']' ) 
       return color
       
    def getNumber (self,index): 
       value = 0
       if self.isNumber (index): 
          value = (index % 10) + 1
+      print ( 'getNumber [number]: [' + str(value) + ']' )
       return value      
       
-   # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[] ):
-      print ( 'UnoCards.init' )
-      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
-                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier, cards=cards)
-      print ('UnoCards, total number of cards: ' + str(self.numImages)) 
-      
+
    def isNumber (self,index): 
       isNum = False
       if index < 39: 
@@ -72,10 +83,16 @@ class UnoCards (SubDeck):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
               self.cardName(sheetIndex))      
-   def sheetIndex (self,index): 
-      ind = self.data[index].sheetIndex
-      
-    
+                            
+   def showInfo (self):
+      length = len(self.data)
+      print ( 'There are ' + str(length) + ' cards in : ' + self.name )
+      i = 0
+      for card in self.data: 
+         print ( str(i) + ') [name,x,y,sheetIndex]: [' + card.name + ',' + str(card.x) + ',' + str(card.y) + \
+                          ',' + str(card.sheetIndex) + ']')
+         i = i + 1
+     
 if __name__ == '__main__':
    from Deck      import Deck
    from Utilities import Utilities

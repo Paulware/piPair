@@ -1,6 +1,7 @@
 from TextBox import TextBox
 
 class Counter: 
+   # Default is a counter with just the value: 0
    def __init__ (self, x, y, title='default'):
       print ( 'Create a counter' )   
       self.value = 0

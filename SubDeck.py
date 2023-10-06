@@ -55,14 +55,15 @@ class SubDeck ():
       else:
          print ( 'Deal cards' )
          self.deck = deckBasis
-         if not (self.deck is None): 
+         if not (deckBasis is None): 
             if len(cards) > 0:
                dealtCards = self.deck.dealList (cards, self.startX, self.startY) 
                numCards = len(cards)
             else:             
                if numCards == 0: # Deal all remaining cards 
-                  numCards = self.deck.length()                  
-               dealtCards = self.deck.deal (numCards)               
+                  numCards = self.deck.length()  
+                                 
+               dealtCards = self.deck.deal (numCards, self.startX, self.startY)                
             self.data = dealtCards
 
       self.coverIndex = deckBasis.coverIndex                      
@@ -73,7 +74,7 @@ class SubDeck ():
    def addCard (self,sourceDeck,index):       
       print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
       d = sourceDeck.data[index]
-      obj = self.makeCardCopy (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide)
+      obj = self.copyCard (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide)
       card = self.addData (obj)
       return card
       
@@ -85,13 +86,13 @@ class SubDeck ():
          obj.x = self.data[ind].x + self.width
       y = self.data[ind].y
       
-      obj = self.makeCardCopy (x,y,name,self.coverIndex,self.data[ind].image,False) 
+      obj = self.copyCard (x,y,name,self.coverIndex,self.data[ind].image,False) 
       
       self.data.append (obj)  
       return obj 
 
    def addData ( self,d): 
-      obj = self.makeCardCopy (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide) 
+      obj = self.copyCard (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide) 
       ind = len(self.data)-1
       name = 'unknown name'
       if len(self.data) == 0: 
@@ -135,7 +136,10 @@ class SubDeck ():
             deck.data[index].x = x * self.xMultiplier
          deck.data[index].y = y
          deck.data[index].name = self.data[ind].name
-      self.data.append (deck.data[index].copy()) # Note: Use of copy! 
+      
+      card = deck.data[index]      
+      cardCopy = self.copyCard (card.x,card.y,card.name,card.sheetIndex,card.image,not card.hide)         
+      self.data.append (cardCopy)
       count = 0 
       print ( 'addTopCard, new self.data: ' )
       for d in self.data: 
@@ -160,7 +164,20 @@ class SubDeck ():
          message = message + str(card.sheetIndex)
       print ( 'cardsToStr got: ' + message )
       return message 
-          
+      
+   def copyCard (self,x,y,name,sheetIndex,image,reveal): 
+      obj = Object()
+      obj.x = x
+      obj.y = y
+      obj.image = image
+      #obj.label = TextBox (labelText, obj.x+5, obj.y + 50)   
+      obj.hide = not reveal
+      obj.name = name               
+      obj.sheetIndex = sheetIndex        
+      obj.width = self.width
+      obj.height = self.height
+      return obj          
+                         
    # shift cards and place top card at the bottom of the deck    
    def cycleTopCard (self):
       print ( 'cycle top card, length of deck: ' + str(len(self.data)))
@@ -219,7 +236,8 @@ class SubDeck ():
          print ( 'SubDeck.findCard, found card at: ' + str(found)) 
       return found
       
-   def findSprite (self,pos,debugIt=False): 
+   #TODO: Why does favorLast not work?   
+   def findSprite (self,pos,debugIt=False,favorLast=False): 
       found = -1
       if pos is None: 
          raise Exception ( 'ERR...SubDeck.findSprite, pos is None' )
@@ -245,7 +263,8 @@ class SubDeck ():
                print ( 'Found sprite at index: ' + str(index) + ' pos: ' + str(pos) + ' rect: ' + str(rect))
                self.showInfo()
                found = index 
-               break
+               if not favorLast: # We will take the first match  
+                  break
          if found > -1: 
             print ( self.name + '.findSprite found: ' + str(found) ) 
          return found 
@@ -279,7 +298,7 @@ class SubDeck ():
       print ( 'Done hiding all cards ' )
       
    def length (self):
-      print ( 'Length of deck: ' + str(len(self.data)))       
+      # print ( 'Length of deck: ' + str(len(self.data)))       
       return len(self.data)
          
    def listCards (self):
@@ -287,19 +306,6 @@ class SubDeck ():
       for card in self.data: 
          print ( 'self.data[' + str(count) + '].index: ' + str(card.sheetIndex))  
          count = count + 1
-         
-   def makeCardCopy (self,x,y,name,sheetIndex,image,reveal): 
-      obj = Object()
-      obj.x = x
-      obj.y = y
-      obj.image = image
-      #obj.label = TextBox (labelText, obj.x+5, obj.y + 50)   
-      obj.hide = not reveal
-      obj.name = name               
-      obj.sheetIndex = sheetIndex        
-      obj.width = self.width
-      obj.height = self.height
-      return obj          
          
    def move (self,index,pos): 
       self.data[index].x = pos[0]
@@ -328,22 +334,17 @@ class SubDeck ():
       return ( self.data[index].x, self.data[index].y )
 
    # set the x location of cards
-   def redeal (self, debugIt=False):
-      newList = []    
+   def redeal (self, debugIt=False):  
       yOffset = self.yMultiplier * self.height  
       x = self.startX
       y = self.startY           
       print ( 'len(self.data): ' + str(len(self.data)) )
       cnt = 0    
       for card in self.data: # Set the width/height of each image 
-         newCard = copy.copy(card)
          ind = cnt
          if debugIt:
             print ( 'self.data[' + str(ind) + '].x = ' + str(x) ) 
             print ( 'self.data[' + str(ind) + '].y = ' + str(y) )          
-         newCard.x = x
-         newCard.y = y
-         newCard.sheetIndex = card.sheetIndex
          
          self.data[ind].x = x
          self.data[ind].y = y
@@ -351,7 +352,6 @@ class SubDeck ():
          card.y = y 
          xOffset = self.width * self.xMultiplier
          c = self.data[ind]
-         newList.append(newCard)
          if debugIt: 
             print ( 'card (' + str(ind) + ') redeal [width,height,xMultipler, xOffset,x,y,sheetIndex]: [' + \
                     str(self.width) + ',' + str(self.height) + ',' + str(self.xMultiplier) + ',' + str(xOffset) + ',' + \
@@ -425,8 +425,7 @@ class SubDeck ():
          card.hide = False
          
    def showCard (self, i, card):       
-      print ( 'show card ' + str(i) + '):' + card.name + ' ' + str(card.x) + ',' + str(card.y) + ',' + \
-      str(card.sheetIndex) ) 
+      print ( str(i) + ') [name,x,y]: [' + card.name + ',' + str(card.x) + ',' + str(card.y) + ']')
       
    def showData (self): 
       self.showInfo()

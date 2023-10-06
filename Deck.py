@@ -32,7 +32,7 @@ class Deck (SpriteSheet):
       if self.coverImage is None:
          raise Exception ("ERR cover images is not defined" )
 
-   def deal (self, numCards): 
+   def deal (self, numCards, startX = 0, startY = 0): 
       print ( 'Deck.deal ' + str(numCards) ) 
       hand = []
       print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
@@ -46,8 +46,8 @@ class Deck (SpriteSheet):
             print ( 'This index of out of range: ' + str(index) )
             exit(1)
          obj.tapped = False
-         obj.x = 0
-         obj.y = 0
+         obj.x = startX
+         obj.y = startY
          obj.name = 'name'
          print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
          hand.append (obj) # TODO: Do I need a copy?

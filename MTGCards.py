@@ -7,7 +7,7 @@ from StatusBar           import StatusBar
 from Labels              import Labels
 from images.mtg.CardInfo import CardInfo  
 from images.mtg.Counter  import Counter
-from images.mtg.Globals  import * 
+from Globals             import * 
 from OptionBox           import OptionBox
 
 def exit1 ():
@@ -82,13 +82,33 @@ class MTGCardBase: # (Behavior)
       self.isWall                = False  
       self.tapEffects            = False   
       self.haste                 = False   
+      self.flying                = False 
       self.offsetPower           = 0
       self.offsetToughness       = 0
       self.flanking              = False    # Used by the T34 tank 
      
       # Special Effects are not effects you tap for, they can happen anytime...
       self.specialEffects        = []
-      
+      self.counters              = []
+   
+   def addIntCounter (self):
+      x = 110
+      y = (len(self.counters) * 35 ) + 110
+      counter = Counter (x,y)
+      self.counters.append (counter)
+      return counter
+         
+   def addTextCounter (self,text):
+      x = 100
+      y = (len(self.counters) * 35 ) + 110
+      counter = Counter (x,y,text)
+      self.counters.append (counter)
+      return counter
+   
+   def attack (self):
+      print ( self.container.name + ' is attacking...' )
+      self.container.tapped = True 
+   
    def castEnchantment (self,deckName,ind): 
       creature = globalDictionary[deckName].data[ind]            
       #print ( 'Add ' + self.container.name + ' to: ' + deckName + ', card: ' + creature.name )       
@@ -120,6 +140,7 @@ class MTGCardBase: # (Behavior)
       globalDictionary['hand'].remove (index,True)  
       globalDictionary['manaBar'].payMana (self.container.sheetIndex)  
       self.summoningSickness = not self.haste
+      print ( 'Summoning sickness for: ' + self.name + ' : ' + str(self.summoningSickness))
    def reset (self):
       self.offsetPower     = 0
       self.offsetToughness = 0 
@@ -197,9 +218,9 @@ class AK47 (ArtifactCard):
       print ( 'AK47 add +2/+0, and remove an ammo counter' )     
    def cast (self):
       # Place 3 counters on AK47
-      self.counter = Counter (110,110)            
+      counter = self.addIntCounter ()
       for I in range(3):
-         self.counter.increment()
+         counter.increment()
    def equip (self):
       print ( 'Equip an AK47 on a creature' )
    
@@ -319,13 +340,17 @@ class InigoMontoya (CreatureCard):
       (deckName,ind) = selectCreature(['opponent'],'Select the creature that killed Inigo\'s father')
       if ind != -1:
          creature = globalDictionary['opponent'].data[ind]
-         creature.counter = Counter ( creature.x,creature.y+10,'father killer')
+         # creature.counter = Counter ( creature.x,creature.y+10,'father killer')
+         counter = self.addTextCounter ( 'father killer' )
       super().cast()
 class JangoFett (CreatureCard):       
    def __init__ (self):
-      super().__init__('creatures/jangoFett.jpg')          
+      super().__init__('creatures/jangoFett.jpg')  
+      self.haste  = True
+      self.flying = True       
    def attack(self):
       print ( 'JengoFett, place bounty counter on target creature' )   
+      super().attack()
 class JustDesserts (InstantCard):
    def __init__ (self):
       super().__init__('instants/justDesserts.jpg')
@@ -447,6 +472,7 @@ class RedRibbonArmy (MTGCardBase):
    # Actions that take place when the card is cast 
    def cast (self): 
       globalDictionary['mtgUtilities'].killAllCreatures()
+      count = addIntCounter ()
       self.counter = Counter (110,110)            
    def upkeep (self):
       print ( 'Execute Upkeep phase for : ' + self.name )
@@ -814,7 +840,6 @@ class MTGCards (SubDeck):
             # print ( '[name,toughness]: [' + card.name + ',' + str(card.toughness) + ']')
          card.enchantments      = []
          card.damage            = 0
-         card.summoningSickness = True 
          if card.name in behaviors: 
             card.behavior = behaviors[card.name]
             card.behavior.container = card 
@@ -943,7 +968,6 @@ class MTGCards (SubDeck):
       card.behavior.container = card
       card.toughness          = data.toughness
       card.enchantments       = data.enchantments
-      card.summoningSickness  = data.summoningSickness
       card.damage             = data.damage
       destinationDeck.redeal()
       return card 
@@ -1012,7 +1036,7 @@ class MTGCards (SubDeck):
    def summoned (self):
       print ( 'Untap all cards in deck: ' + self.name )
       for d in self.data: 
-         d.summoningSickness = False
+         d.behavior.summoningSickness = False
          
              
 if __name__ == '__main__':
@@ -1024,7 +1048,6 @@ if __name__ == '__main__':
    from MTGSetup           import MTGSetup
    from Communications     import Communications
    import os
-
    import time  
 
    pygame.init()
@@ -1067,6 +1090,7 @@ if __name__ == '__main__':
    drawPile.dealCard ('instants/molotov.png')   
    drawPile.dealCard ('creatures/pikachu.png')
    drawPile.dealCard ('creatures/pikachu.png')
+   drawPile.dealCard ('creatures/jangoFett.jpg')
 
    while len(globalDictionary['hand'].data) < 7:    
       drawPile.dealCard ( '' )   
@@ -1256,7 +1280,7 @@ if __name__ == '__main__':
                      if card.behavior.tapEffects:   
                         options.append ( 'Tap' )
                      if card.behavior.isCreature:    
-                        if not card.summoningSickness:                         
+                        if not card.behavior.summoningSickness:                         
                            options.append ( 'Attack' ) 
                         options.append ( 'Block' )
                      options.append ( 'Cancel' )
@@ -1265,7 +1289,7 @@ if __name__ == '__main__':
                selection = optionBox.getSelection()
                print ( '[selection]: [' + selection + ']' ) 
                if selection == 'Attack':
-                  card.behavior.tap()
+                  card.behavior.attack()
                   globalDictionary['inplay'].redeal()                  
                elif selection == 'Cast':                            
                   if card.behavior.isLand: 

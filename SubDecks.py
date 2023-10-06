@@ -1,8 +1,19 @@
-from SubDeck import SubDeck 
+from SubDeck import SubDeck
+from Globals import * 
 import pygame
 import time
 class SubDecks():
 
+   def __init__(self, decks):
+      if (len(decks) > 0) and (decks[0] is None): 
+         print ( 'Oops creating decks with a None deck!' )
+         exit()
+      self.decks = decks 
+      self.selected = None
+      self.displaySurface = pygame.display.get_surface()
+      self.showTime = 0
+      print ( 'SubDecks created' )
+     
    def addDeck (self,deck):
       self.decks.append (deck)   
       
@@ -38,7 +49,7 @@ class SubDecks():
       return found       
 
    # Return deck not specified that occupies the given position       
-   def findOtherDeck (self, skipDeck, pos):
+   def findOtherDeck (self, skipDeck, pos, favorLast=False):
       debugIt = True
       if debugIt: 
          print ( 'SubDecks.findOtherDeck (' + str(pos) + ')' )
@@ -50,11 +61,9 @@ class SubDecks():
       else:    
          for deck in self.decks:           
             if deck != skipDeck: 
-               index = deck.findSprite (pos)
+               index = deck.findSprite (pos,favorLast)
                if index > -1:
                   found = deck
-                  break
-            
       if found is None:
          print ( 'No deck found with sprite associated with this position: ' + str(pos) ) 
       else:
@@ -67,6 +76,7 @@ class SubDecks():
    def findSprite (self, pos, debugIt = False):
       if debugIt: 
          print ( 'SubDecks.findSprite (' + str(pos) + ')' )
+      index = -1
       found = None
       if pos is None: 
          raise Exception ( 'SubDecks.findSprite, pos == None' )
@@ -87,16 +97,10 @@ class SubDecks():
          
       return (found,index)
       
-   def __init__(self, decks):
-      if (len(decks) > 0) and (decks[0] is None): 
-         print ( 'Oops creating decks with a None deck!' )
-         exit()
-      self.decks = decks 
-      self.selected = None
-      self.displaySurface = pygame.display.get_surface()
-      self.showTime = 0
-      print ( 'SubDecks created' )
-         
+   def setGlobals (self):
+      for deck in self.decks:
+         globalDictionary[deck.name] = deck      
+    
 if __name__ == '__main__':
    import pygame
    from Deck import Deck

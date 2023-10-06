@@ -41,17 +41,14 @@ class Utilities ():
       return offset 
       
    def clearStatus (self):    
+       length = len(self.statusMessage) + 40
        width, height = pygame.display.get_surface().get_size()
-       x = 0
-       y = height-35
-       w = width
-       h = 35 
-       # pygame.draw.line(self.displaySurface, self.RED, (0, height-40), (self.DISPLAYWIDTH, height-40)) #status line
-       line1 = TextBox ( '                                                           ', x=x, y=y, w=x, h=h)
-       line1.draw ( ) 
+       text = ''
+       for i in range (length): 
+          text = text + ' ' 
+       line1 = TextBox (text)
+       line1.draw ( (0,height-35,30) )
        pygame.display.update()
-       print ( 'Status cleared [x,y,w,h]: [' + str(x) + ',' + str(y) + ',' + str(w) + ',' + str(h) + ']' )
-       self.statusMessage = ''
         
    def createLabel (self, msg, x, y):
        WHITE = (255,255,255)  
@@ -67,8 +64,7 @@ class Utilities ():
       
    def findSpriteClick (self, pos, sprites ): 
       print ( 'findSpriteClick' )
-      found = -1
-     
+      found = -1     
       clicked_sprite = [s for s in sprites if s.collidepoint(pos)]
       if len(clicked_sprite) == 0: 
          print ( 'len(clicked_sprite) == 0' ) 
@@ -77,8 +73,7 @@ class Utilities ():
             print ( 'i: ' + str(i) + ' len(sprites): ' + str(len(sprites)) )
             if clicked_sprite[0] == sprites [i]: 
                found = i
-               break
-               
+               break              
       return found      
       
    def flip(self):

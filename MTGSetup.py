@@ -7,7 +7,7 @@ from pygame_widgets import slider
 from TextBox import TextBox
 from images.mtg.ManaCost import ManaCost 
 from MessageBox import MessageBox
-from images.mtg.Globals import *
+from Globals import *
 
 # Select the colors for the deck you wish to play with  
 class MTGSetup: 
