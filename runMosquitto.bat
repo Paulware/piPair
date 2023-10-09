@@ -1,2 +1,2 @@
 cd mosquitto
-mosquitto.exe
+mosquitto.exe -v
