@@ -42,7 +42,7 @@ class UnoCards (SubDeck):
       elif (index == 29) or (index == 39):
          name = 'Joker+4'
       elif (index >= 40) and (index <= 43): 
-         name = self.getColor(index) + '0'
+         name = self.getColor(index) + 'replay'
       elif (index >= 44) and (index <= 47):
          name = self.getColor(index) + '+2'
       elif (index >= 48) and (index <= 51):
