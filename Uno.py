@@ -35,7 +35,7 @@ class UnoCommunications (Communications):
       topic = 'messages'
       
       print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']')
-      Communications.__init__(self,topic,broker,myName)
+      super().__init__(topic,broker,myName)
       self.callback = self.callbackProcedure
       if self.connectBroker():
          self.setTarget (target)

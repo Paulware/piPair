@@ -37,24 +37,23 @@ class Communications:
          self.client = TestClient ()
       else:      
          self.client = mqtt.Client()
-      self.topic = topic
-      self.broker = broker
+      self.topic             = topic
+      self.broker            = broker
       self.client.on_connect = self.on_connect
       self.client.on_message = self.on_message
-      self.connected = False
-      self.callback = None 
+      self.connected         = False
+      self.callback          = None 
       
       # set the will (last testament) message, when the Raspberry Pi is powered off, or the network is interrupted abnormally, it will send the will message to other clients      
       message = '{\"id\":0, \"from\":\"' + self.name + '\",\"to\":\"*\", \"message\":\"Off\"}'
       self.client.will_set(topic, message.encode())
       self.message = '' 
-      self.target = ''
-      self.buffer = ['','','','','','','','','','']
-      self.head = 0
-      self.tail = 0
-      
-      self.debug = False 
-      self.quit = False
+      self.target  = ''
+      self.buffer  = ['','','','','','','','','','']
+      self.head    = 0
+      self.tail    = 0    
+      self.debug   = False 
+      self.quit    = False
 
    def acknowledge ( self, destination):   
       self.publish (destination, 'ACK', self.count)  # self.count is probably not correct here.  Don't care?   

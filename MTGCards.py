@@ -604,7 +604,22 @@ import os
 from Communications      import Communications
 class MTGCommunications (Communications):
    # data is a list of objects that have an image and index attribute
-   def __init__ (self):
+   def __init__ (self,hostOrPlayer):
+   
+      if hostOrPlayer == 'host':
+         broker = 'localhost'
+         myName = 'host'
+         target = 'player'
+      else: # Windows computer 
+         broker = 'localhost'
+         myName = 'player'
+         target = 'host'
+      topic = 'messages'
+      
+      print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']')
+      super().__init__(topic,broker,myName)
+      
+      '''
       if os.name == 'posix':
          broker = 'localhost'
          myName = 'pi7'
@@ -614,10 +629,11 @@ class MTGCommunications (Communications):
          myName = 'laptop'
          target = 'pi7'
          broker = 'testServer' # pi not required to be in loop 
-      topic = 'messages'
-      
+      topic = 'messages'      
       print ( '[broker,myName,target]: [' + broker + ',' + myName + ',' + target + ']')
       Communications.__init__(self,topic,broker,myName)
+      '''
+      
       self.callback = self.callbackProcedure
       if self.connectBroker():
          self.setTarget (target)
@@ -693,7 +709,7 @@ class MTGActions():
             globalDictionary['hand'].discard (ind) 
             globalDictionary['hand'].redeal()
       elif self.phase.text == 'End Turn':
-         self.phase.text = 'Upkeep'  
+         self.phase.text = 'Upkeep'
       print ( 'new phase.text: [' + self.phase.text + ']' )
  
    def selectCardFromDeck (self, deck, prompt):
@@ -803,7 +819,7 @@ class MTGCards (SubDeck):
    # data is a list of objects that have an image and index attribute
    def __init__ (self, deckBasis, filename='', width=100, height=150, startXY=(100,100), \
                  displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, empty=False, name=''):
-      numCards = 0
+      numCards  = 0
       self.name = name 
       
       cards = []
@@ -1055,22 +1071,20 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    
    globalDictionary['mtgUtilities'] = MTGUtilities()
-   globalDictionary['utilities']    = Utilities (displaySurface, BIGFONT)   
+   globalDictionary['utilities']    = Utilities (displaySurface, BIGFONT)
    globalDictionary['cardInfo']     = CardInfo()
 
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
-   filename     = MTGSetup().chooseDeckFilename('redDeck.txt')   
+   filename     = MTGSetup().chooseDeckFilename('redDeck.txt')
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
                   yMultiplier=0.0, name='drawPile')                     
    drawPile.hideAll()
    drawPile.shuffle()
    
    opponentDeck = MTGCards (deck, empty=True, startXY=(100, 30), xMultiplier=1.0, yMultiplier=0.0, \
-                             displaySurface=displaySurface, name='opponent')
-   
+                             displaySurface=displaySurface, name='opponent')   
    hand         = MTGCards (deck, empty=True, startXY=(100,600), xMultiplier=1.0, yMultiplier=0.0, \
-                             displaySurface=displaySurface, name='hand')
-                             
+                             displaySurface=displaySurface, name='hand')                             
    inplay       = MTGCards (deck, empty=True, startXY=(100,400), displaySurface=displaySurface, \
                              xMultiplier=1.0, yMultiplier=0.0, name='inplay')   
    discardDeck  = MTGCards (deck, empty=True, startXY=(100,200), displaySurface=displaySurface, \
@@ -1085,19 +1099,18 @@ if __name__ == '__main__':
    globalDictionary['manaBar']     = manaBar   
    actions                         = MTGActions()
          
-   drawPile.dealCard ('creatures/inigoMontoya.jpg')
+   drawPile.dealCard ('creatures/inigoMontoya.jpg'     )
    drawPile.dealCard ('enchantments/imposingVisage.jpg')
-   drawPile.dealCard ('instants/molotov.png')   
-   drawPile.dealCard ('creatures/pikachu.png')
-   drawPile.dealCard ('creatures/pikachu.png')
-   drawPile.dealCard ('creatures/jangoFett.jpg')
+   drawPile.dealCard ('instants/molotov.png'           )   
+   drawPile.dealCard ('creatures/pikachu.png'          )
+   drawPile.dealCard ('creatures/pikachu.png'          )
+   drawPile.dealCard ('creatures/jangoFett.jpg'        )
 
    while len(globalDictionary['hand'].data) < 7:    
       drawPile.dealCard ( '' )   
    
    globalDictionary['hand'].showAll() 
    globalDictionary['hand'].redeal(True)    
-
    
    cards=[]
    cards.append (drawPile)   
@@ -1121,10 +1134,14 @@ if __name__ == '__main__':
    labels.addLabel ('In Play' , 100, 375)
    labels.addLabel ('Hand'    , 100, 575)
    
-   haveCastLand = False 
+   haveCastLand = False
    
-   comm = MTGCommunications ();
-   comm.sendDeck (hand, 'opponent' ) 
+   options        = ['host', 'player']
+   comboBox       = OptionBox(options)
+   result         = comboBox.run ()
+   
+   comm = MTGCommunications (result=='host')
+   comm.sendDeck (hand, 'opponent' )
    
    # Move Daryl Dixon from drawPile to hand, and then cast it
    ind  = drawPile.findCard ( 'creatures/darylDixon.jpg')
