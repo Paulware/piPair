@@ -2,3 +2,4 @@
 mainConfig.txt
 __pycache__
 udp.log
+.venv
