@@ -260,7 +260,7 @@ class Uno ():
                 elif cardName.find ( 'reverse') > -1: 
                    self.comm.send ( 'uno move skip' )                
                    self.utilities.showStatus ('Skipping my turn')
-                elif cardName.find ( '0') > -1: 
+                elif cardName.find ( 'replay') > -1: 
                    self.comm.send ( 'uno move skip' )
                    self.utilities.showStatus ('Skipping my turn')
                 else:
