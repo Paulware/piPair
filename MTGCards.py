@@ -604,9 +604,9 @@ import os
 from Communications      import Communications
 class MTGCommunications (Communications):
    # data is a list of objects that have an image and index attribute
-   def __init__ (self,hostOrPlayer):
-   
-      if hostOrPlayer == 'host':
+   def __init__ (self,iAmHost):
+        
+      if iAmHost:
          broker = 'localhost'
          myName = 'host'
          target = 'player'
@@ -1075,7 +1075,7 @@ if __name__ == '__main__':
    globalDictionary['cardInfo']     = CardInfo()
 
    deck         = Deck ('images/mtgSpriteSheet.png', 10, 30, 291, 290)
-   filename     = MTGSetup().chooseDeckFilename('redDeck.txt')
+   filename     = 'images/mtg/redDeck.txt' # MTGSetup().chooseDeckFilename('redDeck.txt')
    drawPile     = MTGCards (deck, filename, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, \
                   yMultiplier=0.0, name='drawPile')                     
    drawPile.hideAll()
@@ -1140,9 +1140,10 @@ if __name__ == '__main__':
    comboBox       = OptionBox(options)
    result         = comboBox.run ()
    
-   comm = MTGCommunications (result=='host')
+   iAmHost = result == 'host'
+   comm = MTGCommunications (iAmHost)
    comm.sendDeck (hand, 'opponent' )
-   
+      
    # Move Daryl Dixon from drawPile to hand, and then cast it
    ind  = drawPile.findCard ( 'creatures/darylDixon.jpg')
    # card = drawPile.data[ind]
