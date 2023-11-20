@@ -1,18 +1,29 @@
 import pygame
-from SubDeck             import SubDeck
-from Utilities           import Utilities
-from SelectButton        import SelectButton 
-from ViewImage           import ViewImage 
-from StatusBar           import StatusBar
-from Labels              import Labels
-from images.mtg.CardInfo import CardInfo  
-from images.mtg.Counter  import Counter
-from Globals             import * 
-from OptionBox           import OptionBox
+from SubDeck                  import SubDeck
+from Utilities                import Utilities
+from SelectButton             import SelectButton 
+from ViewImage                import ViewImage 
+from StatusBar                import StatusBar
+from Labels                   import Labels
+from images.mtg.CardInfo      import CardInfo  
+from images.mtg.Counter       import Counter
+from images.mtg.DamageCounter import DamageCounter
+from Globals                  import * 
+from OptionBox                import OptionBox
 
 def exit1 ():
+   print ( 'exit1, terminate the program....' )
    comm.disconnect()
    exit()
+   
+       
+def topToDeck (deckSource,deckTarget,reveal=False): 
+   index = len(deckSource.data)-1  
+   ind = deckTarget.addCardToDeck (deckSource.data[index])
+   deckSource.remove (index)      
+   if reveal: 
+      deckTarget.revealTopCard()
+   
 
 def selectCard (decks, title, isCreature, isLand, isWall):
    index = -1   
@@ -31,7 +42,7 @@ def selectCard (decks, title, isCreature, isLand, isWall):
             # Determine which subdeck the card is in. 
             for deckName in decks:
                deck = globalDictionary[deckName] 
-               globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
+               # globalDictionary['utilities'].showStatus ('check if selection is from deck: ' + deck.name)
                (ind,eInd) = deck.findSprite (data)
                if ind != -1: 
                   id = deck.data[ind].sheetIndex
@@ -91,6 +102,15 @@ class MTGCardBase: # (Behavior)
       self.specialEffects        = []
       self.counters              = []
    
+   def addDamage (self,damage): 
+      print ( '\n***' );
+      print ( 'add damage: ' + str(damage) )
+      if not hasattr (self,"damageCounter"): 
+         print ( 'creating self.damageCounter ' )
+         self.damageCounter = DamageCounter ()
+      print ( 'Now addDamage...' )
+      self.damageCounter.addDamage (damage)
+   
    def addIntCounter (self):
       x = 110
       y = (len(self.counters) * 35 ) + 110
@@ -130,17 +150,22 @@ class MTGCardBase: # (Behavior)
    def canCast (self,mana):
       print ( 'Check if ' + str(mana) + ' is sufficient to handle casting cost: ' + str(self.manaCost) ) 
       return True  
+      
+   # move card from hand to inplay 
    def cast (self):
       print ( 'MTGCardBase, cast of ' + self.name )
-      card = globalDictionary['hand'].moveDataToDeck ( globalDictionary['inplay'],self.container,True)
+      index = globalDictionary['hand'].findCard (self.container.name)      
+      ind = globalDictionary['inplay'].addCardToDeck (globalDictionary['hand'].data[index]) 
+      globalDictionary['hand'].remove (index)
+
+      card = globalDictionary['inplay'].data[ind]
       card.hide = False
       globalDictionary['inplay'].redeal()
       globalDictionary['drawPile'].checkY()
-      index = globalDictionary['hand'].findCard (self.container.name)
-      globalDictionary['hand'].remove (index,True)  
       globalDictionary['manaBar'].payMana (self.container.sheetIndex)  
       self.summoningSickness = not self.haste
       print ( 'Summoning sickness for: ' + self.name + ' : ' + str(self.summoningSickness))
+      
    def reset (self):
       self.offsetPower     = 0
       self.offsetToughness = 0 
@@ -192,7 +217,7 @@ class InstantCard (MTGCardBase):
       super().__init__(name,0)  
       self.isInstant = True 
    def cast (self): 
-      print ( 'MTGCardBase, cast of ' + self.name )
+      print ( 'MTGCardBase, cast of ' + self.name + ', remove from hand' )
       index = globalDictionary['hand'].findCard (self.container.name)
       globalDictionary['hand'].remove (index,True)  
       globalDictionary['manaBar'].payMana (self.container.sheetIndex)  
@@ -222,8 +247,7 @@ class AK47 (ArtifactCard):
       for I in range(3):
          counter.increment()
    def equip (self):
-      print ( 'Equip an AK47 on a creature' )
-   
+      print ( 'Equip an AK47 on a creature' )   
 class BFG (ArtifactCard):
    def __init__ (self): 
       super().__init__('artifacts/bfg.jpg')  
@@ -246,8 +270,7 @@ class BatheInDragonBreath (SorceryCard):
 class BlackerLotus (ArtifactCard):
    def __init__ (self): 
       super().__init__('artifacts/blackerLotus.jpg')  
-      self.tapEffects = True 
-      
+      self.tapEffects = True      
    def tap():
       cancelTap = False 
       print ( 'BlackerLotus add 4 mana of any color' ) 
@@ -401,12 +424,16 @@ class Molotov (InstantCard):
    def cast (self):
       print ( 'Molotov, 2 damage to target creature, 1 damage to adjacent?!' )   
       (deck,index) = selectCreature ( ['inplay','opponent'],'Select creature to receive 2 damage' )
-      if index != -1: 
-         damage = globalDictionary[deck].data[index].damage
-         globalDictionary[deck].data[index].damage = damage + 2
-         name = globalDictionary[deck].data[index].name 
-         print ( 'Creature ' + name + ' damage level = ' + str(damage) )
-      super().cast()
+      if index != -1:
+         target = globalDictionary[deck].data[index]     
+         target.damage = target.damage + 2
+         target.behavior.addDamage(2)
+         
+         print ( 'Creature ' + globalDictionary[deck].data[index].name + '.damage is now set = ' + \
+                 str(globalDictionary[deck].data[index].damage) )
+         #TODO: Add/Remove counter based on list of counters.... or do this on view?
+         globalDictionary[deck].data[index].behavior.addTextCounter ( 'Damage: ' + str(globalDictionary[deck].data[index].damage) )
+         super().cast() # Remove from hand 
 class Mountain (LandCard): 
    def __init__ (self): 
       super().__init__('lands/mountain.jpg')          
@@ -865,13 +892,27 @@ class MTGCards (SubDeck):
                
       print ('MTGCards, total number of cards: ' + str(self.numImages) + ' done in __init__')
 
+   def addCardToDeck (self,card): 
+      index = super().addCardToDeck (card)
+      self.data[index].tapped       = card.tapped
+      self.data[index].behavior     = card.behavior
+      self.data[index].enchantments = card.enchantments
+      self.data[index].toughness    = card.toughness
+      self.data[index].damage       = card.damage
+      self.data[index].name         = card.name 
+      
+      return index 
+      
    def addCoverCard (self, labelText, name='cover.jpg'): 
       obj = super().addCoverCard (labelText, name)
       obj.tapped = False 
       
    def addData (self,d): 
       obj = super().addData(d)
-      obj.tapped = d.tapped 
+      if hasattr (d,'tapped'): 
+         obj.tapped = d.tapped 
+      else:
+         obj.tapped = False
       return obj
       
    def assignDamage (self):
@@ -896,8 +937,8 @@ class MTGCards (SubDeck):
          elif y != card.y: 
             print ( '\n***Got a mismatch! [y,card.y,count]: [' + str(y) + ',' + str(card.y) + ',' + str(count) + ']' )
             self.showInfo()
-            exit1()
-         count = count + 1
+            count = count + 1
+            raise Exception ( 'mismatch exception' )
          
    # return the number of creatures in this deck.      
    def countType (self,typeName):
@@ -913,17 +954,23 @@ class MTGCards (SubDeck):
    # This is probably only used by deck: drawPile    
    def dealCard (self,name): 
       if name == '':       
-         globalDictionary['drawPile'].topToDeck (globalDictionary['hand'],reveal=True)   
+         topToDeck (globalDictionary['drawPile'], globalDictionary['hand'] )
       else:
-         ind  = drawPile.findCard (name)
+         ind  = globalDictionary['drawPile'].findCard (name)
          if ind == -1: 
             print ( name + ' not found in drawPile!' )
          else:
-            self.moveToDeck (globalDictionary['hand'],ind,True)      
+            index = globalDictionary['hand'].addCardToDeck (globalDictionary['drawPile'].data[ind])
+            globalDictionary['drawPile'].remove (ind) 
+            
    def draw (self, debugIt=False):
+      ind = -1 
+      count = -1
       SubDeck.draw (self)
       
+      
       for card in self.data:  
+         count = count + 1
          sheetIndex = card.sheetIndex
          name = globalDictionary['cardInfo'].idToName (sheetIndex)  
          if hasattr (card, "counter"):  # Counter appears after being cast
@@ -936,8 +983,17 @@ class MTGCards (SubDeck):
                   count = count + 1
                   # print ( 'draw enchantment[' + str(count) + '] ' + c.name )
                   image = self.getImage (c)
-                  self.displaySurface.blit (image, (c.x,c.y))
-                  
+                  self.displaySurface.blit (image, (c.x,c.y))             
+         if hasattr (card.behavior,"damageCounter"): 
+            card.behavior.damageCounter.draw(card.x,card.y)
+            ind = count
+      if debugIt: 
+         if ind != -1:
+             print ( 'The deck: [' + self.name + '] has a damage counter at index: ' + str(ind) + \
+                     ' the name of the card is: ' + self.data[ind].name )
+             self.showInfo()
+             exit1()
+                     
    def findSprite (self,pos,debugIt=False): 
       enchantmentIndex = -1
       found = (-1,-1)
@@ -975,28 +1031,21 @@ class MTGCards (SubDeck):
       return image                
    
    def getName (self, data):
-      return self.cardName (data.sheetIndex)       
-      
-   def moveDataToDeck (self,destinationDeck,data,reveal=False):      
-      card                    = super().moveDataToDeck (destinationDeck,data,reveal)
-      card.tapped             = False
-      card.behavior           = behaviors[card.name]
-      card.behavior.container = card
-      card.toughness          = data.toughness
-      card.enchantments       = data.enchantments
-      card.damage             = data.damage
-      destinationDeck.redeal()
-      return card 
+      return self.cardName (data.sheetIndex)  
+
+   def monitor (self):
+      if not hasattr (self,"numDamages"):
+         self.numDamages = 0
+
+      count = 0 
+      for card in self.data:
+         if hasattr (card.behavior,"damageCounter"):
+            count = count + 1
+      if self.numDamages != count: 
+         print ( '/n**** ' + self.name + ' has ' + str(count) + ' damaged cards' )
+         exit1()
+      self.numDamages = count
     
-   # Note when you move to deck you should move a copy of the data
-   #   NOT a pointer to the data....
-   # This procedure should remove the index 
-   def moveToDeck (self,destinationDeck,index,reveal=False): 
-      print ( '\n***MTGCards.moveToDeck' )
-      data = self.data[index]
-      card = self.moveDataToDeck (destinationDeck,data,reveal)
-      self.remove (index)
-      return card
        
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
@@ -1141,6 +1190,10 @@ if __name__ == '__main__':
    result         = comboBox.run ()
    
    iAmHost = result == 'host'
+   if iAmHost:
+      globalDictionary['utilities'].setTitle ( 'You are host and move first' )
+   else:
+      globalDictionary['utilities'].setTitle ( 'You are player and move second' )
    comm = MTGCommunications (iAmHost)
    comm.sendDeck (hand, 'opponent' )
       
@@ -1149,30 +1202,43 @@ if __name__ == '__main__':
    # card = drawPile.data[ind]
    print ( '\n***\nbefore moveToDeck, drawPile to hand...')
    drawPile.showInfo()
+   print ('Before move, drawPile card located at [ind]: [' + str(ind) + ']' )
+   print( drawPile.data[ind].name )
    if ind == -1: 
       print ( 'Daryl Dixon not found in drawPile!' )
       exit1()
-   card = drawPile.moveToDeck (globalDictionary['hand'],ind,True)
+   
+   index = globalDictionary['inplay'].addCardToDeck (globalDictionary['drawPile'].retrieveCard(ind))
+   globalDictionary['inplay'].data[index].hide = False 
+   
+   print ( 'index before remove: ' + str(index) )   
+   globalDictionary['drawPile'].remove (ind) 
+   print ( 'index after remove: ' + str(index) ) 
+   drawPile.draw (True)
+   
    print ( '\n***\nafter moveToDeck, drawPile to hand...' )
    drawPile.showInfo()
-   card.behavior.cast()
-   print ( '\n***\nafter cast...' )
+   drawPile.draw (True)
    drawPile.showInfo()
+   drawPile.draw (True)
    print ( '\n***Check drawPile after moving darylDixon, ind:' + str(ind) )
    drawPile.checkY()
       
    print ( '\n***check hand early' )
+   hand.redeal()
    hand.checkY()
-   
-   #card = drawPile.moveToDeck ( globalDictionary['inplay'],ind,True)
-   
+   drawPile.draw (True)
+      
    # Move rocket Tropper from drawPile to Inplay (Test purposes only)
    ind  = drawPile.findCard ( 'creatures/rocketTropper.jpg')
    if ind == -1: 
-      print ( 'Could not find rocketTropper.jpg, pick another card' )
-      exit1()
+      print ( 'Could not find rocketTropper.jpg, TBD: pick another card' )
    else:   
-      card = drawPile.moveToDeck ( globalDictionary['opponent'],ind,True)  
+   
+      index = globalDictionary['opponent'].addCardToDeck (globalDictionary['drawPile'].retrieveCard(ind))
+      globalDictionary['opponent'].data[index].hide = False 
+      globalDictionary['opponent'].redeal()
+      globalDictionary['drawPile'].remove (ind) 
       print ( '\n***Trooper moved to opponent deck' )      
    
    lastPhase = ''   
@@ -1184,11 +1250,13 @@ if __name__ == '__main__':
       manaBar.draw()
       health.draw()
       decks.draw() # Show and set their x/y locations
+      globalDictionary['drawPile'].monitor()
+      
       globalDictionary['utilities'].showLastStatus()
       bar.show (['Quit', 'Message', 'Next Phase','Inplay'] )
       pygame.display.update() 
       if actions.phase.text == 'Draw': #Draw a card 
-         drawPile.topToDeck (globalDictionary['hand'], reveal=True)
+         topToDeck (globalDictionary['drawPile'], globalDictionary['hand'], reveal=True)
          globalDictionary['hand'].redeal() 
          actions.nextPhase()       
       elif actions.phase.text == 'Upkeep': 

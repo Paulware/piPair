@@ -334,6 +334,9 @@ class Utilities ():
        print (str(ssids)) 
        return ssids  
        
+   def setTitle (self, title): 
+       pygame.display.set_caption ( title )   
+       
    def selectOption ( self, options):
        x = 600
        y = 100 

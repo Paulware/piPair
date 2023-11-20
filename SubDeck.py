@@ -71,13 +71,22 @@ class SubDeck ():
       self.numImages = len(self.data)         
       print (self.name + ' has ' + str(self.numImages) + ' cards ') 
    
-   def addCard (self,sourceDeck,index):       
-      print ( 'addCard from ' + sourceDeck.name + ' with index: ' + str(index) + ' to ' + self.name) 
-      d = sourceDeck.data[index]
-      obj = self.copyCard (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide)
-      card = self.addData (obj)
-      return card
-      
+   def addCard (self,sourceDeck,index): 
+      ind = self.addCardToDeck (sourceDeck.data[index])    
+      return self.sourceDeck.data[ind]
+   
+   def addCardToDeck (self,card):    
+      index                       = self.createCard()
+      print ( 'addCardToDeck got an index of : ' + str(index)) 
+      self.data[index].x          = card.x
+      self.data[index].y          = card.y
+      self.data[index].image      = card.image
+      self.data[index].hide       = card.hide
+      self.data[index].name       = card.name
+      self.data[index].sheetIndex = card.sheetIndex 
+      print ( 'addCardToDeck returning an index of : ' + str(index)) 
+      return index   
+   
    def addCoverCard (self, labelText, name='cover.jpg'): 
       ind = len(self.data)-1         
       if len(self.data) == 0: 
@@ -90,61 +99,11 @@ class SubDeck ():
       
       self.data.append (obj)  
       return obj 
-
-   def addData ( self,d): 
-      obj = self.copyCard (d.x,d.y,d.name,d.sheetIndex,d.image,not d.hide) 
-      ind = len(self.data)-1
-      name = 'unknown name'
-      if len(self.data) == 0: 
-         x = self.startX;
-         y = self.startY; 
-      else:
-         if self.xMultiplier == 0.0: 
-            x = self.data[ind].x
-         else: 
-            x = self.data[ind].x + self.width
-         y = self.data[ind].y
-         print ( 'xMultiplier: ' + str(self.xMultiplier) ) 
-         if self.xMultiplier == 0.0: 
-            obj.x = x
-         else:
-            obj.x = x * self.xMultiplier
-         name = d.name 
-         obj.y = y
-      self.data.append (obj)
-      print ( 'Appending card with data: [x,y,sheetIndex,name]: [' + str(obj.x) + \
-              ',' + str(obj.y) + ',' + str(obj.sheetIndex) + ',' + obj.name + ']'  + ' to deck: ' + self.name  )
-      print ( 'addedCard, new len(self.data): ' + str(len(self.data))) 
-      
-      return self.data [len(self.data)-1]
    
    # add a card from the specified deck.data[index] to the top card of this deck       
-   def addTopCard (self,deck,index,name='name'): 
+   def addTopCard (self,deck,index):
+      index = self.addCardToDeck ( deck[index].data )   
       
-      print ( 'addTopCard [index,sheetIndex]: [' + str(index) + ',' + str(deck.data[index].sheetIndex) + ']') 
-      ind = len(self.data)-1 # Get new location from the top card of this deck 
-      if ind >= 0:
-         if self.xMultiplier == 0.0: 
-            x = self.data[ind].x
-         else: 
-            x = self.data[ind].x + self.width
-         y = self.data[ind].y
-         print ( 'xMultiplier: ' + str(self.xMultiplier) ) 
-         if self.xMultiplier == 0.0: 
-            deck.data[index].x = x
-         else:
-            deck.data[index].x = x * self.xMultiplier
-         deck.data[index].y = y
-         deck.data[index].name = self.data[ind].name
-      
-      card = deck.data[index]      
-      cardCopy = self.copyCard (card.x,card.y,card.name,card.sheetIndex,card.image,not card.hide)         
-      self.data.append (cardCopy)
-      count = 0 
-      print ( 'addTopCard, new self.data: ' )
-      for d in self.data: 
-         count = count + 1
-         print ( 'self.data[' + str(count) + '].sheetIndex:' + str(d.sheetIndex) ) 
 
    def append (self, element): 
       self.data.append (element)
@@ -163,20 +122,14 @@ class SubDeck ():
             message = message + ' '
          message = message + str(card.sheetIndex)
       print ( 'cardsToStr got: ' + message )
-      return message 
-      
-   def copyCard (self,x,y,name,sheetIndex,image,reveal): 
-      obj = Object()
-      obj.x = x
-      obj.y = y
-      obj.image = image
-      #obj.label = TextBox (labelText, obj.x+5, obj.y + 50)   
-      obj.hide = not reveal
-      obj.name = name               
-      obj.sheetIndex = sheetIndex        
-      obj.width = self.width
-      obj.height = self.height
-      return obj          
+      return message   
+
+   def createCard (self): 
+      obj = Object () 
+      self.data.append (obj)
+      index = len(self.data) - 1
+      print ( 'createCard returning an index of: ' + str(index)) 
+      return index    
                          
    # shift cards and place top card at the bottom of the deck    
    def cycleTopCard (self):
@@ -310,26 +263,19 @@ class SubDeck ():
    def move (self,index,pos): 
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]   
-      
-   def moveDataToDeck (self,destinationDeck,data,reveal=False): 
-      print ( 'Add card to ' + destinationDeck.name )
-      if reveal:
-         data.hide = False 
-      card = destinationDeck.addData (data)        
-      return card 
    
-   def moveToDeck (self,destinationDeck,index,reveal=False): 
+   '''
+   def moveToDeck (self,destinationDeck,index): 
       if (index == -1) or (index >= len(self.data)): 
          raise Exception ( 'moveToDeck, illegal index: ' + str(index)) 
-      else:
-         print ( 'Add card to ' + destinationDeck.name )
-         if reveal:
-            self.data[index].hide = False 
-         data = self.data[index]
-         card = self.moveDataToDeck (destinationDeck, data, reveal )          
-         self.remove (index)  
-      return card 
-         
+      print ( 'moving an index of: ' + str(index)) 
+      ind = destinationDeck.addCardToDeck (self.data[index])
+      self.remove (index) 
+      print ( 'moveToDeck got an ind of: ' + str(ind) ) 
+      exit1()
+      return ind 
+   '''
+   
    def pos (self,index):
       return ( self.data[index].x, self.data[index].y )
 
@@ -366,15 +312,15 @@ class SubDeck ():
       print ( '\nSubDeck, ***Show deck after redeal' )       
       self.showInfo()
        
-   def remove (self,index,redealCards=False): 
-      print ( 'SubDeck (' + self.name + ').remove index: ' + str(index) )
-      debugIt = True 
+   def remove (self,i,redealCards=False): 
+      print ( 'SubDeck (' + self.name + ').remove index: ' + str(i) )
+      debugIt = False 
       if debugIt:
          print ( '*** SubDeck.remove (' + self.name + '), data before pop' )
          self.showData()
-      if index == -1:
+      if i == -1:
          raise Exception ( 'SubDeck.remove, index == -1' )
-      self.data.pop (index)
+      self.data.pop (i)
       if debugIt: 
          print ( '***SubDeck.remove (' + self.name + ') data after pop' )
          self.showData()
@@ -396,7 +342,18 @@ class SubDeck ():
             index = index + 1
 
       print ( 'Removed all cards with .hide = ' + str(hide))                
-         
+     
+   def retrieveCard (self,index):
+      if index is None: 
+         raise Exception ( 'ERR you cannot retrieve a card with index = [None]' )
+      if index > (len(self.data)-1): 
+         raise Exception ( 'Err...Retrieving non-existent data...[index,len(self.data)]: [' + \
+                           str(index) + ',' + str(len(self.data)) + ']' )
+      elif index < 0: 
+         raise Exception ( 'Err...Cannot retrieve data element : ' + str(index)) 
+      else:
+         return self.data[index]
+     
    def revealTopCard (self):
       length = len(self.data)
       if length > 0: 
@@ -447,20 +404,25 @@ class SubDeck ():
          d = self.data[index1]
          self.data[index1] = self.data[index2]
          self.data[index2] = d         
-         
+   
+   '''   
    def shuffleTo (self, destinationDeck): 
       while self.length() > 0: 
          self.topToDeck (destinationDeck, False)
-       
+   '''
+   
    def topSheetIndex (self): 
       print ( 'SubDeck.topIndex, return sheetIndex' )
       return self.data[self.length()-1].sheetIndex
-      
+    
+   '''    
    def topToDeck (self,destinationDeck,reveal=False): 
       index = self.length()-1     
       self.moveToDeck (destinationDeck,index)
       if reveal: 
          destinationDeck.revealTopCard()
+      exit1() 
+   '''
    
    def unhide (self,index):
       self.data[index].hide = False 

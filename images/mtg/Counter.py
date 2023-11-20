@@ -12,9 +12,11 @@ class Counter:
       self.x = x 
       self.y = y
 
-   def draw (self):
-      self.label.draw()   
-      
+   def draw (self, x=-1, y=-1):
+      if (x == -1):               
+         self.label.draw()   
+      else:
+         self.label.draw ( pos=(x,y) )
    def move (self,x,y):
       print ( 'Move Counter from  to: [' + str(x) + ',' + str(y) + ']' )
       self.x = x
