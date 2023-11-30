@@ -11,6 +11,11 @@ class SpriteSheet:
    # numImages is the total number of images
    # coverIndex is the zero-based index that points to the back cover 
    def __init__(self, filename, numColumns, numRows, numImages, coverIndex):    
+      print ( 'SpriteSheet, filename: ' + filename )
+      print ( 'SpriteSheet, numColumns: ' + str(numColumns)) 
+      print ( 'SpriteSheet, numRows: ' + str(numRows) )
+      print ( 'SpriteSheet numImages: ' + str(numImages ) )
+      print ( 'SpriteSheet coverIndex: ' + str(coverIndex) ) 
       self.numImages = numImages
       self.coverIndex = coverIndex 
       print ( 'coverIndex is: ' + str(coverIndex)) 
@@ -72,13 +77,14 @@ class SpriteSheet:
          rect = pygame.Rect(( x,y,self.spriteWidth,self.spriteHeight))
          image = pygame.Surface(rect.size).convert()
          image.blit(self.image, (0, 0), rect)
-         obj.image = image
-         obj.sheetIndex = i
+         obj.image       = image
+         obj.sheetIndex  = i
          obj.canDealCard = True
-         obj.tapped = False
-         obj.hide = False
-         obj.drag = False 
-         obj.deleted = False
+         obj.tapped      = False
+         obj.hide        = False
+         obj.drag        = False 
+         obj.deleted     = False
+         obj.location    = ''
          if i < self.numImages:
             data.append (obj)
          if i == self.coverIndex:

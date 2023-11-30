@@ -350,12 +350,6 @@ class Uno ():
                          self.utilities.showStatus ( 'Waiting for opponents move' )
 
                          hand.moveToDeck (discardPile,dragging,reveal=True)
-                         # TODO: shuffle discard pile back into draw Pile 
-                         #if discardPile.length() == 5:   # test for discardPile shuffle  
-                         #   self.utilities.showStatus ( 'Need to shuffle discard into draw pile' )
-                         #   discardPile.shuffleTo ( drawPile )
-                         #else: 
-                         #   self.utilities.showStatus ( 'discardPile.length(): ' + str(discardPile.length()) )
                          
                          hand.redeal()                         
                          print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )

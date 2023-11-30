@@ -24,6 +24,11 @@ class Object(object):
 class Deck (SpriteSheet): 
    # numImages is the number of images in the deck that is dealt to a player 
    def __init__ (self, filename, numColumns, numRows, numImages, coverIndex=None):
+   
+      print ( 'Deck filename: '   + str(filename ) )
+      print ( 'Deck numColumns: ' + str(numColumns)) 
+      print ( 'Deck numImages: '  + str(numImages ) )
+   
       if coverIndex is None: 
          raise Exception("ERR coverIndex not specified in deck creation")
          
@@ -33,9 +38,11 @@ class Deck (SpriteSheet):
          raise Exception ("ERR cover images is not defined" )
 
    def deal (self, numCards, startX = 0, startY = 0): 
-      print ( 'Deck.deal ' + str(numCards) ) 
+      debugIt = False
+      if debugIt: 
+         print ( 'Deck.deal ' + str(numCards) ) 
+         print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
       hand = []
-      print ( 'Deal out ' + str(numCards) + ' cards from the deck' )
       for i in range (numCards):
          # obj = type ('Object', (object,), {})
             
@@ -49,7 +56,8 @@ class Deck (SpriteSheet):
          obj.x = startX
          obj.y = startY
          obj.name = 'name'
-         print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
+         if debugIt: 
+            print ( str(i) + ') just dealt card with index: ' + str(obj.sheetIndex) + ' from random number: ' + str(index) ) 
          hand.append (obj) # TODO: Do I need a copy?
          self.data.pop (index)
             
@@ -92,11 +100,6 @@ class Deck (SpriteSheet):
         
       return hand
    
-
-   # colors is a list of colors that cards must include 
-   def limitDeck ( self, colors): 
-      colors = []
-      
       
    def getRandomIndex (self,listLength):         
       index = -1
@@ -107,6 +110,11 @@ class Deck (SpriteSheet):
          index = int ( random.random() * listLength)
       # print ( 'Got a random index: ' + str(index))
       return index
+
+   # colors is a list of colors that cards must include 
+   def limitDeck ( self, colors): 
+      colors = []
+      
      
 if __name__ == '__main__':
    print ( '***Deck __main__' ) 

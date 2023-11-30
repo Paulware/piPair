@@ -1,24 +1,24 @@
 import pygame
-from SubDeck import SubDeck
+from DrawDeck import DrawDeck
 
 '''
    UnoCards is based on SubDeck but customized to the standard uno deck   
    Wherever SubDeck is used, UnoCards can be used instead.  
 '''
-class UnoCards (SubDeck):  
+class UnoCards (DrawDeck):  
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, deckBasis=None, numCards=0, width=80, height=120, startXY=(100,100), \
-                 displaySurface=None, xMultiplier=1.0, yMultiplier=0.0, cards=[], name='' ):
+   def __init__ (self, numColumns, numRows, numImages, width, height, displaySurface, startXY, \
+                 xMultiplier=1.0, yMultiplier=0.0, coverIndex=None):
       print ( 'UnoCards.init' )
-      SubDeck.__init__ (self,deckBasis=deckBasis, numCards=numCards, width=width, height=height, \
-                        startXY=startXY, displaySurface=displaySurface, xMultiplier=xMultiplier, \
-                        yMultiplier=yMultiplier, cards=cards, name=name)
+      DrawDeck.__init__ (self,'images/unoSpriteSheet.jpg', 10, 6, 52, 60,100,displaySurface,startXY,1.0,0.0,coverIndex=52)
+      
       print ('UnoCards, total number of cards: ' + str(self.numImages)) 
       
-      # Add attributes which are specific to MTG cards 
       index = 0
+      # Add attributes that are specific to UNO cards 
       for card in self.data:            
          card.name = self.cardName (card.sheetIndex)
+         print ( 'Assigned name of: ' + card.name + ' to sheetIndex: ' + str(card.sheetIndex)) 
          index     = index + 1
       
    def canDrop (self,topIndex,bottomIndex): 
@@ -32,7 +32,12 @@ class UnoCards (SubDeck):
             ok = True
             print ( 'canDrop is ok...' )
       return ok
-           
+      
+   def cardInfo (self,index): 
+      card = self.data[index]
+      return 'cardInfo for self.data[' + str(index) + '] [location, name, x, y, sheetIndex]: [' + card.location + \
+             ',' + card.name + ',' + str(card.x) + ',' + str(card.y) + ',' + str(card.sheetIndex) + ']'
+                         
    def cardName (self,index): 
       name = 'unknown' + str(index)
       if self.isNumber (index):
@@ -63,7 +68,10 @@ class UnoCards (SubDeck):
          color = 'Green'        
       print ( 'getColor [color]: [' + color + ']' ) 
       return color
-      
+     
+   def getInfo (self,index): 
+      print ( self.cardInfo() ) 
+           
    def getNumber (self,index): 
       value = 0
       if self.isNumber (index): 
@@ -79,19 +87,28 @@ class UnoCards (SubDeck):
             isNum = True 
       return isNum
       
+   def length (self,deckName):
+      count = 0 
+      for card in self.data:
+         if card.location == deckName:
+            count = count + 1
+      return count 
+            
    def printInfo (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + \
               self.cardName(sheetIndex))      
-                            
-   def showInfo (self):
+
+   def showInfo (self, deckName):
       length = len(self.data)
-      print ( 'There are ' + str(length) + ' cards in : ' + self.name )
+      # TODO : add length of function 
+      print ( 'There are ' + str(self.length(deckName)) + ' cards in : ' + deckName )
       i = 0
       for card in self.data: 
-         print ( str(i) + ') [name,x,y,sheetIndex]: [' + card.name + ',' + str(card.x) + ',' + str(card.y) + \
-                          ',' + str(card.sheetIndex) + ']')
-         i = i + 1
+         if deckName == card.location:
+            print ( str(i) + ') [name,x,y,sheetIndex,drawOrder]: [' + card.name + ',' + str(card.x) + ',' + str(card.y) + \
+                             ',' + str(card.sheetIndex) + ',' + str(card.drawOrder) + ']')
+            i = i + 1
      
 if __name__ == '__main__':
    from Deck      import Deck
@@ -105,33 +122,32 @@ if __name__ == '__main__':
    displaySurface = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
-   
-   deck        = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)      
-   hand        = UnoCards (deck,  7, startXY=(100,400), displaySurface=displaySurface)   
-   discardPile = UnoCards (deck,  1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile    = UnoCards (deck, 44, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0)
-   drawPile.hideAll () 
-   
-   cards=[]
-   cards.append (hand)
-   cards.append (drawPile)   
-   cards.append (discardPile)
-   decks = SubDecks (cards)    
-   
-   TextBox('Opponent', x=100, y=  5).draw()
-   TextBox('Discard',  x=100, y=175).draw()
-   TextBox('Draw',     x=310, y=175).draw()
-   TextBox('Hand',     x=100, y=375).draw() 
-   window = pygame.display.get_surface()
-   
+
+   startXY = (100,100)
+
+   deck = UnoCards (10, 6, 52, 60,100,displaySurface,startXY,1.0,0.0,coverIndex=52)
+   deck.deal   ( 'hand', 7, 60, 120, 100, 400,)
+   deck.redeal ('hand', 100, 400, 60, 0)
+   deck.deal   ( 'discard', 1, 60, 120, 100, 200)
+   deck.redeal ('discard', 100, 200, 60, 0)
+   deck.deal   ( 'draw', 43, 60, 120, 300, 200)
+      
    quit = False
    dragCard = None
    
-   decks.draw() # Show and set their x/y locations
-   hand.draw()
-   pygame.display.update() 
+   while not quit:   
+
+      displaySurface.fill ((0,0,0)) 
+      TextBox('Opponent', x=100, y=  5).draw()
+      TextBox('Discard',  x=100, y=175).draw()
+      TextBox('Draw',     x=310, y=175).draw()
+      TextBox('Hand',     x=100, y=375).draw() 
+      deck.draw('hand')
+      deck.drawTop('discard')
+      deck.drawTop('draw')
+      
+      pygame.display.update() 
    
-   while not quit:      
       events = utilities.readOne()
       for event in events:
          (typeInput,data,addr) = event
@@ -140,32 +156,50 @@ if __name__ == '__main__':
                x = data[0]
                y = data[1]
                print ( 'Moving...' + str(dragCard) + ' to [' + str(x) + ',' + str(y) + ']')
-               hand.move (dragCard,data)
-                  
+               deck.move (dragCard,data)
+                 
          elif typeInput == 'drag':
             if dragCard is None:
-               dragCard = hand.findSprite (data) 
+               dragCard = deck.findCard (data) 
+               print ( deck.cardInfo (dragCard) ) 
                if dragCard > -1: 
-                  sheetIndex = hand.data[dragCard].sheetIndex
-                  hand.data[dragCard].drag = True 
-                  print ( '\n\n***DRAG*** ' + hand.cardName(sheetIndex) + '\n\n' )
+                  sheetIndex = deck.data[dragCard].sheetIndex
+                  deck.data[dragCard].drag = True
+                  startPos = (deck.data[dragCard].x,deck.data[dragCard].y)                  
+                  print ( '\n\n***DRAG*** ' + deck.cardName(sheetIndex) + '\n\n' )                                 
+                  
          elif typeInput == 'drop':
-            (deck,index) = decks.findSprite (data) # Where are we dropping                                  
-            if deck == discardPile: 
-               dropSheetIndex = deck.data[index].sheetIndex
-               if discardPile.canDrop ( sheetIndex, dropSheetIndex):                   
-                  print ( 'Drop on discard Pile' ) 
-               else:
-                  print ( 'Illegal Uno drop' )
-            else: 
-               print ( 'Illegal drop yo' )
+            dropIndex = deck.findCard (data,dragCard) # Where are we dropping                                  
+            if dropIndex != -1: 
+               if deck.data[dropIndex].location == 'draw': 
+                  print ( '***drop this card...' )
+                  print (deck.cardInfo (dragCard) )                   
+                  deck.placeOnTop ( 'hand', dragCard )
+                  deck.redeal ('hand', 100, 400, 60, 0) 
+               elif deck.data[dropIndex].location == 'discard': 
+                  dropSheetIndex = deck.data[dropIndex].sheetIndex
+                  if deck.canDrop ( sheetIndex, dropSheetIndex):  
+                     deck.placeOnTop ('discard', dragCard )
+                     deck.redeal ('discard', 100, 200, 0, 0) # Snap to 
+                     print ( 'Drop on discard Pile' )
+                     deck.drawTop ('discard', )  
+                  else:                      
+                     deck.data[dragCard].x = startPos[0]
+                     deck.data[dragCard].y = startPos[1]                 
+                     print ( 'Illegal Uno drop' )
+               else: 
+                  deck.data[dragCard].x = startPos[0]
+                  deck.data[dragCard].y = startPos[1]                 
+                  print ( 'Illegal drop to ' + deck.data[dropIndex].location )
+                  deck.getInfo ( dropIndex)
+                  
             dragCard = None
          elif typeInput == 'select':      
-            index = hand.findSprite (data)  
+            index = deck.findCard (data)  
             if index > -1: 
-               x = hand.data[index].x
-               y = hand.data[index].y
-               sheetIndex = hand.data[index].sheetIndex
+               x = deck.data[index].x
+               y = deck.data[index].y
+               sheetIndex = deck.data[index].sheetIndex
                optionBox = OptionBox (['Play', 'Cancel','Info'], x, y)
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
@@ -174,14 +208,14 @@ if __name__ == '__main__':
                   print ( 'quit is now: ' + str(quit) )
                   break
                elif selection == 'Info':
-                  print ( hand.getInfo (sheetIndex)) 
-               #elif selection == 'Play':
-               #   discardPile.addCard (hand,index)
-               #   hand.data[index].deleted = True 
-               #   # hand.discard (index) 
-               #   hand.addCard (drawPile, drawPile.topCard())
+                  print ( 'Deck found: ' + deck.data[index].location)
+                  deck.getInfo (index) 
+                  # deck.showInfo ( 'draw' )
+               elif selection == 'Play':
+                  deck.placeOnTop ( 'hand', index )
+                  deck.redeal ('hand', 100, 400, 60, 0)                  
 
-               window.fill ((0,0,0))
+               displaySurface.fill ((0,0,0))
          else:
             print ( 'event: ' + typeInput)
 

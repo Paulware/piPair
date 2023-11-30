@@ -1211,9 +1211,9 @@ if __name__ == '__main__':
    index = globalDictionary['inplay'].addCardToDeck (globalDictionary['drawPile'].retrieveCard(ind))
    globalDictionary['inplay'].data[index].hide = False 
    
-   print ( 'index before remove: ' + str(index) )   
-   globalDictionary['drawPile'].remove (ind) 
-   print ( 'index after remove: ' + str(index) ) 
+   print ( 'index before remove: ' + str(index) )
+   globalDictionary['drawPile'].remove (ind)
+   print ( 'index after remove: ' + str(index) )
    drawPile.draw (True)
    
    print ( '\n***\nafter moveToDeck, drawPile to hand...' )
