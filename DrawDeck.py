@@ -50,6 +50,7 @@ class DrawDeck (Deck):
            card.height   = height
         
         print ('Deck has ' + str(self.numImages) + ' cards ') 
+        self.lastDrawMessage = '' # For debugging only 
         
    def deal (self, deckName, numCards, width, height, startX, startY): 
       print ( 'Deal out ' + str(numCards) + ' cards to deck: ' + deckName )
@@ -108,23 +109,24 @@ class DrawDeck (Deck):
             elif top < card.drawOrder:
                top       = index
                drawOrder = card.drawOrder 
+      assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
+      print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
       return (top,drawOrder)
 
    
-   #TODO: Maintain the drawOrder...   
    def draw ( self, deckName ): 
       debugIt = False 
       count = 0 
-      for card in self.data:
+      for card in self.data: 
          if card.location == deckName: 
+            index = self.findDrawCard (deckName, count)
+            if index == -1:
+               break
+            else:
+               image = self.getImage (card)
+               if not card.hide: 
+                  self.displaySurface.blit (image, (card.x,card.y))           
             count = count + 1
-            image = self.getImage (card)
-            if debugIt: 
-               print ( 'card (' + str(count) + ').[x,y,sheetIndex: [' + str(card.x) + ',' + str(card.y) + ',' + \
-                       str (card.sheetIndex) + ']'  ) 
-            card.drawOrder = count
-            if not card.hide: 
-               self.displaySurface.blit (image, (card.x,card.y))           
                
    def drawTop (self, deckName): 
       debugIt = False 
@@ -176,12 +178,32 @@ class DrawDeck (Deck):
                            found = index 
                            
          if found > -1: 
+            card = deck.data[found]
             print ( '.findCard found: ' + str(found) + ' in deck: ' + deckName ) 
             print ( 'Using: [found,card.drawOrder, self.data[found].drawOrder]: [' + \
                                    str(found) + ',' + str(card.drawOrder) + ',' + \
                                    str(self.data[found].drawOrder) + ']') 
          return found 
          
+   def findDrawCard (self, deckName, drawOrder ): 
+      index = -1
+      found = -1
+      for card in self.data:
+         index = index + 1
+         if card.location == deckName: 
+            if card.drawOrder == drawOrder:
+               found = index 
+               break
+            #else:
+            #   print ( 'card.data[' + str(index) + '] has drawORder: ' + str(card.drawOrder) + ' looking for: ' + str(drawOrder) )
+      if found == -1: 
+         message = 'Could not find [drawOrder,deckName]: [' + str(drawOrder) + ',' + deckName + ']' 
+         if message != self.lastDrawMessage:
+            print (message)
+            self.lastDrawMessage = message
+            
+      return found
+     
    def findLeftCard (self, deckName):
       found = -1
       count = -1
@@ -193,7 +215,7 @@ class DrawDeck (Deck):
             elif self.data[found].x > card.x:
                found = count 
       print ( 'left most card is card: ' + str(found) ) 
-      return found        
+      return found     
 
    def getImage (self,card):
       if card.hide: 
@@ -208,46 +230,61 @@ class DrawDeck (Deck):
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]  
       
+   def decrementOrder ( self, deckName, drawOrder): 
+      for card in self.data: 
+         if card.location == deckName:
+            if card.drawOrder >= drawOrder:          
+               card.drawOrder = card.drawOrder - 1
+                             
+      
    def placeOnTop (self,deckName,index):
       debugIt = True       
       (top,drawOrder) = self.deckTop (deckName)   
-      self.data[index].location = deckName
-      self.data[index].drawOrder = drawOrder + 1
+      sourceDeck = self.data[index].location
+      sourceOrder = self.data[index].drawOrder
+      # By moving this card, we create a hole in the draw order of the sourceDeck 
+      self.data[index].location = deckName # We now have a hole in the draw order 
+      drawOrder = drawOrder + 1 # Adding to top of deck
+      print ( 'Moving card: [' + str(index) + '] with drawOrder: ' + str(self.data[index].drawOrder) + \
+              ' to deck: ' + deckName + ' drawOrder: ' + str(drawOrder) )
+      self.data[index].drawOrder = drawOrder
       self.data[index].x = self.data[top].x
       self.data[index].y = self.data[top].y
-      print ( 'TODO: maintain draw order' ) 
+      self.decrementOrder (sourceDeck,sourceOrder)
                    
    # set the x location of cards
-   # Todo: Maintain the draw order... 
+   # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
-      debugIt = True      
+      debugIt = False      
       if debugIt:        
-         print ( 'len(self.data): ' + str(len(self.data)) )
+         print ('len(self.data): ' + str(len(self.data)))
          
-      cnt = 0    
+      count = 0
       for card in self.data: # Set the width/height of each image 
          if deckName == card.location: 
-            ind = cnt
+            index = self.findDrawCard (deckName, count)
+            drawCard = self.data[index]
             if debugIt:
-               print ( 'self.data[' + str(ind) + '].x = ' + str(x) ) 
-               print ( 'self.data[' + str(ind) + '].y = ' + str(y) )          
+               print ( 'self.data[' + str(index) + '].x = ' + str(x) ) 
+               print ( 'self.data[' + str(index) + '].y = ' + str(y) )          
             
-            card.x = x
-            card.y = y 
+            drawCard.x = x
+            drawCard.y = y 
 
             if debugIt: 
                print ( 'card (' + str(ind) + ') redeal [width,height,xMultipler, xOffset,x,y,sheetIndex]: [' + \
-                       str(self.width) + ',' + str(self.height) + ',' + str(self.xMultiplier) + ',' + str(xOffset) + ',' + \
-                       str(card.x) + ',' + str(card.y) + ',' + str(card.sheetIndex) + ']' )
+                       str(self.width) + ',' + str(self.height) + ',' + str(self.xMultiplier) + ',' + \
+                       str(xOffset) + ',' + str(drawCard.x) + ',' + str(drawCard.y) + ',' + \
+                       str(card.sheetIndex) + ']' )
             x = x + xOffset
             y = y + yOffset    
-            cnt = cnt + 1
+            count = count + 1
 
       self.nextX = x
       self.nextY = y
       if debugIt: 
          print ( '\nSubDeck, ***Show deck after redeal' )   
-                    
+   
 if __name__ == '__main__':
    from Utilities import Utilities
    from OptionBox import OptionBox
@@ -260,14 +297,17 @@ if __name__ == '__main__':
    print ( 'Make deck' )
    startXY = (100,100)
    deck = DrawDeck ('images/unoSpriteSheet.jpg', 10, 6, 52, 60,100,displaySurface,startXY,1.0,0.0,coverIndex=52)
-   deck.deal ( 'hand', 7, 80, 120, 100, 100,)
-   
-   deck.redeal ('hand', 100, 100, 60, 0)
+   deck.deal ( 'hand', 7, 80, 120, 100, 100)
+   deck.deal ( 'opponent', 7, 80, 120, 100,100)
+   deck.redeal ('hand', 100, 300, 60, 0)
+   deck.redeal ( 'opponent', 100,100,60,0)   
    
    dragCard = None
-   while True:
+   quit = False
+   while not quit:
       displaySurface.fill ((0,0,0))
-      deck.draw('hand')
+      deck.draw ('hand')
+      deck.draw ('opponent')
       utilities.flip()
       pygame.display.update()
       
@@ -292,14 +332,17 @@ if __name__ == '__main__':
             if index != -1: 
                x = pos[0]
                y = pos[1]
-               optionBox = OptionBox (['Use', 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
+               optionBox = OptionBox (['Use', 'Cancel'], x, y) # , 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
                if selection == 'Cancel': 
                   quit = True 
-               elif selection == 'Discard':
-                  deck.data[index].location = 'discardPile' 
-                  #TODO change x/y location 
+               elif selection == 'Use':
+                  deck.placeOnTop ( 'opponent', index )
+                  deck.redeal ('hand', 100, 300, 60, 0)
+                  deck.redeal ( 'opponent', 100,100,60,0) 
+                                    
+               '''   
                elif selection == 'Tap':                
                   deck.data[index].tapped = not deck.data[index].tapped
                elif selection == 'Use':
@@ -309,3 +352,4 @@ if __name__ == '__main__':
                   deck.data[index].hide = True
                elif selection == 'Show':
                   deck.data[index].hide = False 
+               '''   
