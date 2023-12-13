@@ -98,15 +98,12 @@ class DrawDeck (Deck):
   
    def deckTop (self,deckName): 
       top = -1
-      drawOrder = 0
+      drawOrder = -1
       index = -1
       for card in self.data: 
          index = index + 1
          if card.location == deckName:       
-            if top == -1: 
-               top       = index
-               drawOrder = card.drawOrder 
-            elif top < card.drawOrder:
+            if card.drawOrder > drawOrder:
                top       = index
                drawOrder = card.drawOrder 
       assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
@@ -184,7 +181,24 @@ class DrawDeck (Deck):
                                    str(found) + ',' + str(card.drawOrder) + ',' + \
                                    str(self.data[found].drawOrder) + ']') 
          return found 
-         
+   
+   def checkDrawOrder (self,deckName): 
+      index = -1 
+      for card in self.data: 
+         index = index + 1 
+         if card.location == deckName:
+            drawOrder = card.drawOrder 
+            # print ( 'card (' + str(index) + ')drawOrder: ' + str(card.drawOrder) ) 
+            ind = -1
+            for crd in self.data: 
+               ind = ind + 1
+               if crd.location == deckName: 
+                  if crd.drawOrder == drawOrder:
+                     if (ind != index): 
+                        assert False, 'Deck ' + deckName + ' has a double drawOrder: ' + \
+                                      str(drawOrder)                  
+      print ( 'Deck ' + deckName + ' checks out ok' )
+   
    def findDrawCard (self, deckName, drawOrder ): 
       index = -1
       found = -1
@@ -201,6 +215,7 @@ class DrawDeck (Deck):
          if message != self.lastDrawMessage:
             print (message)
             self.lastDrawMessage = message
+            self.showDeck (deckName)
             
       return found
      
@@ -231,30 +246,49 @@ class DrawDeck (Deck):
       self.data[index].y = pos[1]  
       
    def decrementOrder ( self, deckName, drawOrder): 
+      index = -1 
       for card in self.data: 
+         index = index + 1 
          if card.location == deckName:
-            if card.drawOrder >= drawOrder:          
+            if card.drawOrder >= drawOrder:        
+               #print ( 'decrementing drawOrder: ' + str(card.drawOrder) ) 
                card.drawOrder = card.drawOrder - 1
+               #print ( ' to: ' + str(card.drawOrder) ) 
                              
       
    def placeOnTop (self,deckName,index):
       debugIt = True       
-      (top,drawOrder) = self.deckTop (deckName)   
+      (top,drawOrder) = self.deckTop (deckName)  
+      print ( 'Deck ' + deckName + ' has a [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )      
       sourceDeck = self.data[index].location
       sourceOrder = self.data[index].drawOrder
       # By moving this card, we create a hole in the draw order of the sourceDeck 
-      self.data[index].location = deckName # We now have a hole in the draw order 
+      self.data[index].location = deckName # We now have a hole in the draw order
+      print ( 'Old drawOrder: ' + str(drawOrder) )       
       drawOrder = drawOrder + 1 # Adding to top of deck
       print ( 'Moving card: [' + str(index) + '] with drawOrder: ' + str(self.data[index].drawOrder) + \
               ' to deck: ' + deckName + ' drawOrder: ' + str(drawOrder) )
       self.data[index].drawOrder = drawOrder
+      print ( 'New drawOrder: ' + str(drawOrder) ) 
       self.data[index].x = self.data[top].x
       self.data[index].y = self.data[top].y
       self.decrementOrder (sourceDeck,sourceOrder)
-                   
+      print ( 'Done in placeOnTop' )
+      
+   def showDeck ( self, deckName ): 
+      print ( 'Show this deck: ' + deckName )
+      index = -1
+      for card in self.data:
+         index = index + 1
+         if card.location == deckName:
+            print ( deckName + '.card (' + str(index) + '): [drawOrder], [' + \
+            str(card.drawOrder) + ']') 
+         
+      
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
+      print ( 'redeal: ' + deckName )
       debugIt = False      
       if debugIt:        
          print ('len(self.data): ' + str(len(self.data)))
@@ -339,8 +373,10 @@ if __name__ == '__main__':
                   quit = True 
                elif selection == 'Use':
                   deck.placeOnTop ( 'opponent', index )
-                  deck.redeal ('hand', 100, 300, 60, 0)
-                  deck.redeal ( 'opponent', 100,100,60,0) 
+                  deck.redeal ( 'hand',     100, 300, 60, 0)
+                  deck.checkDrawOrder ('hand')
+                  deck.redeal ( 'opponent', 100, 100, 60, 0) 
+                  deck.checkDrawOrder ( 'opponent')
                                     
                '''   
                elif selection == 'Tap':                
