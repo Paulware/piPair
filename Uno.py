@@ -50,9 +50,12 @@ class UnoCommunications (Communications):
       if self.gotPeek ('subdeck uno'):   
          message = self.peek () 
          print ( 'handleSubdeck, got message: [' + message + ']')
-         cards = [] 
+         #TODO: Make this work for current deck type.
+         #cards = [] 
          for c in cardsStr: 
-            cards.append (int(c))             
+            #cards.append (int(c)) 
+            deck.placeOnTop (name, int(c)) 
+         '''   
          if name == 'hand': 
             print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
             d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards, name=name)             
@@ -64,7 +67,8 @@ class UnoCommunications (Communications):
             d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
          elif name == 'drawPile':
             d = UnoCards (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
-         return d  
+         return d
+         '''         
       else: 
          raise Exception ( 'Could not gotPeek subdeck uno' )      
          
@@ -83,9 +87,10 @@ class UnoCommunications (Communications):
       print ( 'data: ' + str(data) ) 
       name     = data[2]                 
       cardsStr = data[3:]
-      subDeck =  self.handleSubdeck (name,cardsStr,deck)      
+      #subDeck =  
+      self.handleSubdeck (name,cardsStr,deck)      
       self.pop() 
-      return subDeck
+      #return subDeck
 
 # Show the Uno Pages
 class Uno (): 
@@ -117,33 +122,17 @@ class Uno ():
        sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )
        pygame.display.update()
 
-       deck = Deck ('images/unoSpriteSheet.jpg', 10, 6, 52, 52)
-                 
-       if self.iAmHost:   
-          hand        = UnoCards (deckBasis=deck, numCards=7, startXY=(100,400), displaySurface=displaySurface, name='hand')
-          hand.redeal()
-          opponent    = UnoCards (deckBasis=deck, numCards=7, startXY=(100,50),  displaySurface=displaySurface, name='opponent')
-          # opponent.hideAll ()
-          opponent.redeal()
-          opponent.showAll()
-          discardPile = UnoCards (deckBasis=deck, numCards=1, startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, \
-                                  name='discardPile')
-          # All remaining cards go into the draw pile 
-          drawPile    = UnoCards (deckBasis=deck, numCards=0, startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, \
-                                  name='drawPile')
-          drawPile.hideAll () 
-          
-          # creates decks array 
-          cards=[]
-          cards.append (opponent)
-          cards.append (drawPile)   
-          cards.append (discardPile)
-          cards.append (hand)
-          decks = SubDecks (cards)  
-          decks.setGlobals()          
-            
+       deck = UnoCards (10, 6, 52, 60,100,displaySurface,(100,100),1.0,0.0,coverIndex=52)
+       if self.iAmHost:          
+          deck.deal   ( 'hand', 7, 60, 120, 100, 400,)
+          deck.redeal ( 'hand', 100, 400, 60, 0)
+          deck.deal   ( 'opponent', 7, 60, 120, 100, 50)
+          deck.redeal ( 'opponent', 100, 50, 60, 0)
+          deck.deal   ( 'discard', 1, 60, 120, 100, 200)
+          deck.redeal ( 'discard', 100, 200, 60, 0)
+          deck.deal   ( 'draw', 37, 60, 120, 300, 200)       
+              
           pygame.display.update()
-          
           self.utilities.showStatus ( "Waiting for join uno")
           self.comm.waitPeek ('join uno' )
           self.utilities.showStatus ( "Give Cards")
@@ -155,12 +144,11 @@ class Uno ():
        else: # Host goes first...
           self.comm.send ( 'join uno' )
           self.utilities.showStatus ( "Waiting for host to deal")
-          cards=[]
 
-          opponent = self.comm.waitData ( 'subdeck uno opponent',deck)
-          globalDictionary['opponent'] = opponent
-          opponent.redeal()          
-          opponent.showAll()
+          # Get the opponent deck from the host
+          self.comm.waitData ( 'subdeck uno opponent',deck)
+          deck.redeal ( 'opponent', 100, 50, 60, 0)
+          #opponent.showAll()
           
           drawPile = self.comm.waitData ( 'subdeck uno drawPile',deck )
           globalDictionary['drawPile'] = drawPile
@@ -214,7 +202,11 @@ class Uno ():
           TextBox('Draw',     x=310, y=175).draw()
           TextBox('Hand',     x=100, y=375).draw()        
 
-          decks.draw()
+          # Draw the decks 
+          deck.draw('hand')
+          deck.drawTop('discard')
+          deck.drawTop('draw')
+          
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
           self.utilities.showLastStatus()
           self.utilities.flip() 

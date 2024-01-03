@@ -422,6 +422,7 @@ class Utilities ():
        
    def showStatus (self,status):
        self.statusMessage = status 
+       print ( 'showStatus [status,self.statusMessage]: [' + status + ',' + self.statusMessage + ']' )
        if self.statusMessage != "":
           print ( 'Show status: ' + self.statusMessage )
           self.clearStatus()

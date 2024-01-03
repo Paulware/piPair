@@ -1,9 +1,7 @@
 import pygame
 from DrawDeck import DrawDeck
-
 '''
-   UnoCards is based on SubDeck but customized to the standard uno deck   
-   Wherever SubDeck is used, UnoCards can be used instead.  
+   UnoCards is based on DrawDeck but customized to the standard uno deck   
 '''
 class UnoCards (DrawDeck):  
    # data is a list of objects that have an image and index attribute
@@ -70,7 +68,7 @@ class UnoCards (DrawDeck):
       return color
      
    def getInfo (self,index): 
-      print ( self.cardInfo() ) 
+      print ( self.cardInfo(index) ) 
            
    def getNumber (self,index): 
       value = 0
@@ -123,15 +121,14 @@ if __name__ == '__main__':
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
    utilities = Utilities (displaySurface, BIGFONT)   
 
-   startXY = (100,100)
-
-   deck = UnoCards (10, 6, 52, 60,100,displaySurface,startXY,1.0,0.0,coverIndex=52)
+   deck = UnoCards (10, 6, 52, 60,100,displaySurface,(100,100),1.0,0.0,coverIndex=52)
    deck.deal   ( 'hand', 7, 60, 120, 100, 400,)
-   deck.redeal ('hand', 100, 400, 60, 0)
+   deck.redeal ( 'hand', 100, 400, 60, 0)
    deck.deal   ( 'discard', 1, 60, 120, 100, 200)
-   deck.redeal ('discard', 100, 200, 60, 0)
+   deck.redeal ( 'discard', 100, 200, 60, 0)
    deck.deal   ( 'draw', 43, 60, 120, 300, 200)
-      
+
+   mouseOffset = (0,0)      
    quit = False
    dragCard = None
    
@@ -153,10 +150,11 @@ if __name__ == '__main__':
          (typeInput,data,addr) = event
          if typeInput == 'move':
             if not dragCard is None:
-               x = data[0]
-               y = data[1]
-               print ( 'Moving...' + str(dragCard) + ' to [' + str(x) + ',' + str(y) + ']')
-               deck.move (dragCard,data)
+               x = data[0] - mouseOffset[0]
+               y = data[1] - mouseOffset[1]
+               # print ( 'Moving...' + str(dragCard) + ' to [' + str(x) + ',' + str(y) + ']')
+               deck.move (dragCard,(x,y))
+               pygame.display.update()
                  
          elif typeInput == 'drag':
             if dragCard is None:
@@ -167,10 +165,15 @@ if __name__ == '__main__':
                   deck.data[dragCard].drag = True
                   startPos = (deck.data[dragCard].x,deck.data[dragCard].y)                  
                   print ( '\n\n***DRAG*** ' + deck.cardName(sheetIndex) + '\n\n' )                                 
+                  mouseOffset = (data[0]-deck.data[dragCard].x,data[1]-deck.data[dragCard].y)
+                  print ( 'mouseOffset : ' + str(mouseOffset) ) 
                   
          elif typeInput == 'drop':
             dropIndex = deck.findCard (data,dragCard) # Where are we dropping                                  
-            if dropIndex != -1: 
+            if dropIndex == -1:
+               print ( 'No drop target found' )
+               deck.redeal ( 'hand', 100, 400, 60, 0)               
+            else:               
                if deck.data[dropIndex].location == 'draw': 
                   print ( '***drop this card...' )
                   print (deck.cardInfo (dragCard) )                   
@@ -183,6 +186,7 @@ if __name__ == '__main__':
                      deck.redeal ('discard', 100, 200, 0, 0) # Snap to 
                      print ( 'Drop on discard Pile' )
                      deck.drawTop ('discard', )  
+                     deck.redeal ( 'hand', 100, 400, 60, 0)
                   else:                      
                      deck.data[dragCard].x = startPos[0]
                      deck.data[dragCard].y = startPos[1]                 
@@ -203,18 +207,18 @@ if __name__ == '__main__':
                optionBox = OptionBox (['Play', 'Cancel','Info'], x, y)
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
-               if selection == 'Cancel': 
+               if selection == 'Cancel':
                   quit = True
                   print ( 'quit is now: ' + str(quit) )
                   break
                elif selection == 'Info':
                   print ( 'Deck found: ' + deck.data[index].location)
-                  deck.getInfo (index) 
+                  deck.getInfo (index)
                   # deck.showInfo ( 'draw' )
                elif selection == 'Play':
-                  deck.placeOnTop ( 'hand', index )
-                  deck.redeal ('hand', 100, 400, 60, 0)                  
-
+                  deck.placeOnTop ( 'discard', index )
+                  deck.redeal     ( 'discard', 100, 400, 60, 0)
+                  deck.redeal     ( 'hand',    100, 400, 60, 0) 
                displaySurface.fill ((0,0,0))
          else:
             print ( 'event: ' + typeInput)

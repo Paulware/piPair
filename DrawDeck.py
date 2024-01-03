@@ -52,15 +52,34 @@ class DrawDeck (Deck):
         print ('Deck has ' + str(self.numImages) + ' cards ') 
         self.lastDrawMessage = '' # For debugging only 
         
+   def checkDrawOrder (self,deckName): 
+      index = -1 
+      for card in self.data: 
+         index = index + 1 
+         if card.location == deckName:
+            drawOrder = card.drawOrder 
+            # print ( 'card (' + str(index) + ')drawOrder: ' + str(card.drawOrder) ) 
+            ind = -1
+            for crd in self.data: 
+               ind = ind + 1
+               if crd.location == deckName: 
+                  if crd.drawOrder == drawOrder:
+                     if (ind != index): 
+                        assert False, 'Deck ' + deckName + ' has a double drawOrder: ' + \
+                                      str(drawOrder)                  
+      print ( 'Deck ' + deckName + ' checks out ok' )
+      
    def deal (self, deckName, numCards, width, height, startX, startY): 
       print ( 'Deal out ' + str(numCards) + ' cards to deck: ' + deckName )
       drawOrder = 0
       for i in range (numCards):   
          index = self.getRandomIndex (len(self.data))
+         count = 0 
          while self.data[index].location != '':
+            count = count + 1
             index = self.getRandomIndex (len(self.data))
-         print ( 'index: ' + str(index)) 
-         
+            if count == 1000: 
+               assert False, 'Ran out of cards trying to deal, the number of cards in this deck is: ' + str(len(self.data))
          try: 
             card = self.data[index]
          except IndexError:
@@ -76,8 +95,48 @@ class DrawDeck (Deck):
          card.drawOrder = drawOrder
          drawOrder      = drawOrder + 1
     
-         print ( str(i) + ') just dealt card with index: ' + str(card.sheetIndex) + ' from random number: ' + str(index) ) 
-  
+         print ( str(i) + ' of ' + str(numCards) + ' just dealt ' + deckName + ' card with index: ' + str(card.sheetIndex) + ' from random number: ' + str(index) ) 
+      print ( 'Done in ' + deckName + ' deal' )
+   
+   def decrementOrder ( self, deckName, drawOrder): 
+      index = -1 
+      for card in self.data: 
+         index = index + 1 
+         if card.location == deckName:
+            if card.drawOrder >= drawOrder:        
+               #print ( 'decrementing drawOrder: ' + str(card.drawOrder) ) 
+               card.drawOrder = card.drawOrder - 1
+               #print ( ' to: ' + str(card.drawOrder) ) 
+                                  
+   def deckTop (self,deckName): 
+      top = -1
+      drawOrder = -1
+      index = -1
+      for card in self.data: 
+         index = index + 1
+         if card.location == deckName:       
+            if card.drawOrder > drawOrder:
+               top       = index
+               drawOrder = card.drawOrder 
+      assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
+      # print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
+      return (top,drawOrder)
+
+   
+   def draw ( self, deckName ): 
+      debugIt = False 
+      count = 0 
+      for card in self.data: 
+         if card.location == deckName: 
+            index = self.findDrawCard (deckName, count)
+            if index == -1:
+               break
+            else:
+               image = self.getImage (card)
+               if not card.hide: 
+                  self.displaySurface.blit (image, (card.x,card.y))           
+            count = count + 1
+               
    def drawInfo (self,deckName):
       count = 0
       maxIndex = -1
@@ -96,35 +155,6 @@ class DrawDeck (Deck):
                
       return (count,minIndex,maxIndex)
   
-   def deckTop (self,deckName): 
-      top = -1
-      drawOrder = -1
-      index = -1
-      for card in self.data: 
-         index = index + 1
-         if card.location == deckName:       
-            if card.drawOrder > drawOrder:
-               top       = index
-               drawOrder = card.drawOrder 
-      assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
-      print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
-      return (top,drawOrder)
-
-   
-   def draw ( self, deckName ): 
-      debugIt = False 
-      count = 0 
-      for card in self.data: 
-         if card.location == deckName: 
-            index = self.findDrawCard (deckName, count)
-            if index == -1:
-               break
-            else:
-               image = self.getImage (card)
-               if not card.hide: 
-                  self.displaySurface.blit (image, (card.x,card.y))           
-            count = count + 1
-               
    def drawTop (self, deckName): 
       debugIt = False 
       (top,drawOrder) = self.deckTop (deckName)
@@ -175,29 +205,12 @@ class DrawDeck (Deck):
                            found = index 
                            
          if found > -1: 
-            card = deck.data[found]
+            card = self.data[found]
             print ( '.findCard found: ' + str(found) + ' in deck: ' + deckName ) 
             print ( 'Using: [found,card.drawOrder, self.data[found].drawOrder]: [' + \
                                    str(found) + ',' + str(card.drawOrder) + ',' + \
                                    str(self.data[found].drawOrder) + ']') 
          return found 
-   
-   def checkDrawOrder (self,deckName): 
-      index = -1 
-      for card in self.data: 
-         index = index + 1 
-         if card.location == deckName:
-            drawOrder = card.drawOrder 
-            # print ( 'card (' + str(index) + ')drawOrder: ' + str(card.drawOrder) ) 
-            ind = -1
-            for crd in self.data: 
-               ind = ind + 1
-               if crd.location == deckName: 
-                  if crd.drawOrder == drawOrder:
-                     if (ind != index): 
-                        assert False, 'Deck ' + deckName + ' has a double drawOrder: ' + \
-                                      str(drawOrder)                  
-      print ( 'Deck ' + deckName + ' checks out ok' )
    
    def findDrawCard (self, deckName, drawOrder ): 
       index = -1
@@ -245,17 +258,6 @@ class DrawDeck (Deck):
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]  
       
-   def decrementOrder ( self, deckName, drawOrder): 
-      index = -1 
-      for card in self.data: 
-         index = index + 1 
-         if card.location == deckName:
-            if card.drawOrder >= drawOrder:        
-               #print ( 'decrementing drawOrder: ' + str(card.drawOrder) ) 
-               card.drawOrder = card.drawOrder - 1
-               #print ( ' to: ' + str(card.drawOrder) ) 
-                             
-      
    def placeOnTop (self,deckName,index):
       debugIt = True       
       (top,drawOrder) = self.deckTop (deckName)  
@@ -264,7 +266,10 @@ class DrawDeck (Deck):
       sourceOrder = self.data[index].drawOrder
       # By moving this card, we create a hole in the draw order of the sourceDeck 
       self.data[index].location = deckName # We now have a hole in the draw order
-      print ( 'Old drawOrder: ' + str(drawOrder) )       
+      print ( 'Old drawOrder: ' + str(drawOrder) )   
+      if drawOrder == 0: 
+         assert False, 'No old draw order to place on top' 
+         
       drawOrder = drawOrder + 1 # Adding to top of deck
       print ( 'Moving card: [' + str(index) + '] with drawOrder: ' + str(self.data[index].drawOrder) + \
               ' to deck: ' + deckName + ' drawOrder: ' + str(drawOrder) )
@@ -274,16 +279,6 @@ class DrawDeck (Deck):
       self.data[index].y = self.data[top].y
       self.decrementOrder (sourceDeck,sourceOrder)
       print ( 'Done in placeOnTop' )
-      
-   def showDeck ( self, deckName ): 
-      print ( 'Show this deck: ' + deckName )
-      index = -1
-      for card in self.data:
-         index = index + 1
-         if card.location == deckName:
-            print ( deckName + '.card (' + str(index) + '): [drawOrder], [' + \
-            str(card.drawOrder) + ']') 
-         
       
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
@@ -319,6 +314,15 @@ class DrawDeck (Deck):
       if debugIt: 
          print ( '\nSubDeck, ***Show deck after redeal' )   
    
+   def showDeck ( self, deckName ): 
+      print ( 'Show this deck: ' + deckName )
+      index = -1
+      for card in self.data:
+         index = index + 1
+         if card.location == deckName:
+            print ( deckName + '.card (' + str(index) + '): [drawOrder], [' + \
+            str(card.drawOrder) + ']') 
+               
 if __name__ == '__main__':
    from Utilities import Utilities
    from OptionBox import OptionBox
@@ -366,7 +370,7 @@ if __name__ == '__main__':
             if index != -1: 
                x = pos[0]
                y = pos[1]
-               optionBox = OptionBox (['Use', 'Cancel'], x, y) # , 'Discard', 'Tap', 'Cancel', 'Hide', 'Show'], x, y)
+               optionBox = OptionBox (['Use', 'Hide', 'Tap', 'Cancel'], x, y) # , 'Discard'], x, y)
                selection = optionBox.getSelection()
                print ( '[index,selection]: [' + str(index) + ',' + selection + ']' ) 
                if selection == 'Cancel': 
@@ -377,15 +381,8 @@ if __name__ == '__main__':
                   deck.checkDrawOrder ('hand')
                   deck.redeal ( 'opponent', 100, 100, 60, 0) 
                   deck.checkDrawOrder ( 'opponent')
-                                    
-               '''   
+               elif selection == 'Hide':
+                  deck.data[index].hide = not deck.data[index].hide
                elif selection == 'Tap':                
                   deck.data[index].tapped = not deck.data[index].tapped
-               elif selection == 'Use':
-                  deck.data[index].location = 'discardPile'
-                  #TODO change x/y location 
-               elif selection == 'Hide':
-                  deck.data[index].hide = True
-               elif selection == 'Show':
-                  deck.data[index].hide = False 
-               '''   
+                                   
