@@ -18,8 +18,7 @@ import os
 from Communications      import Communications
 class UnoCommunications (Communications):
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, hostOrPlayer):
-   
+   def __init__ (self, hostOrPlayer): 
       if hostOrPlayer == 'host':
          broker = 'localhost'
          myName = 'host'
@@ -44,34 +43,7 @@ class UnoCommunications (Communications):
    def callbackProcedure (self, msg ):
       data = msg.split ( ' ' )
       print ( '\n***callbackProcedure got message: [' + str(data) + ']')  
-      
-   def handleSubdeck (self,name,cardsStr,deck):
-      print ( 'handleSubdeck [name,cardsStr]: [' + name + ',' + str(cardsStr) + ']' )
-      if self.gotPeek ('subdeck uno'):   
-         message = self.peek () 
-         print ( 'handleSubdeck, got message: [' + message + ']')
-         #TODO: Make this work for current deck type.
-         #cards = [] 
-         for c in cardsStr: 
-            #cards.append (int(c)) 
-            deck.placeOnTop (name, int(c)) 
-         '''   
-         if name == 'hand': 
-            print ( '*** Adding ' + str(len(cardsStr) ) + ' to hand' ) 
-            d = UnoCards (deck, startXY=(100,400), displaySurface=displaySurface, cards=cards, name=name)             
-         elif name == 'opponent': 
-            d = UnoCards (deck, startXY=(100,50),  displaySurface=displaySurface, cards=cards, name=name) 
-            d.hideAll()
-         elif name == 'discardPile': 
-            print ( 'Creating a discardPile with xMultiplier = 0.0' )
-            d = UnoCards (deck,  startXY=(100,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
-         elif name == 'drawPile':
-            d = UnoCards (deck,  startXY=(300,200), displaySurface=displaySurface, xMultiplier=0.0, yMultiplier=0.0, cards=cards, name=name)
-         return d
-         '''         
-      else: 
-         raise Exception ( 'Could not gotPeek subdeck uno' )      
-         
+        
    def waitPeek ( self, msg ):
       print ( 'Waiting for msg: [' + msg + ']' )
       while True: 
@@ -79,6 +51,8 @@ class UnoCommunications (Communications):
             break
             
       print ( '\n***waitPeek, got ' + msg + '!!!!')
+      
+   # Handle a 'subdeck uno' message    
    def waitData (self, peekString,deck):
       self.waitPeek (peekString)
       globalDictionary['utilities'].showStatus ( "Waiting..." + peekString )
@@ -87,10 +61,17 @@ class UnoCommunications (Communications):
       print ( 'data: ' + str(data) ) 
       name     = data[2]                 
       cardsStr = data[3:]
-      #subDeck =  
-      self.handleSubdeck (name,cardsStr,deck)      
+
+      print ( 'handleSubdeck [name,cardsStr]: [' + name + ',' + str(cardsStr) + ']' )
+      if self.gotPeek ('subdeck uno'):   
+         message = self.peek () 
+         print ( 'handleSubdeck, got message: [' + message + ']') 
+         for c in cardsStr: 
+            deck.placeOnTop (name, int(c))        
+      else: 
+         raise Exception ( 'Could not gotPeek subdeck uno' )      
+                    
       self.pop() 
-      #return subDeck
 
 # Show the Uno Pages
 class Uno (): 
@@ -129,51 +110,37 @@ class Uno ():
           deck.deal   ( 'opponent', 7, 60, 120, 100, 50)
           deck.redeal ( 'opponent', 100, 50, 60, 0)
           deck.deal   ( 'discard', 1, 60, 120, 100, 200)
-          deck.redeal ( 'discard', 100, 200, 60, 0)
-          deck.deal   ( 'draw', 37, 60, 120, 300, 200)       
+          deck.redeal ( 'discard', 100, 200, 0, 0)
+          deck.deal   ( 'draw', 37, 60, 120, 300, 200) 
+          deck.redeal ( 'draw', 300, 200, 0, 0)          
               
           pygame.display.update()
           self.utilities.showStatus ( "Waiting for join uno")
           self.comm.waitPeek ('join uno' )
           self.utilities.showStatus ( "Give Cards")
           #self.utilities.showStatus ( '\n***Sending cards to opponent' )
-          self.comm.send ( 'subdeck uno opponent '    + hand.cardsToStr () )
-          self.comm.send ( 'subdeck uno drawPile '    + drawPile.cardsToStr () )                 
-          self.comm.send ( 'subdeck uno discardPile ' + discardPile.cardsToStr() )
-          self.comm.send ( 'subdeck uno hand '        + opponent.cardsToStr () )          
+          self.comm.send ( 'subdeck uno opponent ' + deck.cardsToStr ('hand') )
+          self.comm.send ( 'subdeck uno draw '     + deck.cardsToStr ('draw') )                 
+          self.comm.send ( 'subdeck uno discard '  + deck.cardsToStr ('discard') )
+          self.comm.send ( 'subdeck uno hand '     + deck.cardsToStr ('opponent') )          
        else: # Host goes first...
           self.comm.send ( 'join uno' )
           self.utilities.showStatus ( "Waiting for host to deal")
 
           # Get the opponent deck from the host
           self.comm.waitData ( 'subdeck uno opponent',deck)
-          deck.redeal ( 'opponent', 100, 50, 60, 0)
-          #opponent.showAll()
+          deck.redeal ( 'opponent', 100, 50, 60, 0)         
+          self.comm.waitData ( 'subdeck uno draw',deck )
+          deck.redeal ( 'draw', 300, 200, 0, 0)
+          self.comm.waitData ( 'subdeck uno discard',deck )
+          deck.redeal ( 'discard', 100, 200, 0, 0)
           
-          drawPile = self.comm.waitData ( 'subdeck uno drawPile',deck )
-          globalDictionary['drawPile'] = drawPile
-          drawPile.hideAll()
-          
-          discardPile = self.comm.waitData ( 'subdeck uno discardPile',deck )
-          globalDictionary['discardPile'] = discardPile
+          self.comm.waitData ( 'subdeck uno hand',deck)
+          deck.redeal ( 'hand', 100, 400, 60, 0)
+          deck.showInfo ('hand')
 
-          
-          hand = self.comm.waitData ( 'subdeck uno hand',deck)
-          globalDictionary['hand'] = hand
-          #hand.hideAll()
-          hand.redeal()
-          
           message = self.comm.pop () # Why? 
           
-          # creates decks array 
-          cards=[]
-          cards.append (opponent)
-          cards.append (drawPile)   
-          cards.append (discardPile)
-          cards.append (hand)                   
-          decks = SubDecks (cards) 
-          decks.setGlobals()             
-          decks.draw()               
              
        self.comm.pop() # Consume peek why? 
  
@@ -192,8 +159,8 @@ class Uno ():
                 pygame.display.set_caption('It is your move')
              else:
                 pygame.display.set_caption('Waiting on opponent to move')
-             hand.showInfo()
-             discardPile.showInfo()
+             deck.showInfo( 'hand')
+             deck.showInfo ( 'discard' )
           
           window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
@@ -211,12 +178,12 @@ class Uno ():
           self.utilities.showLastStatus()
           self.utilities.flip() 
           
-          if drawPile.length() == 1: 
+          if deck.length ('draw') == 1: 
              self.utilities.showStatus ( 'Need to shuffle the discardPile back into the draw pile' )
              break
           
-          if (opponent.length() == 0) or (hand.length() == 0): 
-             if opponent.length() == 0: 
+          if (deck.length('opponent') == 0) or (deck.length ('hand') == 0): 
+             if deck.length ('opponent') == 0: 
                 self.utilities.showStatus ( 'You have lost :(')
              else:
                 self.utilities.showStatus ( 'You have won! :)' )
@@ -228,6 +195,8 @@ class Uno ():
                 myMove = True # opponent skipping their turn
                 pygame.display.set_caption('It is your move')
                 self.utilities.showStatus ('Move again')
+                
+             # Handle the card that has played by the opponent 
              elif message.find ( 'hand discard') > -1: 
                 data = message.split ( ' ' )
                 index = int ( data [2] )   
@@ -236,17 +205,18 @@ class Uno ():
                 cardName = opponent.cardName (sheetIndex)                
                 self.utilities.showStatus ('Opponent discarded ' + cardName )
                 
-                opponent.moveToDeck (discardPile,index,reveal=True)
-                opponent.redeal()
-                discardPile.showAll()
+                deck.placeOnTop ( 'discard', index )
+                #  deck.redeal ( 'discard', 100, 200, 0, 0)
+                deck.redeal ( 'opponent', 100, 50, 60, 0) 
                 if cardName == 'Joker+4':
                    for i in range(4): 
-                      drawPile.topToDeck (hand, True)                      
+                      deck.topToDeck ('draw', 'hand')                      
                    self.comm.send ( 'uno move skip' ) 
                    self.utilities.showStatus ('Skipping my turn')
-                elif cardName.find ( '+2' ) > -1: 
-                   drawPile.topToDeck (hand, True)                      
-                   drawPile.topToDeck (hand, True)                      
+                elif cardName.find ( '+2' ) > -1:
+                   # draw 2 cards                 
+                   deck.topToDeck ('draw', 'hand')                      
+                   deck.topToDeck ('draw', 'hand')                      
                    self.comm.send ( 'uno move skip' ) 
                    self.utilities.showStatus ('Skipping my turn')
                 elif cardName.find ( 'reverse') > -1: 
@@ -257,20 +227,21 @@ class Uno ():
                    self.utilities.showStatus ('Skipping my turn')
                 else:
                    myMove = True   
-                                    
+
+             # The opponent is telling us to draw a hand                                     
              elif message.find ( 'draw hand') > -1:
                 print ( 'split data [' + message + ']' )
                 data = message.split ( ' ' )
                 print ( 'data after split: ' + str(data ) ) 
                 index = int ( data [2] )  
                 print ( 'draw hand[' + str(index) )                 
-                sheetIndex = drawPile.data[index].sheetIndex                
+                sheetIndex = deck.data[index].sheetIndex                
                 print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
+                assert True, 'This sheetIndex is relative to hand not deck?!'
                 self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
-                drawPile.data[index].hide = False 
-                opponent.addTopCard (drawPile,index)
-                # opponent.hideAll()
-                drawPile.remove (index)
+                
+                deck.data[index].hide = False 
+                deck.topToDeck ( 'draw', 'opponent')
                 myMove = True                 
              else:
                 self.utilities.showStatus ( "Opponent moved, Your Turn")
@@ -281,8 +252,8 @@ class Uno ():
           for event in events:
              (typeInput,data,addr) = event                                
              # Use data above to determine sprite click?                
-             if typeInput == 'drag':  
-                sprite = self.utilities.findSpriteClick (event[1], sprites ) 
+             if typeInput == 'drag': 
+                sprite = deck.findCard (data)             
                 if sprite != -1: # Quit is the only other option           
                    print ("Selected command: " + str(sprite))
                    quit = True    

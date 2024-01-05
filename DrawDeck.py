@@ -51,7 +51,18 @@ class DrawDeck (Deck):
         
         print ('Deck has ' + str(self.numImages) + ' cards ') 
         self.lastDrawMessage = '' # For debugging only 
-        
+   
+   def cardsToStr (self,deckName):
+      message = ''
+      for card in self.data: 
+         if card.location == deckName:
+            if message != '': 
+               message = message + ' '
+            message = message + str(card.sheetIndex)
+            
+      print ( 'cardsToStr got: ' + message )
+      return message 
+      
    def checkDrawOrder (self,deckName): 
       index = -1 
       for card in self.data: 
@@ -95,7 +106,7 @@ class DrawDeck (Deck):
          card.drawOrder = drawOrder
          drawOrder      = drawOrder + 1
     
-         print ( str(i) + ' of ' + str(numCards) + ' just dealt ' + deckName + ' card with index: ' + str(card.sheetIndex) + ' from random number: ' + str(index) ) 
+         print ( str(i) + ' of ' + str(numCards) + ' just dealt ' + deckName + ' card with index: ' + str(card.sheetIndex) + ' with drawOrder: ' + str(card.drawOrder) ) 
       print ( 'Done in ' + deckName + ' deal' )
    
    def decrementOrder ( self, deckName, drawOrder): 
@@ -117,8 +128,10 @@ class DrawDeck (Deck):
          if card.location == deckName:       
             if card.drawOrder > drawOrder:
                top       = index
-               drawOrder = card.drawOrder 
-      assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
+               drawOrder = card.drawOrder
+      if top == -1: 
+         print ( 'deck ' + deckName + ' does not exist, but will be created' )       
+      #assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
       # print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
       return (top,drawOrder)
 
@@ -159,15 +172,15 @@ class DrawDeck (Deck):
       debugIt = False 
       (top,drawOrder) = self.deckTop (deckName)
       if top == -1: 
-         raise Exception ( "Could not find a top for deck: " + deckName )
-      else: 
-         card = self.data[top]
-         image = self.getImage (card)
-         if debugIt: 
-            print ( 'drawTop, card (' + str(top) + ').[location,x,y,sheetIndex: [' + card.location + ',' + \
-                    str(card.x) + ',' + str(card.y) + ',' + str (card.sheetIndex) + ']'  ) 
-         if not card.hide: 
-            self.displaySurface.blit (image, (card.x,card.y))           
+         assert True, 'Could not find a top for deck: ' + deckName 
+      
+      card = self.data[top]
+      if debugIt:
+         print ( 'drawTop, card (' + str(top) + ').[location,x,y,sheetIndex: [' + card.location + ',' + \
+                 str(card.x) + ',' + str(card.y) + ',' + str (card.sheetIndex) + ']'  ) 
+      image = self.getImage (card)
+      if not card.hide: 
+         self.displaySurface.blit (image, (card.x,card.y))           
       
                            
    def findCard (self,pos,ignoreCard=-1):
@@ -224,7 +237,8 @@ class DrawDeck (Deck):
             #else:
             #   print ( 'card.data[' + str(index) + '] has drawORder: ' + str(card.drawOrder) + ' looking for: ' + str(drawOrder) )
       if found == -1: 
-         message = 'Could not find [drawOrder,deckName]: [' + str(drawOrder) + ',' + deckName + ']' 
+         message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName
+         assert False, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
          if message != self.lastDrawMessage:
             print (message)
             self.lastDrawMessage = message
@@ -244,6 +258,13 @@ class DrawDeck (Deck):
                found = count 
       print ( 'left most card is card: ' + str(found) ) 
       return found     
+   
+   def length (self,deckName):
+      count = 0 
+      for card in self.data:
+         if card.location == deckName: 
+            count = count + 1
+      return count 
 
    def getImage (self,card):
       if card.hide: 
@@ -259,39 +280,51 @@ class DrawDeck (Deck):
       self.data[index].y = pos[1]  
       
    def placeOnTop (self,deckName,index):
-      debugIt = True       
-      (top,drawOrder) = self.deckTop (deckName)  
+      debugIt = True  
+      newDeck = False 
+      top = -1
+      if self.length ( deckName ) == 0: 
+         print ( 'Create this deck: ' + deckName )
+         newDeck = True 
+         drawOrder = -1 
+      else:          
+         (top,drawOrder) = self.deckTop (deckName)  
+         
       print ( 'Deck ' + deckName + ' has a [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )      
-      sourceDeck = self.data[index].location
-      sourceOrder = self.data[index].drawOrder
+      sourceDeck  = self.data[index].location
+      if hasattr (self.data[index],'drawOrder'): 
+         sourceOrder = self.data[index].drawOrder
+         self.decrementOrder (sourceDeck,sourceOrder)
       # By moving this card, we create a hole in the draw order of the sourceDeck 
       self.data[index].location = deckName # We now have a hole in the draw order
-      print ( 'Old drawOrder: ' + str(drawOrder) )   
-      if drawOrder == 0: 
-         assert False, 'No old draw order to place on top' 
-         
+      print ( 'Old drawOrder: ' + str(drawOrder) )            
       drawOrder = drawOrder + 1 # Adding to top of deck
-      print ( 'Moving card: [' + str(index) + '] with drawOrder: ' + str(self.data[index].drawOrder) + \
-              ' to deck: ' + deckName + ' drawOrder: ' + str(drawOrder) )
+      print ( 'Moving card: [' + str(index) + '] with drawOrder: ' + \
+              ' to deck: ' + deckName + ' drawOrder: ' + str(drawOrder))
       self.data[index].drawOrder = drawOrder
       print ( 'New drawOrder: ' + str(drawOrder) ) 
-      self.data[index].x = self.data[top].x
-      self.data[index].y = self.data[top].y
-      self.decrementOrder (sourceDeck,sourceOrder)
+      if hasattr ( self.data[index], 'x'):  
+         self.data[index].x = self.data[top].x
+         self.data[index].y = self.data[top].y
+      else:
+         # x/y should be set by redeal function 
+         self.data[index].x = 100
+         self.data[index].y = 100
       print ( 'Done in placeOnTop' )
       
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
       print ( 'redeal: ' + deckName )
-      debugIt = False      
+      debugIt = True      
       if debugIt:        
          print ('len(self.data): ' + str(len(self.data)))
          
-      count = 0
+      drawOrder = 0
+      index = 0
       for card in self.data: # Set the width/height of each image 
          if deckName == card.location: 
-            index = self.findDrawCard (deckName, count)
+            index = self.findDrawCard (deckName, drawOrder)
             drawCard = self.data[index]
             if debugIt:
                print ( 'self.data[' + str(index) + '].x = ' + str(x) ) 
@@ -301,13 +334,14 @@ class DrawDeck (Deck):
             drawCard.y = y 
 
             if debugIt: 
-               print ( 'card (' + str(ind) + ') redeal [width,height,xMultipler, xOffset,x,y,sheetIndex]: [' + \
+               print ( 'card (' + str(drawOrder) + ') redeal [location,width,height,xMultipler, xOffset,x,y,sheetIndex,drawOrder]: [' + \
+                       drawCard.location + ',' + \
                        str(self.width) + ',' + str(self.height) + ',' + str(self.xMultiplier) + ',' + \
                        str(xOffset) + ',' + str(drawCard.x) + ',' + str(drawCard.y) + ',' + \
-                       str(card.sheetIndex) + ']' )
+                       str(drawCard.sheetIndex) + ',' + str(drawCard.drawOrder) + ']' )
             x = x + xOffset
             y = y + yOffset    
-            count = count + 1
+            drawOrder = drawOrder + 1 # drawOrder starts at 0
 
       self.nextX = x
       self.nextY = y
@@ -321,7 +355,11 @@ class DrawDeck (Deck):
          index = index + 1
          if card.location == deckName:
             print ( deckName + '.card (' + str(index) + '): [drawOrder], [' + \
-            str(card.drawOrder) + ']') 
+            str(card.drawOrder) + ']')
+
+   def topToDeck ( self, topDeck, destinationDeck ):
+      (index, drawOrder) =  self.deckTop ( topDeck )
+      self.placeOnTop ( destinationDeck, index )      
                
 if __name__ == '__main__':
    from Utilities import Utilities
