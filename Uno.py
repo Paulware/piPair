@@ -137,7 +137,6 @@ class Uno ():
           
           self.comm.waitData ( 'subdeck uno hand',deck)
           deck.redeal ( 'hand', 100, 400, 60, 0)
-          deck.showInfo ('hand')
 
           message = self.comm.pop () # Why? 
           
@@ -159,8 +158,6 @@ class Uno ():
                 pygame.display.set_caption('It is your move')
              else:
                 pygame.display.set_caption('Waiting on opponent to move')
-             deck.showInfo( 'hand')
-             deck.showInfo ( 'discard' )
           
           window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
@@ -173,6 +170,7 @@ class Uno ():
           deck.draw('hand')
           deck.drawTop('discard')
           deck.drawTop('draw')
+          deck.draw ('opponent')
           
           sprites = self.utilities.showImages (['quit.jpg'], [(400,600)] )       
           self.utilities.showLastStatus()
@@ -201,8 +199,8 @@ class Uno ():
                 data = message.split ( ' ' )
                 index = int ( data [2] )   
                 print ( 'Got an index of: ' + str(index) )                 
-                sheetIndex = opponent.data[index].sheetIndex             
-                cardName = opponent.cardName (sheetIndex)                
+                sheetIndex = deck.data[index].sheetIndex             
+                cardName = deck.cardName (sheetIndex)                
                 self.utilities.showStatus ('Opponent discarded ' + cardName )
                 
                 deck.placeOnTop ( 'discard', index )
@@ -238,7 +236,7 @@ class Uno ():
                 sheetIndex = deck.data[index].sheetIndex                
                 print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
                 assert True, 'This sheetIndex is relative to hand not deck?!'
-                self.utilities.showStatus ('Opponent drew ' + drawPile.cardName (sheetIndex) )                
+                self.utilities.showStatus ('Opponent drew ' + deck.cardName (sheetIndex) )                
                 
                 deck.data[index].hide = False 
                 deck.topToDeck ( 'draw', 'opponent')
@@ -251,41 +249,44 @@ class Uno ():
           events = self.utilities.readOne()
           for event in events:
              (typeInput,data,addr) = event                                
-             # Use data above to determine sprite click?                
+             
              if typeInput == 'drag': 
-                sprite = deck.findCard (data)             
-                if sprite != -1: # Quit is the only other option           
-                   print ("Selected command: " + str(sprite))
-                   quit = True    
-                else:
-                   if myMove:
-                      print ( '\n\n***DRAG***\n\n' )
-                      (deck,index) = decks.findSprite (data) # Returns index in list 
-                      if index != -1: 
-                         name = deck.cardName ( deck.data[index].sheetIndex)
-                         startPos = (deck.data[index].x,deck.data[index].y)                      
+                sprite = deck.findCard (data)
+                                               
+                # Use data above to determine sprite click?               
+                name = self.utilities.findSpriteName (data, sprites, ['quit'] )
+                if name == 'quit': 
+                   quit = True 
+                   
+                if myMove:
+                   print ( '\n\n***DRAG***\n\n' )
+                   index = deck.findCard (data) # Returns index in list 
+                   if index != -1: 
+                      name = deck.cardName ( deck.data[index].sheetIndex)
+                      startPos = (deck.data[index].x,deck.data[index].y)                      
 
-                         if deck == opponent: 
-                            self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
-                         elif deck == discardPile: 
-                            self.utilities.showStatus ( 'ERR this is where you drop cards' )
-                            # Return card to starting position 
-                            hand.data[dragging].x = startPos[0]
-                            hand.data[dragging].y = startPos[1]
-                            startPos = None                          
-                         elif deck == drawPile:
-                            deck.data[index].hide = False
-                            hand.addCard (deck,index)
-                            deck.remove (index)
-                            myMove = False
-                            self.utilities.showStatus ( 'Waiting for opponent to move' )
-                            self.comm.send ( 'uno move ' + str(index) + ' draw hand' )
-                         elif deck == hand:
-                            sourceDeck = hand
-                            mousePos = data
-                            dragging = index                    
-                   else: 
-                      self.utilities.showStatus ('Err, not your move' )                      
+                      deckName = deck.data[index].location
+                      if deckName == 'opponent': 
+                         self.utilities.showStatus ( 'ERR you cannot move an opponents card' )
+                      elif deckName == 'discard': 
+                         self.utilities.showStatus ( 'ERR this is where you drop cards' )
+                         # Return card to starting position 
+                         hand.data[dragging].x = startPos[0]
+                         hand.data[dragging].y = startPos[1]
+                         startPos = None                          
+                      elif deckName == 'draw':
+                         deck.data[index].hide = False
+                         deck.moveTo ( 'hand',index )
+                         myMove = False
+                         self.utilities.showStatus ( 'Waiting for opponent to move' )
+                         self.comm.send ( 'uno move ' + str(index) + ' draw hand' )
+                         deck.redeal ( 'hand', 100, 400, 60, 0)                         
+                      elif deckName == 'hand':
+                         sourceDeck = 'hand'
+                         mousePos = data
+                         dragging = index                    
+                else: 
+                   self.utilities.showStatus ('Err, not your move' )                      
  
              elif typeInput == 'move':
                 if not dragging is None: 
@@ -300,32 +301,34 @@ class Uno ():
              elif typeInput == 'drop':
                 if not dragging is None: 
                    print ( 'dragging: ' + str(dragging) )
-                   #TODO replace findOther with discardPile.findSprite 
-                   index = discardPile.findSprite (data)
-                   if index == -1:
-                      self.utilities.showStatus ( 'You can only drop on the discard pile' )
+                   index = deck.findCard(data, dragging)
+                   deckName = ''
+                   if index != -1: 
+                      deckName = deck.data[index].location
+                   if (deckName != 'discard'):                     
+                      self.utilities.showStatus ( 'Drop on discard pile not: ' + deckName )
                    else: 
-                      index = len(discardPile.data)-1
-                      deck=discardPile
-                      sheetIndex = hand.data[dragging].sheetIndex
-                      if hand.canDrop (sheetIndex, deck.data[index].sheetIndex): 
+                   
+                      sheetIndex = deck.data[dragging].sheetIndex
+                      if deck.canDrop (sheetIndex, deck.data[index].sheetIndex): # canDrop (topIndex,bottomIndex) 
                          self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
                          self.utilities.showStatus ( 'Waiting for opponents move' )
 
-                         hand.moveToDeck (discardPile,dragging,reveal=True)
+                         deck.moveTo ('discard', dragging )
+                         deck.redeal ( 'hand', 100, 400, 60, 0)
                          
-                         hand.redeal()                         
-                         print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
+                         #print ( 'discardPile now has ' + str(discardPile.length()) + ' cards' )
                          myMove = False 
                          startPos = None
-                         cardName = hand.cardName (sheetIndex)
+                         cardName = deck.cardName (deck.data[dragging].sheetIndex )
+                         print ( 'Dragging and dropping: ' + cardName )
                          count = 0 
                          if cardName.find ( '+2' ) > -1: 
                             count = 2
                          elif cardName.find ( '+4' ) > -1: 
                             count = 4
                          for i in range(count): 
-                            drawPile.topToDeck (opponent, True)                          
+                            deck.topToDeck ('draw', 'opponent')                          
                          #opponent.hideAll()
                       else:
                          self.utilities.showStatus ( 'Illegal move' )

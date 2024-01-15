@@ -1200,7 +1200,7 @@ if __name__ == '__main__':
    # Move Daryl Dixon from drawPile to hand, and then cast it
    ind  = drawPile.findCard ( 'creatures/darylDixon.jpg')
    # card = drawPile.data[ind]
-   print ( '\n***\nbefore moveToDeck, drawPile to hand...')
+   print ( '\n***\nbefore moveTo, drawPile to hand...')
    drawPile.showInfo()
    print ('Before move, drawPile card located at [ind]: [' + str(ind) + ']' )
    print( drawPile.data[ind].name )
@@ -1216,7 +1216,7 @@ if __name__ == '__main__':
    print ( 'index after remove: ' + str(index) )
    drawPile.draw (True)
    
-   print ( '\n***\nafter moveToDeck, drawPile to hand...' )
+   print ( '\n***\nafter moveTo, drawPile to hand...' )
    drawPile.showInfo()
    drawPile.draw (True)
    drawPile.showInfo()

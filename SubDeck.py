@@ -264,17 +264,7 @@ class SubDeck ():
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]   
    
-   '''
-   def moveToDeck (self,destinationDeck,index): 
-      if (index == -1) or (index >= len(self.data)): 
-         raise Exception ( 'moveToDeck, illegal index: ' + str(index)) 
-      print ( 'moving an index of: ' + str(index)) 
-      ind = destinationDeck.addCardToDeck (self.data[index])
-      self.remove (index) 
-      print ( 'moveToDeck got an ind of: ' + str(ind) ) 
-      exit1()
-      return ind 
-   '''
+
    
    def pos (self,index):
       return ( self.data[index].x, self.data[index].y )

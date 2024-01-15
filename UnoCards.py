@@ -36,20 +36,20 @@ class UnoCards (DrawDeck):
       return 'cardInfo for self.data[' + str(index) + '] [location, name, x, y, sheetIndex]: [' + card.location + \
              ',' + card.name + ',' + str(card.x) + ',' + str(card.y) + ',' + str(card.sheetIndex) + ']'
                          
-   def cardName (self,index): 
-      name = 'unknown' + str(index)
-      if self.isNumber (index):
-         name = self.getColor (index) + ' ' + str(self.getNumber(index))       
-      elif (index == 9) or (index == 19):
+   def cardName (self,sheetIndex): 
+      name = 'unknown' + str(sheetIndex)
+      if self.isNumber (sheetIndex):
+         name = self.getColor (sheetIndex) + ' ' + str(self.getNumber(sheetIndex))       
+      elif (sheetIndex == 9) or (sheetIndex == 19):
          name = 'Joker'
-      elif (index == 29) or (index == 39):
+      elif (sheetIndex == 29) or (sheetIndex == 39):
          name = 'Joker+4'
-      elif (index >= 40) and (index <= 43): 
-         name = self.getColor(index) + 'replay'
-      elif (index >= 44) and (index <= 47):
-         name = self.getColor(index) + '+2'
-      elif (index >= 48) and (index <= 51):
-         name = self.getColor(index) + 'reverse'
+      elif (sheetIndex >= 40) and (sheetIndex <= 43): 
+         name = self.getColor(sheetIndex) + 'replay'
+      elif (sheetIndex >= 44) and (sheetIndex <= 47):
+         name = self.getColor(sheetIndex) + '+2'
+      elif (sheetIndex >= 48) and (sheetIndex <= 51):
+         name = self.getColor(sheetIndex) + 'reverse'
                
       return name 
    

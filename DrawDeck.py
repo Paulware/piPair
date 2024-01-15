@@ -181,8 +181,7 @@ class DrawDeck (Deck):
       image = self.getImage (card)
       if not card.hide: 
          self.displaySurface.blit (image, (card.x,card.y))           
-      
-                           
+                                 
    def findCard (self,pos,ignoreCard=-1):
       debugIt   = False 
       found     = -1
@@ -278,7 +277,10 @@ class DrawDeck (Deck):
    def move (self,index,pos): 
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]  
-      
+   
+   def moveTo (self, deckName, index ):
+      self.placeOnTop (deckName,index)
+   
    def placeOnTop (self,deckName,index):
       debugIt = True  
       newDeck = False 
@@ -311,7 +313,10 @@ class DrawDeck (Deck):
          self.data[index].x = 100
          self.data[index].y = 100
       print ( 'Done in placeOnTop' )
-      
+   
+   def pos (self,index):
+      return ( self.data[index].x, self.data[index].y )
+   
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
@@ -358,6 +363,7 @@ class DrawDeck (Deck):
             str(card.drawOrder) + ']')
 
    def topToDeck ( self, topDeck, destinationDeck ):
+      print ( ' Move a card from ' + topDeck + ' to ' + destinationDeck )
       (index, drawOrder) =  self.deckTop ( topDeck )
       self.placeOnTop ( destinationDeck, index )      
                

@@ -72,9 +72,17 @@ class Utilities ():
          for i in range (len(sprites)): 
             print ( 'i: ' + str(i) + ' len(sprites): ' + str(len(sprites)) )
             if clicked_sprite[0] == sprites [i]: 
+               print ( 'Found sprite: ' + str(i)) 
                found = i
                break              
       return found      
+      
+   def findSpriteName (self, pos, sprites, names): 
+      ind = self.findSpriteClick (pos, sprites)
+      name = ''
+      if ind != -1: 
+         name = names[ind]
+      return name          
       
    def flip(self):
       pygame.display.flip()
