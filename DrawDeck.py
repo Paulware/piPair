@@ -54,11 +54,15 @@ class DrawDeck (Deck):
    
    def cardsToStr (self,deckName):
       message = ''
+      drawOrder = 0
       for card in self.data: 
          if card.location == deckName:
             if message != '': 
                message = message + ' '
-            message = message + str(card.sheetIndex)
+            index = self.findDrawCard (deckName, drawOrder )
+            sheetIndex = self.data[index].sheetIndex            
+            message = message + str(sheetIndex)
+            drawOrder = drawOrder + 1
             
       print ( 'cardsToStr got: ' + message )
       return message 
@@ -233,11 +237,9 @@ class DrawDeck (Deck):
             if card.drawOrder == drawOrder:
                found = index 
                break
-            #else:
-            #   print ( 'card.data[' + str(index) + '] has drawORder: ' + str(card.drawOrder) + ' looking for: ' + str(drawOrder) )
       if found == -1: 
          message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName
-         assert False, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
+         assert True, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
          if message != self.lastDrawMessage:
             print (message)
             self.lastDrawMessage = message

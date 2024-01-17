@@ -18,7 +18,7 @@ import os
 from Communications      import Communications
 class UnoCommunications (Communications):
    # data is a list of objects that have an image and index attribute
-   def __init__ (self, hostOrPlayer): 
+   def __init__ (self, hostOrPlayer, utilities): 
       if hostOrPlayer == 'host':
          broker = 'localhost'
          myName = 'host'
@@ -40,9 +40,81 @@ class UnoCommunications (Communications):
          self.setTarget (target)
       else:
          raise Exception ( 'Could not connect to broker: ' + broker )
+      self.utilities = utilities
+      
    def callbackProcedure (self, msg ):
       data = msg.split ( ' ' )
       print ( '\n***callbackProcedure got message: [' + str(data) + ']')  
+     
+   def handleMessage (self, deck ): 
+      myMove = False 
+      if self.gotPeek ('move'): 
+         message = self.pop() # consume the message
+         if message.find ( 'uno move skip' ) > -1: 
+            myMove = True # opponent skipping their turn
+            pygame.display.set_caption('It is your move')
+            self.utilities.showStatus ('Move again')
+            
+         # Handle the card that has played by the opponent 
+         elif message.find ( 'hand discard') > -1: 
+            data = message.split ( ' ' )
+            index = int ( data [2] )   
+            print ( 'Got an index of: ' + str(index) )                 
+            sheetIndex = deck.data[index].sheetIndex             
+            cardName = deck.cardName (sheetIndex)                
+            self.utilities.showStatus ('Opponent discarded ' + cardName )
+            
+            deck.placeOnTop ( 'discard', index )
+            deck.redeal ( 'opponent', 100, 50, 60, 0) 
+            if cardName == 'Joker+4':
+               for i in range(4): 
+                  print ( 'Opponent forced a draw ' + str(i+1) + ' of 4')
+                  deck.topToDeck ('draw', 'hand')                      
+               self.send ( 'uno move skip' ) 
+               self.utilities.showStatus ('Skipping my turn')
+               deck.redeal ( 'hand', 100, 400, 60, 0)               
+            elif cardName.find ( '+2' ) > -1:
+               # draw 2 cards                 
+               print ( 'Opponent forced a draw 1 of 2...')
+               deck.topToDeck ('draw', 'hand')                      
+               deck.redeal ( 'hand', 100, 400, 60, 0)
+               print ( 'Opponent forced a draw 2 of 2...')
+               deck.topToDeck ('draw', 'hand')                      
+               deck.redeal ( 'hand', 100, 400, 60, 0)
+               self.send ( 'uno move skip' ) 
+               self.utilities.showStatus ('Skipping my turn')
+            elif cardName.find ( 'reverse') > -1: 
+               self.send ( 'uno move skip' )                
+               self.utilities.showStatus ('Skipping my turn')
+            elif cardName.find ( 'replay') > -1: 
+               self.send ( 'uno move skip' )
+               self.utilities.showStatus ('Skipping my turn')
+            else:
+               myMove = True   
+
+         # The opponent is telling us to draw a hand                                     
+         elif message.find ( 'draw hand') > -1:
+            print ( 'split data [' + message + ']' )
+            data = message.split ( ' ' )
+            print ( 'data after split: ' + str(data ) ) 
+            index = int ( data [2] )  
+            print ( 'draw hand[' + str(index) + ']')                 
+            sheetIndex = deck.data[index].sheetIndex                
+            print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
+            self.utilities.showStatus ('Opponent drew ' + deck.cardName (sheetIndex) )                
+            print ( '*****Before move, opponent deck ****' )
+            deck.showInfo ('opponent')            
+            deck.moveTo ( 'opponent', index )
+            print ( '*****After move, opponent deck *****' )
+            deck.showInfo ( 'opponent')
+            myMove = True              
+            deck.redeal ( 'opponent', 100, 50, 60, 0)
+            
+         else:
+            self.utilities.showStatus ( "Opponent moved[" + message + ", Your Turn")
+            myMove = True          
+            
+      return myMove 
         
    def waitPeek ( self, msg ):
       print ( 'Waiting for msg: [' + msg + ']' )
@@ -187,64 +259,9 @@ class Uno ():
                 self.utilities.showStatus ( 'You have won! :)' )
              myMove = False 
           
-          if not myMove and self.comm.gotPeek ('move'): 
-             message = self.comm.pop() # consume the message
-             if message.find ( 'uno move skip' ) > -1: 
-                myMove = True # opponent skipping their turn
-                pygame.display.set_caption('It is your move')
-                self.utilities.showStatus ('Move again')
-                
-             # Handle the card that has played by the opponent 
-             elif message.find ( 'hand discard') > -1: 
-                data = message.split ( ' ' )
-                index = int ( data [2] )   
-                print ( 'Got an index of: ' + str(index) )                 
-                sheetIndex = deck.data[index].sheetIndex             
-                cardName = deck.cardName (sheetIndex)                
-                self.utilities.showStatus ('Opponent discarded ' + cardName )
-                
-                deck.placeOnTop ( 'discard', index )
-                #  deck.redeal ( 'discard', 100, 200, 0, 0)
-                deck.redeal ( 'opponent', 100, 50, 60, 0) 
-                if cardName == 'Joker+4':
-                   for i in range(4): 
-                      deck.topToDeck ('draw', 'hand')                      
-                   self.comm.send ( 'uno move skip' ) 
-                   self.utilities.showStatus ('Skipping my turn')
-                elif cardName.find ( '+2' ) > -1:
-                   # draw 2 cards                 
-                   deck.topToDeck ('draw', 'hand')                      
-                   deck.topToDeck ('draw', 'hand')                      
-                   self.comm.send ( 'uno move skip' ) 
-                   self.utilities.showStatus ('Skipping my turn')
-                elif cardName.find ( 'reverse') > -1: 
-                   self.comm.send ( 'uno move skip' )                
-                   self.utilities.showStatus ('Skipping my turn')
-                elif cardName.find ( 'replay') > -1: 
-                   self.comm.send ( 'uno move skip' )
-                   self.utilities.showStatus ('Skipping my turn')
-                else:
-                   myMove = True   
-
-             # The opponent is telling us to draw a hand                                     
-             elif message.find ( 'draw hand') > -1:
-                print ( 'split data [' + message + ']' )
-                data = message.split ( ' ' )
-                print ( 'data after split: ' + str(data ) ) 
-                index = int ( data [2] )  
-                print ( 'draw hand[' + str(index) )                 
-                sheetIndex = deck.data[index].sheetIndex                
-                print ( 'drawing sheetIndex: ' + str(sheetIndex) ) 
-                assert True, 'This sheetIndex is relative to hand not deck?!'
-                self.utilities.showStatus ('Opponent drew ' + deck.cardName (sheetIndex) )                
-                
-                deck.data[index].hide = False 
-                deck.topToDeck ( 'draw', 'opponent')
-                myMove = True                 
-             else:
-                self.utilities.showStatus ( "Opponent moved, Your Turn")
-                myMove = True          
-                 
+          if not myMove: 
+             myMove = self.comm.handleMessage (deck)
+                             
           # pygame.display.update()
           events = self.utilities.readOne()
           for event in events:
@@ -307,8 +324,10 @@ class Uno ():
                       deckName = deck.data[index].location
                    if (deckName != 'discard'):                     
                       self.utilities.showStatus ( 'Drop on discard pile not: ' + deckName )
-                   else: 
-                   
+                      deck.data[dragging].x = startPos[0]
+                      deck.data[dragging].y = startPos[1]
+                      startPos = None                       
+                   else:                    
                       sheetIndex = deck.data[dragging].sheetIndex
                       if deck.canDrop (sheetIndex, deck.data[index].sheetIndex): # canDrop (topIndex,bottomIndex) 
                          self.comm.send ( 'uno move ' + str(dragging) + ' hand discard' )                                      
@@ -327,17 +346,18 @@ class Uno ():
                             count = 2
                          elif cardName.find ( '+4' ) > -1: 
                             count = 4
-                         for i in range(count): 
-                            deck.topToDeck ('draw', 'opponent')                          
-                         #opponent.hideAll()
+                         if count > 0: 
+                            for i in range(count): 
+                               deck.topToDeck ('draw', 'opponent') 
+                            deck.redeal ( 'opponent', 100, 50, 60, 0)         
                       else:
                          self.utilities.showStatus ( 'Illegal move' )
                          print ( 'Oops you cannot drop this card here' )
                          # Return card to origin position 
                          print ( '[dragging,x,y]:[' + str(dragging) + ',' + str(startPos[0]) + ',' + \
                                  str(startPos[1]) + ']' )
-                         hand.data[dragging].x = startPos[0]
-                         hand.data[dragging].y = startPos[1]
+                         deck.data[dragging].x = startPos[0]
+                         deck.data[dragging].y = startPos[1]
                          startPos = None               
                    dragging = None
                    offset = None
@@ -359,7 +379,7 @@ if __name__ == '__main__':
       print ( 'number of parameters: ' + str(numParameters) ) 
       
       pygame.init()
-      displaySurface = pygame.display.set_mode((1200, 800))
+      displaySurface = pygame.display.set_mode((900, 800))
       BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
       
 
@@ -369,7 +389,7 @@ if __name__ == '__main__':
       utilities      = Utilities (displaySurface, BIGFONT)   
       globalDictionary['utilities'] = utilities
  
-      comm           = UnoCommunications (result)           
+      comm           = UnoCommunications (result, utilities)           
       utilities.comm = comm                       
       uno = Uno(displaySurface,utilities,comm,result == 'host')
       uno.main()       

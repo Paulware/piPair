@@ -45,7 +45,7 @@ class UnoCards (DrawDeck):
       elif (sheetIndex == 29) or (sheetIndex == 39):
          name = 'Joker+4'
       elif (sheetIndex >= 40) and (sheetIndex <= 43): 
-         name = self.getColor(sheetIndex) + 'replay'
+         name = self.getColor(sheetIndex) + '0'
       elif (sheetIndex >= 44) and (sheetIndex <= 47):
          name = self.getColor(sheetIndex) + '+2'
       elif (sheetIndex >= 48) and (sheetIndex <= 51):
@@ -99,7 +99,6 @@ class UnoCards (DrawDeck):
 
    def showInfo (self, deckName):
       length = len(self.data)
-      # TODO : add length of function 
       print ( 'There are ' + str(self.length(deckName)) + ' cards in : ' + deckName )
       i = 0
       for card in self.data: 
