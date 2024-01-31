@@ -190,7 +190,7 @@ class MTGSetup:
          text = self.quitButton.isPressed()      
          if self.createButton.isPressed(): 
             self.createDeck()
-            setup.showDeck()
+            setup.showInfo()
 
          pygame_widgets.update (events)
          pygame.display.update()

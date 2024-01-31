@@ -123,7 +123,7 @@ class DrawDeck (Deck):
                card.drawOrder = card.drawOrder - 1
                #print ( ' to: ' + str(card.drawOrder) ) 
                                   
-   def deckTop (self,deckName): 
+   def deckTop (self,deckName,debugIt=False): 
       top = -1
       drawOrder = -1
       index = -1
@@ -133,10 +133,12 @@ class DrawDeck (Deck):
             if card.drawOrder > drawOrder:
                top       = index
                drawOrder = card.drawOrder
+               
       if top == -1: 
-         print ( 'deck ' + deckName + ' does not exist, but will be created' )       
+         print ( 'deck ' + deckName + ' does not exist, but will be created' )
       #assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
-      # print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
+      if debugIt: 
+         print ( 'deckTop [name,top,drawOrder]: [' + deckName + ',' + str(top) + ',' + str(drawOrder) + ']' )
       return (top,drawOrder)
   
    def draw ( self, deckName ):
@@ -148,6 +150,7 @@ class DrawDeck (Deck):
             if index == -1:
                break
             else:
+               card = self.data[index]
                image = self.getImage (card)
                if not card.hide:
                   self.displaySurface.blit (image, (card.x,card.y))
@@ -242,7 +245,7 @@ class DrawDeck (Deck):
          if message != self.lastDrawMessage:
             print (message)
             self.lastDrawMessage = message
-            self.showDeck (deckName)
+            self.showInfo (deckName)
             
       return found
      
@@ -350,7 +353,7 @@ class DrawDeck (Deck):
       if debugIt: 
          print ( '\nDrawDeck, ***Show deck after redeal' )   
    
-   def showDeck ( self, deckName ): 
+   def showInfo ( self, deckName ): 
       print ( 'Show this deck: ' + deckName )
       index = -1
       for card in self.data:
@@ -417,6 +420,7 @@ if __name__ == '__main__':
                if selection == 'Cancel': 
                   quit = True 
                elif selection == 'Use':
+                  deck.show
                   deck.placeOnTop ( 'opponent', index )
                   deck.redeal ( 'hand',     100, 300, 60, 0)
                   deck.checkDrawOrder ('hand')

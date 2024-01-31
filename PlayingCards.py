@@ -41,7 +41,7 @@ class PlayingCards (DrawDeck):
       
    def face (self,index):
       value = (index % 13) + 1 
-      print ( 'face of index: ' + str(index) + ' : ' + str(value)) 
+      # print ( 'face of index: ' + str(index) + ' : ' + str(value)) 
       return value
 
    def getGroup (self, index ):
@@ -81,6 +81,17 @@ class PlayingCards (DrawDeck):
       if (s == 'clubs') or (s == 'spades'): 
          color = 'black'
       return color
+      
+   def showInfo ( self, deckName ): 
+      (top,drawOrder) = self.deckTop (deckName,True)
+      
+      print ( 'Show this deck: ' + deckName )
+      index = -1
+      for card in self.data:
+         index = index + 1
+         if card.location == deckName:
+            print ('[deckName,index,drawOrder,name]: [' + deckName + ',' + str(index) + ',' + str(card.drawOrder) + ',' + \
+                   self.cardName(index) + ']' )
      
    def suit (self,index):
       suits = ['clubs','diamonds','hearts','spades']
@@ -124,13 +135,12 @@ if __name__ == '__main__':
       window.fill ((0,0,0))  
 
       # Draw the decks 
-      deck.redeal  ('discard', 200, 50,  60, 0)
+      deck.redeal  ('discard', 200, 50,  0, 0)
       deck.draw    ('discard')
       deck.redeal  ('hand'   , 200, 170, 60, 0)
       deck.draw    ('hand') 
       deck.redeal  ('draw',    200, 300, 0, 0)
-      deck.drawTop ('draw')
-      
+      deck.draw    ('draw') 
       labels.draw()
       
       pygame.display.update()
@@ -156,6 +166,8 @@ if __name__ == '__main__':
                    print ( 'What is the top card in the draw deck?' )
                    (index,drawOrder) = deck.deckTop ('draw')
                    print ( 'Name of card: ' + deck.cardName (index) ) 
+                   deckName = deck.data[index].location                   
+                   deck.showInfo (deckName)
                 elif selection == 'Tap':  
                    deck.tap (index)                
                 elif selection == 'Use':
