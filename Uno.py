@@ -223,6 +223,7 @@ class Uno ():
        offset     = None
        quit = False
        lastMove = not myMove 
+       window = pygame.display.get_surface()    
        while not self.utilities.quit and not self.gameOver() and not quit:
           if myMove != lastMove: 
              lastMove = myMove
@@ -231,7 +232,6 @@ class Uno ():
              else:
                 pygame.display.set_caption('Waiting on opponent to move')
           
-          window = pygame.display.get_surface()    
           window.fill ((0,0,0))  
           TextBox('Opponent', x=100, y=  5).draw()
           TextBox('Discard',  x=100, y=175).draw()

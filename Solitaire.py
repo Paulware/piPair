@@ -24,9 +24,14 @@ class Solitaire ():
 
        # Deal out the 7 columns of cards 
        x = 100        
-       decks=[]
+       
        columns = 7
+       #deck = UnoCards (10, 6, 52, 60,100,displaySurface,(100,100),1.0,0.0,coverIndex=52)
+
        for i in range(columns):
+          columnName = 'column' + str(i)
+          
+          
           hand = PlayingCards (self.deck,columns-i,80,120,(x,100), DISPLAYSURF,xMultiplier=0.0, yMultiplier=0.25)
           hand.hideAll () 
           hand.data [hand.length()-1].hide = False 

@@ -27,7 +27,7 @@ class DrawDeck (Deck):
         print ( 'DrawDeck numImages: ' + str(numImages) ) 
         Deck.__init__ (self,filename,numColumns,numRows,numImages,coverIndex)      
         if displaySurface is None: 
-           print ( 'You should specify displaySurface when subdeck is created' )
+           print ( 'You should specify displaySurface when drawdeck is created' )
            exit (1)
         self.width          = width
         self.height         = height 
@@ -138,22 +138,21 @@ class DrawDeck (Deck):
       #assert top != -1, 'Could not find a top card for deck: [' + deckName + '], does deck ' + deckName + ' exist?' 
       # print ( 'deckTop [top,drawOrder]: [' + str(top) + ',' + str(drawOrder) + ']' )
       return (top,drawOrder)
-
-   
-   def draw ( self, deckName ): 
-      debugIt = False 
-      count = 0 
-      for card in self.data: 
-         if card.location == deckName: 
+  
+   def draw ( self, deckName ):
+      debugIt = False
+      count = 0
+      for card in self.data:
+         if card.location == deckName:
             index = self.findDrawCard (deckName, count)
             if index == -1:
                break
             else:
                image = self.getImage (card)
-               if not card.hide: 
-                  self.displaySurface.blit (image, (card.x,card.y))           
+               if not card.hide:
+                  self.displaySurface.blit (image, (card.x,card.y))
             count = count + 1
-               
+      
    def drawInfo (self,deckName):
       count = 0
       maxIndex = -1
@@ -322,11 +321,7 @@ class DrawDeck (Deck):
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
-      print ( 'redeal: ' + deckName )
-      debugIt = True      
-      if debugIt:        
-         print ('len(self.data): ' + str(len(self.data)))
-         
+      debugIt = False 
       drawOrder = 0
       index = 0
       for card in self.data: # Set the width/height of each image 
@@ -353,7 +348,7 @@ class DrawDeck (Deck):
       self.nextX = x
       self.nextY = y
       if debugIt: 
-         print ( '\nSubDeck, ***Show deck after redeal' )   
+         print ( '\nDrawDeck, ***Show deck after redeal' )   
    
    def showDeck ( self, deckName ): 
       print ( 'Show this deck: ' + deckName )
