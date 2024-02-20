@@ -82,7 +82,7 @@ class DrawDeck (Deck):
                      if (ind != index): 
                         assert False, 'Deck ' + deckName + ' has a double drawOrder: ' + \
                                       str(drawOrder)                  
-      print ( 'Deck ' + deckName + ' checks out ok' )
+      print ( 'Deck ' + deckName + ' checks out ok' )   
       
    def deal (self, deckName, numCards, width, height, startX, startY): 
       print ( 'Deal out ' + str(numCards) + ' cards to deck: ' + deckName )
@@ -90,11 +90,18 @@ class DrawDeck (Deck):
       for i in range (numCards):   
          index = self.getRandomIndex (len(self.data))
          count = 0 
+         cardsLeft = self.length ('') 
+         
+         if cardsLeft == 0: 
+            self.showInfo ('*')
+         
+         print ( 'cardsLeft: ' + str(cardsLeft))         
+         assert cardsLeft > 0, 'Ran out of cards trying to deal, the number of cards remaining in this deck is: ' + str(cardsLeft)
+         
          while self.data[index].location != '':
             count = count + 1
             index = self.getRandomIndex (len(self.data))
-            if count == 1000: 
-               assert False, 'Ran out of cards trying to deal, the number of cards in this deck is: ' + str(len(self.data))
+               
          try: 
             card = self.data[index]
          except IndexError:
@@ -324,7 +331,7 @@ class DrawDeck (Deck):
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
-      debugIt = False 
+      debugIt = False
       drawOrder = 0
       index = 0
       for card in self.data: # Set the width/height of each image 
@@ -353,13 +360,13 @@ class DrawDeck (Deck):
       if debugIt: 
          print ( '\nDrawDeck, ***Show deck after redeal' )   
    
-   def showInfo ( self, deckName ): 
-      print ( 'Show this deck: ' + deckName )
+   def showInfo ( self, deckName='*'): 
+      print ( 'DrawDeck.showInfo, [deckName,len(self.data)]: [' + deckName + ',' + str(len(self.data)) + ']' )
       index = -1
       for card in self.data:
          index = index + 1
-         if card.location == deckName:
-            print ( deckName + '.card (' + str(index) + '): [drawOrder], [' + \
+         if (card.location == deckName) or (deckName == '*'):
+            print ( card.location + '.card (' + str(index) + '): [drawOrder], [' + \
             str(card.drawOrder) + ']')
 
    def topToDeck ( self, topDeck, destinationDeck ):

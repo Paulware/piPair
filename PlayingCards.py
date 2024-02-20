@@ -7,8 +7,7 @@ from DrawDeck import DrawDeck
 '''
 class PlayingCards (DrawDeck): 
    #TODO: Pass in filename for bigger or different decks
-   def __init__ (self, width=0, height=0, displaySurface=None, \
-                 startXY=(0,0), xMultiplier=1.0, yMultiplier=0.0, coverIndex=52 ):
+   def __init__ (self, width=0, height=0, displaySurface=None, startXY=(0,0), xMultiplier=1.0, yMultiplier=0.0, coverIndex=52 ):
                  
       # print ( 'PlayingCards.init' )
       DrawDeck.__init__ (self,filename='images/standardCardSprites.jpg', numColumns=13, numRows=5, numImages=52,\
@@ -82,15 +81,15 @@ class PlayingCards (DrawDeck):
          color = 'black'
       return color
       
-   def showInfo ( self, deckName ): 
+   def showInfo ( self, deckName='*' ): 
       (top,drawOrder) = self.deckTop (deckName,True)
       
-      print ( 'Show this deck: ' + deckName )
+      print ( 'PlayingCards.showInfo, Show this deck: ' + deckName )
       index = -1
       for card in self.data:
          index = index + 1
-         if card.location == deckName:
-            print ('[deckName,index,drawOrder,name]: [' + deckName + ',' + str(index) + ',' + str(card.drawOrder) + ',' + \
+         if (card.location == deckName) or (deckName=='*'):
+            print ('[deckName,index,drawOrder,name]: [' + card.location + ',' + str(index) + ',' + str(card.drawOrder) + ',' + \
                    self.cardName(index) + ']' )
      
    def suit (self,index):
