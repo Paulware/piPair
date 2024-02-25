@@ -7,14 +7,13 @@ from DrawDeck import DrawDeck
 '''
 class PlayingCards (DrawDeck): 
    #TODO: Pass in filename for bigger or different decks
-   def __init__ (self, width=0, height=0, displaySurface=None, startXY=(0,0), xMultiplier=1.0, yMultiplier=0.0, coverIndex=52 ):
+   def __init__ (self, width=0, height=0, displaySurface=None, startXY=(0,0), xMultiplier=1.0, yMultiplier=0.0, coverIndex=54 ):
                  
       # print ( 'PlayingCards.init' )
       DrawDeck.__init__ (self,filename='images/standardCardSprites.jpg', numColumns=13, numRows=5, numImages=52,\
                          width=60,height=100, displaySurface=displaySurface,startXY=startXY,\
                          xMultiplier=xMultiplier,yMultiplier=yMultiplier,coverIndex=coverIndex)
                          
-
       print ('PlayingCards, total number of cards: ' + str(self.numImages)) 
       
    def cardName (self,index): 
@@ -43,6 +42,13 @@ class PlayingCards (DrawDeck):
       # print ( 'face of index: ' + str(index) + ' : ' + str(value)) 
       return value
 
+   def getColor (self,index):
+      suitName = self.suit (index)   
+      color = 'red'
+      if suitName in ['clubs','spades']:
+         color = 'black'
+      return color 
+      
    def getGroup (self, index ):
       print ( 'Get deck group associated with card index: ' + str(index)) 
       group = []        
@@ -80,6 +86,12 @@ class PlayingCards (DrawDeck):
       if (s == 'clubs') or (s == 'spades'): 
          color = 'black'
       return color
+
+   def showCard ( self, index ): 
+      card = self.data[index]
+      print ('[deckName,index,x,y,drawOrder,name]: [' + card.location + ',' + str(index) + ',' + \
+             str(card.x) + ',' + str(card.y) + ',' + \
+             str(card.drawOrder) + ',' + self.cardName(index) + ']' )
       
    def showInfo ( self, deckName='*' ): 
       (top,drawOrder) = self.deckTop (deckName,True)
@@ -88,10 +100,11 @@ class PlayingCards (DrawDeck):
       index = -1
       for card in self.data:
          index = index + 1
-         if (card.location == deckName) or (deckName=='*'):
-            print ('[deckName,index,drawOrder,name]: [' + card.location + ',' + str(index) + ',' + str(card.drawOrder) + ',' + \
-                   self.cardName(index) + ']' )
-     
+         if (card.location == deckName) or ((deckName=='*') and (card.location != '')):
+            print ('[deckName,index,x,y,drawOrder,name]: [' + card.location + ',' + str(index) + ',' + \
+                   str(card.x) + ',' + str(card.y) + ',' + \
+                   str(card.drawOrder) + ',' + self.cardName(index) + ']' )
+          
    def suit (self,index):
       suits = ['clubs','diamonds','hearts','spades']
       ind = int(index / 13) 

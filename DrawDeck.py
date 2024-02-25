@@ -48,9 +48,18 @@ class DrawDeck (Deck):
         for card in self.data:
            card.width    = width
            card.height   = height
+           card.location = ''
+           card.x        = 0
+           card.y        = 0
         
         print ('Deck has ' + str(self.numImages) + ' cards ') 
         self.lastDrawMessage = '' # For debugging only 
+
+   def cardInfo ( self, index): 
+      line = 'DrawDeck.cardInfo, [index]: [' + str(index) + ']'
+      card = self.data[index]
+      line = line + '\r' + card.location + '.card (' + str(index) + '): [drawOrder], [' + str(card.drawOrder) + ']'
+      return line 
    
    def cardsToStr (self,deckName):
       message = ''
@@ -90,12 +99,10 @@ class DrawDeck (Deck):
       for i in range (numCards):   
          index = self.getRandomIndex (len(self.data))
          count = 0 
-         cardsLeft = self.length ('') 
          
-         if cardsLeft == 0: 
-            self.showInfo ('*')
          
-         print ( 'cardsLeft: ' + str(cardsLeft))         
+         cardsLeft = self.length ('')          
+         #print ( 'cardsLeft: ' + str(cardsLeft))         
          assert cardsLeft > 0, 'Ran out of cards trying to deal, the number of cards remaining in this deck is: ' + str(cardsLeft)
          
          while self.data[index].location != '':
@@ -117,7 +124,8 @@ class DrawDeck (Deck):
          card.drawOrder = drawOrder
          drawOrder      = drawOrder + 1
     
-         print ( str(i) + ' of ' + str(numCards) + ' just dealt ' + deckName + ' card with index: ' + str(card.sheetIndex) + ' with drawOrder: ' + str(card.drawOrder) ) 
+         print ( str(i) + ' of ' + str(numCards) + ' just dealt ' + deckName + ' card with index: ' + str(card.sheetIndex) + \
+         ' [drawOrder,x,y]: [' + str(card.drawOrder) + ',' + str(card.x) + ',' + str(card.y) + ']'  ) 
       print ( 'Done in ' + deckName + ' deal' )
    
    def decrementOrder ( self, deckName, drawOrder): 
@@ -158,9 +166,9 @@ class DrawDeck (Deck):
                break
             else:
                card = self.data[index]
-               image = self.getImage (card)
-               if not card.hide:
-                  self.displaySurface.blit (image, (card.x,card.y))
+               image = self.getImage (card)              
+               self.displaySurface.blit (image, (card.x,card.y))
+               
             count = count + 1
       
    def drawInfo (self,deckName):
@@ -267,7 +275,12 @@ class DrawDeck (Deck):
             elif self.data[found].x > card.x:
                found = count 
       print ( 'left most card is card: ' + str(found) ) 
-      return found     
+      return found 
+
+   def hideName ( self,deckName): 
+      for card in self.data:
+         if deckName == card.location:
+            card.hide = True          
    
    def length (self,deckName):
       count = 0 
@@ -331,7 +344,9 @@ class DrawDeck (Deck):
    # set the x location of cards
    # Maintain the draw order...Does redeal care? 
    def redeal (self, deckName, x, y, xOffset, yOffset):
-      debugIt = False
+      print ( 'DrawDeck.redeal [deckName,x,y,xOffset,yOffset]: [' + deckName + ',' + \
+              str(x) + ',' + str(y) + ',' + str(xOffset) + ',' + str(yOffset) + ']' )
+      debugIt = True
       drawOrder = 0
       index = 0
       for card in self.data: # Set the width/height of each image 
@@ -359,8 +374,9 @@ class DrawDeck (Deck):
       self.nextY = y
       if debugIt: 
          print ( '\nDrawDeck, ***Show deck after redeal' )   
-   
+
    def showInfo ( self, deckName='*'): 
+      print ( self.cardInfo ( deckName ) )
       print ( 'DrawDeck.showInfo, [deckName,len(self.data)]: [' + deckName + ',' + str(len(self.data)) + ']' )
       index = -1
       for card in self.data:
