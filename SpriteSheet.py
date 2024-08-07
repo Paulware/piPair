@@ -82,7 +82,7 @@ class SpriteSheet:
          obj.canDealCard = True
          obj.tapped      = False
          obj.hide        = False
-         obj.drag        = False 
+         # obj.drag        = False 
          obj.deleted     = False
          obj.location    = ''
          if i < self.numImages:

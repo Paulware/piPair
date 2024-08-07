@@ -161,7 +161,7 @@ if __name__ == '__main__':
                print ( deck.cardInfo (dragCard) ) 
                if dragCard > -1: 
                   sheetIndex = deck.data[dragCard].sheetIndex
-                  deck.data[dragCard].drag = True
+                  # deck.data[dragCard].drag = True
                   startPos = (deck.data[dragCard].x,deck.data[dragCard].y)                  
                   print ( '\n\n***DRAG*** ' + deck.cardName(sheetIndex) + '\n\n' )                                 
                   mouseOffset = (data[0]-deck.data[dragCard].x,data[1]-deck.data[dragCard].y)

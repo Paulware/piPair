@@ -16,9 +16,19 @@ class PlayingCards (DrawDeck):
                          
       print ('PlayingCards, total number of cards: ' + str(self.numImages)) 
       
-   def cardName (self,index): 
+   def cardInfo ( self, index):
+      card = self.data[index]
+      name = self.cardName (index)
+      line = 'PlayingCards.cardInfo, [index,location,cardName]: [' + str(index) + ',' + card.location + ',' + name + ']'
+      # print ( line )
+      return line       
+      
+   def cardName (self,index):    
+      assert str(type(index)).find ('tuple') == -1, 'PlayingCards.cardName (index) is a tuple'          
       faces = ['ERR', 'Ace', 'Deuce', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King'] 
-      return faces[self.face(index)] + ' of ' + self.suit(index) 
+      name = faces[self.face(index)] + ' of ' + self.suit(index)
+      print ( 'cardName(' + str(index) + '): ' + name )
+      return name 
    
    def deal1 (self): 
       (index,drawOrder) = deck.deckTop ('draw') 
@@ -38,8 +48,9 @@ class PlayingCards (DrawDeck):
       return (self.length() == 0)
       
    def face (self,index):
+      print ( 'type(index): ' + str(type(index)) ) 
+      print ( 'index: ' + str (index))
       value = (index % 13) + 1 
-      # print ( 'face of index: ' + str(index) + ' : ' + str(value)) 
       return value
 
    def getColor (self,index):
@@ -75,11 +86,25 @@ class PlayingCards (DrawDeck):
    def hide (self,index):
       self.data[index].hide = True 
       
+   def hideAll (self,deckName):
+      for card in self.data:
+         if card.location == deckName: 
+            card.hide = True 
+      
    def info (self,sheetIndex):
       print ( 'Show info for card with index: ' + str(sheetIndex)) 
       print ( 'Info for card[' + str(sheetIndex) + ']: ' + self.suit(sheetIndex) + ',' + \
               'color: ' + self.redBlack(sheetIndex) + ', face: ' + str(self.face(sheetIndex)) )       
-    
+
+   def placeOnTop (self,deckName,index, pos=(0,0)):   
+      # For each of the cards in the list, also move them to the top 
+      allCards = self.locationList (self.data[index].location, showVisible=True) 
+      print ( 'PlayingCards.placeOnTop, allCards: ' + str(allCards)) 
+      for card in allCards: 
+         index = card[0]
+         print ( 'PlayingCards.py, placeOnTop, index: ' + str(index) ) 
+         DrawDeck.placeOnTop (self,deckName,index, pos )         
+
    def redBlack (self,index):
       s = self.suit (index)
       color = 'red'
@@ -101,14 +126,15 @@ class PlayingCards (DrawDeck):
       for card in self.data:
          index = index + 1
          if (card.location == deckName) or ((deckName=='*') and (card.location != '')):
-            print ('[deckName,index,x,y,drawOrder,name]: [' + card.location + ',' + str(index) + ',' + \
+            print ('[deckName,index,x,y,drawOrder,name,hide]: [' + card.location + ',' + str(index) + ',' + \
                    str(card.x) + ',' + str(card.y) + ',' + \
-                   str(card.drawOrder) + ',' + self.cardName(index) + ']' )
+                   str(card.drawOrder) + ',' + self.cardName(index) + ',' + str(card.hide) + ']' )
           
    def suit (self,index):
       suits = ['clubs','diamonds','hearts','spades']
       ind = int(index / 13) 
       value = suits[ind]
+      print ( 'suit of ' + str(index) + '=' + value )
       return value
       
    def tap (self,index):

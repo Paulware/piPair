@@ -5,7 +5,7 @@ import Communications
 from Deck import Deck
 from Utilities import Utilities
 from OptionBox import OptionBox
-from PlayingCards import PlayingCards
+from SolitaireCards import SolitaireCards
 from SubDecks import SubDecks
  
 BLACK = (  0,  0,  0)
@@ -26,13 +26,13 @@ class Solitaire ():
        x = 100        
        
        columns = 7
-       #deck = UnoCards (10, 6, 52, 60,100,displaySurface,(100,100),1.0,0.0,coverIndex=52)
+       #deck = SolitaireCards (10, 6, 52, 60,100,displaySurface,(100,100),1.0,0.0,coverIndex=52)
 
        for i in range(columns):
           columnName = 'column' + str(i)
           
           
-          hand = PlayingCards (self.deck,columns-i,80,120,(x,100), DISPLAYSURF,xMultiplier=0.0, yMultiplier=0.25)
+          hand = SolitaireCards (self.deck,columns-i,80,120,(x,100), DISPLAYSURF,xMultiplier=0.0, yMultiplier=0.25)
           hand.hideAll () 
           hand.data [hand.length()-1].hide = False 
           hand.x = x
@@ -246,7 +246,7 @@ class Solitaire ():
              quit = True    
                   
           elif event == 'mqtt':
-             if data.find ( 'move tictactoe') > -1: # Opponent has moved 
+             if data.find ( 'move solitaire') > -1: # Opponent has moved 
                 move = data.split ( ' ' )
                 print ( 'move : ' + str(move) ) 
                 x = int (move[2])

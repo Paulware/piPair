@@ -169,12 +169,6 @@ class SubDeck ():
    def drawCard (self): 
       cards = self.deck.deal (1)
       self.data.append (cards[0]) 
-               
-            
-   def dropAll (self):
-      print ( 'Dropping all cards')
-      for card in self.data:
-         card.drag = False 
          
    def findCard (self,name): 
       found = -1
