@@ -2,38 +2,6 @@ import random
 import pygame
 from Deck import Deck
 
-
-'''
-   class Object:
-      def __init__ (self):
-         pass        
-         
-   list = [] 
-   obj = Object()
-   obj.drawOrder = 0
-   obj.name = 'Steve'
-   list.append (obj)
-   # Better: 
-   list.append (('Paul',-1))
-   s  = sorted ( list, key=lambda obj:obj.drawOrder)  
-   print ( [x.name + ',' + str(x.drawOrder) for x in s])
-   
-
-   Responsibility of the deck is to read a sprite sheet and parse it into
-      all the cards. 
-
-   Functions are exposed that allow you to chop the deck into subdecks, such as deal            
-   The deck will not display the cards, but that is the responsibility of the sub-deck.
-   
-   Part of a deck can be moved to a sub-deck randomly, with those cards removed from the deck.
-     
-      
-   Original data is stored in the sheet.data element which is a list object
-      This class will add not add any attributes to that sheet.data
-      
-   This class will also have a coverImage attribute which is the image on the back of the card
-'''
-
 class DrawDeck (Deck): 
    def __init__ (self, filename, numColumns, numRows, numImages, width, height, displaySurface, startXY, \
                  xMultiplier=1.0, yMultiplier=0.0, coverIndex=None):
@@ -302,26 +270,36 @@ class DrawDeck (Deck):
                                    str(found) + ',' + str(card.drawOrder) + ',' + \
                                    str(self.data[found].drawOrder) + ']') 
          return found 
+         
+   def confirmDrawOrder (self,deckName):
+      drawOrder = 0
+      for card in self.data:    
+         if card.location == deckName: 
+            self.findDrawCard (deckName,drawOrder) # this does an assert check 
+            drawOrder = drawOrder + 1            
+      print ( 'DrawOrder confirmed for ' + deckName)
     
    def findDrawCard (self, deckName, drawOrder,debugIt=True ): 
       index = -1
       found = -1
-      for card in self.data:
-         index = index + 1
-         if card.location == deckName: 
-            if card.drawOrder == drawOrder:
-               found = index 
-               break
-               
-      if (found == -1) and debugIt: 
-         message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName
-         print ( message ) 
-         
-         assert False, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
-         if message != self.lastDrawMessage:
-            print (message)
-            self.lastDrawMessage = message
+      if self.length(deckName) > 0:          
+         for card in self.data:
+            index = index + 1
+            if card.location == deckName: 
+               if card.drawOrder == drawOrder:
+                  found = index 
+                  break
+                  
+         if (found == -1) and debugIt: 
             self.showInfo (deckName)
+            message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName + ' deck len: ' + str(self.len(deckName))
+            print ( message ) 
+            
+            assert False, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
+            if message != self.lastDrawMessage:
+               print (message)
+               self.lastDrawMessage = message
+               self.showInfo (deckName)
          
          
       return found
@@ -363,7 +341,10 @@ class DrawDeck (Deck):
                locations.append ( location )
       return locations
  
-     
+   # Note: This procedure should be overwritten by the child class 
+   def getName (self,index): 
+      return 'DrawDeck.getName: overwrite needed for ' + str(index) 
+      
    def hideName ( self,deckName): 
       for card in self.data:
          if deckName == card.location:
@@ -423,7 +404,6 @@ class DrawDeck (Deck):
       self.data[index].x = pos[0]
       self.data[index].y = pos[1]  
       
-            
    # Note side effect: Changing the drawOrder 
    # This procedure while take a list of indexes, sort them by drawOrder and place them on a location 
    # if drawOrder is not -1, it will start with that drawOrder and increment each by one 
@@ -560,7 +540,7 @@ class DrawDeck (Deck):
       for card in self.data:
          index = index + 1
          if (card.location == deckName) or (deckName == '*'):
-            print ( card.location + '.card (' + str(index) + '): [drawOrder], [' + \
+            print ( card.location + '.card (' + str(index) + '): [name,drawOrder], [' + self.getName(index) + ',' + \
             str(card.drawOrder) + ']')
             
    # Sort the list by drawOrder 

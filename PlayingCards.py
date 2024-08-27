@@ -83,6 +83,9 @@ class PlayingCards (DrawDeck):
       print ( 'Got a group: ' + str(group))                  
       return group
  
+   def getName (self,index): 
+      return self.cardName (index)
+ 
    def hide (self,index):
       self.data[index].hide = True 
       

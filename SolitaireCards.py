@@ -24,36 +24,40 @@ class SolitaireCards (PlayingCards):
       topSuit        = deck.suit (topIndex)
       topFace        = deck.face (topIndex)
       bottomFace     = deck.face (bottomIndex)
-      print ( '[bottomLocation,bottomSuit,topSuit,topFace,bottomFace]: [' + bottomLocation + \
+      print ( '[bottomIndex, topIndex, bottomLocation,bottomSuit,topSuit,topFace,bottomFace]: [' + \
+              str(bottomIndex) + ',' + str(topIndex) + ',' + bottomLocation + \
               ',' + str(bottomSuit) + ',' + str(topSuit) + ',' + str(topFace) + ',' + str(bottomFace) + ']' )
-      if bottomLocation = 'draw': 
-         ok = False 
-      if (bottomLocation.find ( 'ace') > -1) and (bottomSuit == topSuit) and (topFace == (bottomFace+1)): # Dropping on an Ace Column 
-         ok = True  
-      elif name.find ( 'Ace' ) > -1: 
-         print ( 'Dropping an ace on:' + str(dropIndex) )
-         if dropIndex == -1: # Not dropping ace on any card    
-           ok = True         
+      if (bottomLocation == 'draw') and (bottomIndex > -1): 
+         print ( 'No drop on location: draw' )
       else:
-         if (bottomIndex != -1) and (topIndex != -1): 
-            bottomColor = self.getColor (bottomIndex)
-            topColor    = self.getColor (topIndex)
-            location = self.data[bottomIndex].location
-            if bottomColor != topColor:
-               bottomFace = self.face (bottomIndex)
-               topFace    = self.face (topIndex)
-               if bottomFace == (topFace + 1): 
-                  ok = True 
-               else:
-                  print ( 'SolitaireCards.canDrop, no drop a [bottomFace,topFace]: [' + str(bottomFace) + ',' + str(topFace) + ']' )
-            else: 
-               face1 = self.face (bottomIndex)
-               face2 = self.face (topIndex)                
-               print ( '[location,face1,face2]: [ ' + location + ',' + str(face1) + ',' + str(face2) + ']' )               
-               if (location.find ( 'Ace') > -1) and (face2 == (face1+1)): # We are dropping on an Ace column 
-                  ok = True                                 
+         if (bottomLocation.find ( 'ace') > -1) and (bottomSuit == topSuit) and (topFace == (bottomFace+1)): # Dropping on an Ace Column 
+            ok = True  
+            print ( 'Ok dropping on ace column ' )
+         elif name.find ( 'Ace' ) > -1: 
+            print ( 'Dropping an ace on:' + str(dropIndex) )
+            if dropIndex == -1: # Not dropping ace on any card    
+              ok = True         
+              print ( 'Ok dropping an ace anywhere' )
          else:
-            print ( 'SolitaireCards.canDrop, no drop b [bottomColor,topColor]: [' + bottomColor + ',' + topColor + ']' )
+            if (bottomIndex != -1) and (topIndex != -1): 
+               bottomColor = self.getColor (bottomIndex)
+               topColor    = self.getColor (topIndex)
+               location = self.data[bottomIndex].location
+               if bottomColor != topColor:
+                  bottomFace = self.face (bottomIndex)
+                  topFace    = self.face (topIndex)
+                  if bottomFace == (topFace + 1): 
+                     ok = True 
+                  else:
+                     print ( 'SolitaireCards.canDrop, no drop a [bottomFace,topFace]: [' + str(bottomFace) + ',' + str(topFace) + ']' )
+               else: 
+                  face1 = self.face (bottomIndex)
+                  face2 = self.face (topIndex)                
+                  print ( '[location,face1,face2]: [ ' + location + ',' + str(face1) + ',' + str(face2) + ']' )               
+                  if (location.find ( 'Ace') > -1) and (face2 == (face1+1)): # We are dropping on an Ace column 
+                     ok = True                                 
+            else:
+               print ( 'SolitaireCards.canDrop, no drop b [bottomColor,topColor]: [' + bottomColor + ',' + topColor + ']' )
       return ok 
 
    def deal (self): 
@@ -251,6 +255,7 @@ if __name__ == '__main__':
 
             if deck.canDrop ( dropIndex, dragCard):
                sourceLocation = deck.data[dragCard].location           
+               destinationLocation = deck.data[dropIndex].location
                if dropIndex == -1: 
                   print ( 'Drop an ace yo' )
                   x = data[0]
@@ -262,16 +267,12 @@ if __name__ == '__main__':
                   print ( 'Drop ok from: ' + sourceLocation + ' length of afterList: ' + str(len(afterList)) )
                   deck.dropDragList ( afterList,dropIndex,0,25)
                   print ( 'finished dropDragList' )                   
-                  '''
-                  # Place card on top of other card
-                  # Todo, maintain order of card(s) placed on top.  Handle more than 1
-                  if dropIndex == -1: # Possible Ace drop on nothing 
-                     pos = (deck.data[dragCard].x,deck.data[dragCard].y) 
-                     deck.placeOnTop ( name, dragCard,pos )
-                  else:               
-                     deck.placeOnTop ( deck.data[dropIndex].location,dragCard)
-                  ''' 
+
                   deck.flipTop (sourceLocation)                  
+                  print ( 'Confirm drawOrder on source and destination ' )
+                  deck.confirmDrawOrder (sourceLocation)        # Check Source 
+                  deck.confirmDrawOrder (destinationLocation )  # Check Destination 
+                  print ( 'Draw order confirmed on [source,destination]: [' + sourceLocation + ',' + destinationLocation + ']' )
             else:
                if name.find ('King') > -1: 
                   emptyColumn = deck.emptyColumn()
