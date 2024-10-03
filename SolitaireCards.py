@@ -185,13 +185,14 @@ if __name__ == '__main__':
    from Labels    import Labels   
    import time  
 
-   def draw(): 
+   def draw(dragCard): 
       window.fill ((0,0,0))  
       deck.drawLocations()
       
       labels.draw  ()      
-      pygame.display.update()   
-   
+      deck.drawCard (dragCard)            
+      pygame.display.update()     
+      
    pygame.init()
    displaySurface = pygame.display.set_mode((1200, 800))
    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
@@ -211,7 +212,7 @@ if __name__ == '__main__':
    dragCard = None
 
    while not quit:
-      draw()   
+      draw(dragCard)   
            
       events = utilities.readOne()
       
@@ -247,9 +248,6 @@ if __name__ == '__main__':
                dragList = [] 
           
          elif (typeInput == 'drop') and not (dragCard is None):
-            #TODO: There is an index which is like an array index for a deck
-            #      And there is an index like a data[index].   Why do we need 
-            #      a deck array index?   Should we get rid of this concept?
             name = deck.cardName (dragCard) 
             dropIndex = deck.findCard (data,ignoreCard=dragCard) # Where are we dropping 
 

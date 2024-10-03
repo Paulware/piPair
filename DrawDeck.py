@@ -84,6 +84,14 @@ class DrawDeck (Deck):
          index = typeValue.find ( 'int' )
          assert index > -1, 'type(' + str(value) + ') should be int, but is:' + str(typeValue)
    
+   def confirmDrawOrder (self,deckName):
+      drawOrder = 0
+      for card in self.data:    
+         if card.location == deckName: 
+            self.findDrawCard (deckName,drawOrder) # this does an assert check 
+            drawOrder = drawOrder + 1            
+      print ( 'DrawOrder confirmed for ' + deckName)
+    
    def cycleTop (self,deckName):
       if self.numCards (deckName) > 0: 
          (topCard,_) = self.deckTop ( deckName,True)
@@ -171,11 +179,15 @@ class DrawDeck (Deck):
             if index == -1:
                break
             else:
-               card = self.data[index]
-               image = self.getImage (card)              
-               self.displaySurface.blit (image, (card.x,card.y))
+               self.drawCard (index)
                
             count = count + 1
+          
+   def drawCard (self,index):
+      if not (index is None): 
+         card = self.data[index]
+         image = self.getImage (card)              
+         self.displaySurface.blit (image, (card.x,card.y))
       
    def drawInfo (self,deckName):
       count = 0
@@ -271,14 +283,6 @@ class DrawDeck (Deck):
                                    str(self.data[found].drawOrder) + ']') 
          return found 
          
-   def confirmDrawOrder (self,deckName):
-      drawOrder = 0
-      for card in self.data:    
-         if card.location == deckName: 
-            self.findDrawCard (deckName,drawOrder) # this does an assert check 
-            drawOrder = drawOrder + 1            
-      print ( 'DrawOrder confirmed for ' + deckName)
-    
    def findDrawCard (self, deckName, drawOrder,debugIt=True ): 
       index = -1
       found = -1
@@ -292,8 +296,8 @@ class DrawDeck (Deck):
                   
          if (found == -1) and debugIt: 
             self.showInfo (deckName)
-            message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName + ' deck len: ' + str(self.len(deckName))
-            print ( message ) 
+            #message = 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName + ' deck len: ' + str(self.len(deckName))
+            #print ( message ) 
             
             assert False, 'Could not find drawOrder ' + str(drawOrder) + ' for deck: ' + deckName 
             if message != self.lastDrawMessage:
